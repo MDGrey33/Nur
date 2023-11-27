@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Install any dependencies
-# RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Command to run on container start
 CMD ["python", "main.py"]

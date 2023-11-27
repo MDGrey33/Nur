@@ -14,63 +14,20 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 
 
 ## Setup
-Create setup_and_run.sh
+1. Setup Docker 
+2. Git clone the repo 
 
-chmod +x setup_and_run.sh
+````
+git clone https://github.com/MDGrey33/Nur.git
+````
+Download setup_and_run.sh from the repo and make it executable and execute it
 
-````bash
-#!/bin/bash
-
-# Function to check and install Miniconda if necessary
-check_miniconda() {
-    if ! [ -x "$(command -v conda)" ]; then
-        echo "Miniconda is not installed. Installing Miniconda..."
-        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-        bash miniconda.sh -b -p $HOME/miniconda
-        export PATH="$HOME/miniconda/bin:$PATH"
-        echo "Miniconda installed."
-    else
-        echo "Miniconda is already installed."
-    fi
-}
-
-# Check if already in Nur directory with main.py
-if [ -d "Nur" ] && [ -f "Nur/main.py" ]; then
-    echo "Nur directory with main.py already exists. Skipping cloning."
-    cd Nur
-else
-    # Clone the GitHub repository if Nur directory doesn't exist
-    git clone https://github.com/MDGrey33/Nur.git
-    cd Nur
-fi
-
-# Check if the Miniconda environment already exists
-env_name="myenv"
-if conda info --envs | grep -q "$env_name"; then
-    echo "Miniconda environment '$env_name' already exists. Activating it."
-else
-    echo "Creating Miniconda environment '$env_name'."
-    conda create -n "$env_name" python=3.8 -y
-fi
-
-# Activate the Miniconda environment
-# Modify this depending on your shell compatibility
-source activate "$env_name"
-
-# Install Python dependencies
-if [ -f "requirements.txt" ]; then
-    echo "Installing Python dependencies."
-    pip install -r requirements.txt
-else
-    echo "No requirements.txt found. Skipping Python dependencies installation."
-fi
-
-# Start the Docker containers
-echo "Starting Docker containers."
-docker-compose up --build
+````
+cd Nur
+chmod +x ./setup/setup_and_run.sh
+./setup/setup_and_run.sh
 ````
 
-## Run
-````bash
-./utility/setup_and_run.sh
-````
+The script will load 3 docker images for you 1 of which is the python environment and 2 are Kafka and Kafka Zookeeper 
+
+or follow the steps in the script manually.
