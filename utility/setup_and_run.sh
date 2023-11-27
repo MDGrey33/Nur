@@ -1,24 +1,3 @@
-# Nur
-The self actualizing documentation framework that heals its knowledge gaps as naturally as a ray of light
-
-## Rough thoughts
-- add a confluence space (url credentials and update interval)
-- Pulls the confluence space and stores it in an sqlite database
-- Uses Kafka for all operations
-- Vectorizes the confluence space pages and stores the embeds in a chroma db collection
-- Listens on specific slack channels for questions relevant to its domain
-- Uses the vectorized embeds to find the most similar pages to a question
-- Creates an assistant with the relevant pages and allows it to engage to provide the answer if confident enough
-- Gets user feedback to either increase confidence or decrease confidence
-- If confidence is below a certain threashold the assistant will add the question to a trivia quizz and runs it with the specialist team and recommends the update in a confluence comment
-
-
-## Setup
-Create setup_and_run.sh
-
-chmod +x setup_and_run.sh
-
-````bash
 #!/bin/bash
 
 # Function to check and install Miniconda if necessary
@@ -68,9 +47,3 @@ fi
 # Start the Docker containers
 echo "Starting Docker containers."
 docker-compose up --build
-````
-
-## Run
-````bash
-./utility/setup_and_run.sh
-````
