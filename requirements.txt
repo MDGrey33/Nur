@@ -2,3 +2,5 @@ openai
 kafka-python
 requests
 schedule
+sqlalchemy
+beautifulsoup4
