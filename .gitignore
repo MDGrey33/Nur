@@ -1,3 +1,6 @@
 /.idea/
 /credentials.py
 /configuration.py
+/old/
+/confluence_integration/context/
+/confluence_integration/old/

@@ -1,9 +1,0 @@
-
-
-#  python-docker-compose up -dapp:
-#    build: .
-#    volumes:
-#      - .:/app
-#    depends_on:
-#      - kafka
-#      - zookeeper
