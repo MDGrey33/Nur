@@ -4,3 +4,6 @@ requests
 schedule
 sqlalchemy
 beautifulsoup4
+chromadb
+langchain
+tiktoken

@@ -30,3 +30,6 @@ chmod +x ./setup/setup_and_run.sh
 The script will load 3 docker images for you 1 of which is the python environment and 2 are Kafka and Kafka Zookeeper 
 
 or follow the steps in the script manually.
+
+Ref: 
+API documentation: https://atlassian-python-api.readthedocs.io/confluence.html
