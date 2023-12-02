@@ -15,22 +15,11 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 
 
 ## Setup
-
-
+Still n forming phase
+For now clone the repo
+There is one module in each package
+Familiarize yourself with the modules
 ````
 git clone https://github.com/MDGrey33/Nur.git
 ````
-Download setup_and_run.sh from the repo and make it executable and execute it
-
-````
-cd Nur
-chmod +x ./setup/setup_and_run.sh
-./setup/setup_and_run.sh
-````
-
-The script will load 3 docker images for you 1 of which is the python environment and 2 are Kafka and Kafka Zookeeper 
-
-or follow the steps in the script manually.
-
-Ref: 
-API documentation: https://atlassian-python-api.readthedocs.io/confluence.html
+Setup script not functional at this point.
