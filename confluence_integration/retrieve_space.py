@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
@@ -12,11 +13,13 @@ confluence = Confluence(
 )
 
 
+# Get top level pages from a space
 def get_top_level_ids(space_key):
     top_level_pages = confluence.get_all_pages_from_space(space_key)
     return [page['id'] for page in top_level_pages]
 
 
+# Get child pages from a page
 def get_child_ids(item_id, content_type):
     child_items = confluence.get_page_child_by_type(item_id, type=content_type)
     return [child['id'] for child in child_items]
@@ -54,10 +57,10 @@ def get_all_comments_recursive(page_id):
     for comment_id in top_level_comment_ids:
         all_comments.append(comment_id)
         all_comments.extend(get_child_comments_recursively(comment_id))
-
     return all_comments
 
 
+"""
 def get_space_ids(space_key):
     all_page_ids = get_all_pages_recursive(space_key)
     page_comments_map = {}
@@ -67,6 +70,7 @@ def get_space_ids(space_key):
         page_comments_map[page_id] = page_comments
 
     print("Page and Comments Map:", page_comments_map)
+"""
 
 
 def choose_space():
@@ -89,9 +93,22 @@ def strip_html_tags(content):
     return soup.get_text()
 
 
-def get_space_content():
+def check_date_filter(update_date, all_page_ids):
+    updated_pages = []
+    for page_id in all_page_ids:
+        page_history = confluence.history(page_id)  # directly use page_id
+        last_updated = datetime.strptime(page_history['lastUpdated']['when'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        if last_updated >= update_date:
+            updated_pages.append(page_id)  # append the page_id to the list
+    return updated_pages
+
+
+
+def get_space_content(update_date=None):
     space_key = choose_space()
     all_page_ids = get_all_pages_recursive(space_key)
+    if update_date is not None:
+        all_page_ids = check_date_filter(update_date, all_page_ids)
     page_content_map = {}
 
     for page_id in all_page_ids:
@@ -130,4 +147,8 @@ def get_space_content():
 
 
 if __name__ == "__main__":
+    # Initial space retrieve
     get_space_content()
+    # Space update retrieve
+    # get_space_content(update_date=datetime(2023, 12, 1, 0, 0, 0))
+
