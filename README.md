@@ -1,6 +1,6 @@
 # Nur
 The self actualizing documentation framework that heals its knowledge gaps as naturally as a ray of light
-
+[Custom GPT to discuss the code base](https://chat.openai.com/g/g-zKBLXtfrD-shams-nur)
 ## Feature list
 ### Done:
 - add a confluence space (url credentials and update interval) 

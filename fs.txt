@@ -1,0 +1,12 @@
+vector
+setup
+requirements.txt
+fs.txt
+database
+credentials.py
+context
+confluence_integration
+configuration.py
+__pycache__
+README.md
+LICENSE
