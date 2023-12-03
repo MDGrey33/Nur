@@ -4,7 +4,7 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 ## Feature list
 ### Done:
 - add a confluence space (url credentials and update interval) 
-- Pulls the confluence space and stores it in an sqlite database
+- Pulls the confluence space and stores it in a sqlite database
 - Vectorizes the confluence space pages and stores the embeds in a chroma db collection
 - Uses the vectorized embeds to find the most similar pages to a question
 ### Todo:
