@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
 from database.confluence_database import store_space_data, store_pages_data
+from file_system.file_manager import FileManager
 
 # Initialize Confluence API
 confluence = Confluence(
@@ -60,19 +61,6 @@ def get_all_comments_recursive(page_id):
     return all_comments
 
 
-"""
-def get_space_ids(space_key):
-    all_page_ids = get_all_pages_recursive(space_key)
-    page_comments_map = {}
-
-    for page_id in all_page_ids:
-        page_comments = get_all_comments_recursive(page_id)
-        page_comments_map[page_id] = page_comments
-
-    print("Page and Comments Map:", page_comments_map)
-"""
-
-
 def choose_space():
     spaces = confluence.get_all_spaces(start=0, limit=50, expand='description.plain,body.view,value')
     for i, space in enumerate(spaces['results']):
@@ -103,32 +91,39 @@ def check_date_filter(update_date, all_page_ids):
     return updated_pages
 
 
+def format_page_content_for_llm(page_data):
+    """ Format page data into a string of key-value pairs for LLM context. """
+    content = ""
+    for key, value in page_data.items():
+        content += f"{key}: {value}\n"
+    return content
+
 
 def get_space_content(update_date=None):
     space_key = choose_space()
     all_page_ids = get_all_pages_recursive(space_key)
     if update_date is not None:
         all_page_ids = check_date_filter(update_date, all_page_ids)
-    page_content_map = {}
+
+    file_manager = FileManager()  # Initialize FileManager instance
+    page_content_map = {}  # For storing page data for database
 
     for page_id in all_page_ids:
         page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
         page_title = strip_html_tags(page['title'])
-
         page_author = page['history']['createdBy']['displayName']
         created_date = page['history']['createdDate']
         last_updated = page['version']['when']
-
         page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
-
         page_comments_content = ""
         page_comments = get_all_comments_recursive(page_id)
+
         for comment_id in page_comments:
             comment = confluence.get_page_by_id(comment_id, expand='body.storage')
             comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
             page_comments_content += strip_html_tags(comment_content)
 
-        page_content_map[page_id] = {
+        page_data = {
             'title': page_title,
             'author': page_author,
             'createdDate': created_date,
@@ -137,13 +132,17 @@ def get_space_content(update_date=None):
             'comments': page_comments_content
         }
 
-    with open('page_content.json', 'w') as f:
-        json.dump(page_content_map, f)
+        # Store data for database
+        page_content_map[page_id] = page_data
 
+        formatted_content = format_page_content_for_llm(page_data)
+        file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
+
+    # Store all page data in the database
     store_pages_data(space_key, page_content_map)
-    print("Page content written to JSON and database.")
 
-    return page_content_map
+    print("Page content written to individual files and database.")
+    return all_page_ids
 
 
 if __name__ == "__main__":
