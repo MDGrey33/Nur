@@ -6,3 +6,4 @@ beautifulsoup4
 chromadb
 langchain
 tiktoken
+prettytable

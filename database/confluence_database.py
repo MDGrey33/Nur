@@ -1,7 +1,10 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+# /Users/roland/code/Nur/database/confluence_database.py
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+from configuration import sql_file_path
+
 
 # Define the base class
 Base = declarative_base()
@@ -34,7 +37,7 @@ class PageData(Base):
 
 
 # Setup database connection
-engine = create_engine('sqlite:///../database/confluence_data.db')
+engine = create_engine('sqlite:///' + sql_file_path)
 Base.metadata.bind = engine
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
@@ -72,3 +75,9 @@ def store_pages_data(space_key, pages_data):
     session.commit()
     print("Page content written to database.")
 
+
+# stores vector data for each page in the sql database
+def store_vector_data(page_id, vector, metadata):
+    new_vector_data = VectorData(page_id=page_id, vector=vector, metadata=metadata)
+    session.add(new_vector_data)
+    session.commit()
