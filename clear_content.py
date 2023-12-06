@@ -1,5 +1,4 @@
-# doesnt work needs fixing
-
+# ./clear_content.py
 import os
 import shutil
 from configuration import file_system_path, database_path, vector_folder_path
