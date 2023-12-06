@@ -76,8 +76,3 @@ def store_pages_data(space_key, pages_data):
     print("Page content written to database.")
 
 
-# stores vector data for each page in the sql database
-def store_vector_data(page_id, vector, metadata):
-    new_vector_data = VectorData(page_id=page_id, vector=vector, metadata=metadata)
-    session.add(new_vector_data)
-    session.commit()

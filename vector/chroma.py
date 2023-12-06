@@ -24,13 +24,17 @@ def get_data_from_db():
             f"content: {record[7]}, comments: {record[8]}"
         )
         all_documents.append(document)
+    page_ids = [record[1] for record in records]
 
     # Close the SQLite connection
     conn.close()
-    return all_documents
+    print('###################################################')
+    print(page_ids)
+    print('###################################################')
+    return all_documents, page_ids
 
 
-def vectorize_documents(all_documents):
+def vectorize_documents(all_documents, page_ids):
 
     # Initialize OpenAI embeddings with the API key
     embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
@@ -38,19 +42,26 @@ def vectorize_documents(all_documents):
     # Create the Chroma vectorstore with the embedding function
     vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
 
+    # Prepare page_ids to be added as metadata
+    metadatas = [
+        {"page_id": page_id} for page_id in page_ids
+    ]
+
     # Add texts to the vectorstore
-    vectordb.add_texts(texts=all_documents)
+    vectordb.add_texts(texts=all_documents, metadatas=metadatas)
+    # vectordb.upsert_texts(texts=all_documents, metadatas=metadatas)
 
     # Persist the database
     vectordb.persist()
 
 
-def add():
-    all_documents = get_data_from_db()
-    vectorize_documents(all_documents)
+def add_to_vector():
+    all_documents, page_ids = get_data_from_db()
+    vectorize_documents(all_documents, page_ids)
+    return page_ids
 
 
-def retrieve(question):
+def retrieve_relevant_documents(question):
     # Initialize OpenAI embeddings with the API key
     embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
 
@@ -63,16 +74,24 @@ def retrieve(question):
     # Perform a similarity search in the vectorstore
     similar_documents = vectordb.similarity_search_by_vector(query_embedding)
 
-    # Process and return the results
-    return [doc.page_content for doc in similar_documents]
+    # Process and return the results along with their metadata
+    results = []
+    for doc in similar_documents:
+        result = {
+            "page_content": doc.page_content,
+            "metadata": doc.metadata
+        }
+        results.append(result)
+    document_ids = [doc.metadata.get('page_id') for doc in similar_documents if doc.metadata]
+
+    return document_ids
 
 
 if __name__ == '__main__':
-    add()
+    vectorized_page_ids = add_to_vector()
     question = "do we use any reminder functionality in our solution?"
-    results = retrieve(question)
-    for doc in results:
-        print(doc)
-
-
+    relevant_document_ids = retrieve_relevant_documents(question)
+    for result in relevant_document_ids:
+        print(result)
+        print("---------------------------------------------------")
 

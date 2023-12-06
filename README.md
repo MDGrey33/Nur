@@ -7,8 +7,8 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Pulls the confluence space and stores it in a sqlite database
 - Vectorizes the confluence space pages and stores the embeds in a chroma db collection
 - Uses the vectorized embeds to find the most similar pages to a question
-### Todo:
 - Creates an assistant with the relevant pages and allows it to engage to provide the answer if confident enough
+### Todo:
 - Listens on specific slack channels for questions relevant to its domain
 - Gets user feedback to either increase confidence or decrease confidence
 - If confidence is below a certain threashold the assistant will add the question to a trivia quizz and runs it with the specialist team and recommends the update in a confluence comment
@@ -23,3 +23,9 @@ Familiarize yourself with the modules
 git clone https://github.com/MDGrey33/Nur.git
 ````
 Setup script not functional at this point.
+
+## Usage
+1. Add openai api key to credentials
+2. Add confluence credentials to ./credentials
+3. Add project absolute path to ./confiduration 
+4. Run the main.py file
