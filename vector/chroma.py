@@ -1,4 +1,4 @@
-# /Users/roland/code/Nur/vector/chroma.py
+# ./vector/chroma.py
 import sqlite3
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma

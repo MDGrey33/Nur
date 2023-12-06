@@ -1,4 +1,4 @@
-# //Users/roland/code/Nur/confluence_integration/retrieve_space.py
+# ./confluence_integration/retrieve_space.py
 from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence

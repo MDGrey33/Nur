@@ -1,4 +1,4 @@
-# /Users/roland/code/Nur/database/confluence_database.py
+# ./database/confluence_database.py
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
