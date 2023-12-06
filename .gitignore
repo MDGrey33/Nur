@@ -10,3 +10,5 @@
 /content/file_system/
 /content/databaseconfluence_data.db
 /content/
+.DS_Store
+*.pyc
