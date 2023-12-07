@@ -7,10 +7,11 @@ from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
+from configuration import file_system_path
 from file_system.file_manager import FileManager
 from vector.chroma import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import get_response_from_assistant
-
+import os
 
 
 # Abstract base class for Slack event handlers
@@ -22,27 +23,77 @@ class SlackEventHandler(ABC):
 
 # Handler for messages sent in Slack channels
 class ChannelMessageHandler(SlackEventHandler):
-    def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
-        try:
-            logging.debug(f"Received event: {req.payload}")
-            if req.type == "events_api":
-                event = req.payload.get("event", {})
-                logging.info(f"Event details: {event}")
+    processed_messages = set()  # To keep track of processed message IDs
 
-                # Ignore messages from the bot itself
-                if event.get("type") == "message" and "subtype" not in event and event.get("user") != bot_user_id:
+    def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
+        # Acknowledge the event immediately
+        client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
+
+        event = req.payload.get("event", {})
+        message_id = event.get("client_msg_id")  # Unique identifier for each message
+
+        # Check if the message is a retry and already processed
+        if message_id in self.processed_messages:
+            return
+
+        try:
+            if req.type == "events_api":
+                if self.is_valid_message(event, bot_user_id):
                     text = event.get("text", "")
                     channel_id = event["channel"]
-                    logging.info(f"Message received: '{text}' in channel {channel_id}")
 
-                    # Respond to the message
-                    response_message = f"I got a message from you saying \"{text}\""
-                    web_client.chat_postMessage(channel=channel_id, text=response_message)
-                    logging.info(f"Sent response in channel {channel_id}")
+                    if "?" in text:
+                        self.answer_question(channel_id, text, event.get("ts"), web_client)
+                    else:
+                        self.send_default_response(text, channel_id, web_client)
 
-                client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
+                    # Add the message ID to the processed set
+                    self.processed_messages.add(message_id)
+
         except Exception as e:
             logging.error(f"Error processing event: {e}", exc_info=True)
+
+    def is_valid_message(self, event, bot_user_id):
+        """ Check if the event is a valid user message """
+        return event.get("type") == "message" and "subtype" not in event and event.get("user") != bot_user_id
+
+    def send_default_response(self, text, channel_id, web_client):
+        """ Send a default response to a non-question message """
+        response_message = f"I got a message from you saying \"{text}\""
+        web_client.chat_postMessage(channel=channel_id, text=response_message)
+
+    def answer_question(self, channel_id, question, message_id_to_reply_under, web_client):
+        """ Handle a question message """
+        file_name = f"{channel_id}_context.txt"
+        context = self.fetch_recent_messages(channel_id, web_client)
+        self.save_context_to_file(context, file_name)
+        response = self.generate_response(question, file_name)
+        web_client.chat_postMessage(channel=channel_id, text=response, thread_ts=message_id_to_reply_under)
+        logging.debug(f"Sent question response to channel {channel_id}")
+
+    def send_default_response(self, text, channel_id, web_client):
+        """ Send a default response to a non-question message """
+        response_message = f"I got a message from you saying \"{text}\""
+        web_client.chat_postMessage(channel=channel_id, text=response_message)
+
+    def fetch_recent_messages(self, channel_id, web_client):
+        """ Fetch recent messages for context """
+        response = web_client.conversations_history(channel=channel_id, limit=100)
+        return "\n".join([msg.get('text') for msg in response.get('messages', [])])
+
+    def save_context_to_file(self, context, file_name):
+        """ Save the fetched context to a file """
+        with open(os.path.join(file_system_path, file_name), 'w') as file:
+            file.write(context)
+
+    def generate_response(self, question, file_name):
+        """ Generate a response for a question """
+        file_id = file_name[:-4]
+        relevant_document_ids = retrieve_relevant_documents(question)
+        relevant_document_ids.append(file_id)
+        return get_response_from_assistant(question, relevant_document_ids)
+
+
 
 
 # Handler for reactions added to messages
