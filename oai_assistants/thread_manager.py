@@ -117,3 +117,4 @@ class ThreadManager:
         for message in messages.data:
             if message.role == "assistant":
                 print(f"Assistant: {message.content[0].text.value}")
+
