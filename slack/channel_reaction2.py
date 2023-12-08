@@ -43,9 +43,11 @@ class ChannelMessageHandler(SlackEventHandler):
                     channel_id = event["channel"]
 
                     if "?" in text:
+                        # Handle question message
                         self.answer_question(channel_id, text, event.get("ts"), web_client)
                     else:
-                        self.send_default_response(text, channel_id, web_client)
+                        # Handle non-question message
+                        self.send_default_response(text, channel_id, event.get("ts"), web_client)
 
                     # Add the message ID to the processed set
                     self.processed_messages.add(message_id)
@@ -57,24 +59,23 @@ class ChannelMessageHandler(SlackEventHandler):
         """ Check if the event is a valid user message """
         return event.get("type") == "message" and "subtype" not in event and event.get("user") != bot_user_id
 
-    def send_default_response(self, text, channel_id, web_client):
+    def send_default_response(self, text, channel_id, thread_ts, web_client):
         """ Send a default response to a non-question message """
         response_message = f"I got a message from you saying \"{text}\""
-        web_client.chat_postMessage(channel=channel_id, text=response_message)
+        web_client.chat_postMessage(channel=channel_id, text=response_message, thread_ts=thread_ts)
 
     def answer_question(self, channel_id, question, message_id_to_reply_under, web_client):
         """ Handle a question message """
         file_name = f"{channel_id}_context.txt"
         context = self.fetch_recent_messages(channel_id, web_client)
         self.save_context_to_file(context, file_name)
-        response = self.generate_response(question, file_name)
-        web_client.chat_postMessage(channel=channel_id, text=response, thread_ts=message_id_to_reply_under)
-        logging.debug(f"Sent question response to channel {channel_id}")
 
-    def send_default_response(self, text, channel_id, web_client):
-        """ Send a default response to a non-question message """
-        response_message = f"I got a message from you saying \"{text}\""
-        web_client.chat_postMessage(channel=channel_id, text=response_message)
+        response_text = self.generate_response(question, file_name)
+        print("*"*100)
+        print(response_text)
+        print("*"*100)
+        # Send the extracted text as a response in Slack
+        web_client.chat_postMessage(channel=channel_id, text=response_text, thread_ts=message_id_to_reply_under)
 
     def fetch_recent_messages(self, channel_id, web_client):
         """ Fetch recent messages for context """
@@ -91,10 +92,16 @@ class ChannelMessageHandler(SlackEventHandler):
         file_id = file_name[:-4]
         relevant_document_ids = retrieve_relevant_documents(question)
         relevant_document_ids.append(file_id)
-        return get_response_from_assistant(question, relevant_document_ids)
+        response_obj = get_response_from_assistant(question, relevant_document_ids)
 
+        # Extract the text from the first assistant message
+        response_text = "No valid response found."  # Default response
+        for message in response_obj.data:
+            if message.role == "assistant":
+                response_text = message.content[0].text.value
+                break  # Assuming you only need the first assistant message
 
-
+        return response_text
 
 # Handler for reactions added to messages
 class ReactionHandler(SlackEventHandler):
