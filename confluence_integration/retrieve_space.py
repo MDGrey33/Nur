@@ -16,18 +16,48 @@ confluence = Confluence(
 
 # Get top level pages from a space
 def get_top_level_ids(space_key):
+    """
+    Retrieve IDs of top-level pages in a specified Confluence space.
+
+    Args:
+    space_key (str): The key of the Confluence space.
+
+    Returns:
+    list: A list of page IDs for the top-level pages in the space.
+    """
     top_level_pages = confluence.get_all_pages_from_space(space_key)
     return [page['id'] for page in top_level_pages]
 
 
 # Get child pages from a page
 def get_child_ids(item_id, content_type):
+    """
+    Retrieve IDs of child items (pages or comments) for a given Confluence item.
+
+    Args:
+    item_id (str): The ID of the Confluence page or comment.
+    content_type (str): Type of content to retrieve ('page' or 'comment').
+
+    Returns:
+    list: A list of IDs for child items.
+    """
     child_items = confluence.get_page_child_by_type(item_id, type=content_type)
     return [child['id'] for child in child_items]
 
 
-def get_all_pages_recursive(space_key):
+def get_all_page_ids_recursive(space_key):
+    """
+    Recursively retrieves all page IDs in a given space, including child pages.
+
+    Args:
+    space_key (str): The key of the Confluence space.
+
+    Returns:
+    list: A list of all page IDs in the space.
+    """
+
     def get_child_pages_recursively(page_id):
+        # Inner function to recursively get child page IDs
         child_pages = []
         child_page_ids = get_child_ids(page_id, content_type='page')
         for child_id in child_page_ids:
@@ -44,44 +74,80 @@ def get_all_pages_recursive(space_key):
     return all_pages
 
 
-def get_all_comments_recursive(page_id):
-    def get_child_comments_recursively(comment_id):
-        child_comments = []
-        child_comment_ids = get_child_ids(comment_id, content_type='comment')
-        for child_id in child_comment_ids:
-            child_comments.append(child_id)
-            child_comments.extend(get_child_comments_recursively(child_id))
-        return child_comments
+def get_all_comment_ids_recursive(page_id):
+    """
+    Recursively retrieves all comment IDs for a given Confluence page.
 
-    all_comments = []
+    Args:
+    page_id (str): The ID of the Confluence page.
+
+    Returns:
+    list: A list of all comment IDs for the page.
+    """
+
+    def get_child_comment_ids_recursively(comment_id):
+        # Inner function to recursively get child comment IDs
+        child_comment_ids = []  # Use a separate list to accumulate child comment IDs
+        immediate_child_ids = get_child_ids(comment_id, content_type='comment')
+        for child_id in immediate_child_ids:
+            child_comment_ids.append(child_id)
+            child_comment_ids.extend(get_child_comment_ids_recursively(child_id))
+        return child_comment_ids
+
+    all_comment_ids = []
     top_level_comment_ids = get_child_ids(page_id, content_type='comment')
     for comment_id in top_level_comment_ids:
-        all_comments.append(comment_id)
-        all_comments.extend(get_child_comments_recursively(comment_id))
-    return all_comments
+        all_comment_ids.append(comment_id)
+        all_comment_ids.extend(get_child_comment_ids_recursively(comment_id))
+    return all_comment_ids
 
 
 def choose_space():
+    """
+    Prompt the user to choose a Confluence space from a list of available spaces.
+
+    Returns:
+    str: The key of the chosen Confluence space.
+    """
     spaces = confluence.get_all_spaces(start=0, limit=50, expand='description.plain,body.view,value')
     for i, space in enumerate(spaces['results']):
         print(f"{i + 1}. {space['name']} (Key: {space['key']})")
     choice = int(input("Choose a space (number): ")) - 1
     space_key = spaces['results'][choice]['key']
-    space_data={'space_key': space_key,
-                'url': confluence_credentials['base_url'],
-                'login': confluence_credentials['username'],
-                'token': confluence_credentials['api_token']
-                }
+    space_data = {'space_key': space_key,
+                  'url': confluence_credentials['base_url'],
+                  'login': confluence_credentials['username'],
+                  'token': confluence_credentials['api_token']
+                  }
     store_space_data(space_data)
     return spaces['results'][choice]['key']
 
 
 def strip_html_tags(content):
+    """
+    Remove HTML tags from a string.
+
+    Args:
+    content (str): The string with HTML content.
+
+    Returns:
+    str: The string with HTML tags removed.
+    """
     soup = BeautifulSoup(content, 'html.parser')
     return soup.get_text()
 
 
 def check_date_filter(update_date, all_page_ids):
+    """
+    Filter pages based on their last updated date.
+
+    Args:
+    update_date (datetime): The threshold date for filtering. Pages updated after this date will be included.
+    all_page_ids (list): A list of page IDs to be filtered.
+
+    Returns:
+    list: A list of page IDs that were last updated on or after the specified update_date.
+    """
     updated_pages = []
     for page_id in all_page_ids:
         page_history = confluence.history(page_id)  # directly use page_id
@@ -92,7 +158,18 @@ def check_date_filter(update_date, all_page_ids):
 
 
 def format_page_content_for_llm(page_data):
-    """ Format page data into a string of key-value pairs for LLM context. """
+    """
+        Format page data into a string of key-value pairs suitable for LLM (Language Learning Models) context.
+
+        This function converts page data into a text format that can be easily consumed by language models,
+        with each key-value pair on a separate line.
+
+        Args:
+        page_data (dict): A dictionary containing page data with keys like title, author, createdDate, etc.
+
+        Returns:
+        str: A string representation of the page data in key-value format.
+        """
     content = ""
     for key, value in page_data.items():
         content += f"{key}: {value}\n"
@@ -100,8 +177,20 @@ def format_page_content_for_llm(page_data):
 
 
 def get_space_content(update_date=None):
+    """
+    Retrieve content from a specified Confluence space and process it.
+
+    This function allows the user to choose a Confluence space, retrieves all relevant page and comment data,
+    formats it, and stores it both in files and a database.
+
+    Args:
+    update_date (datetime, optional): If provided, only pages updated after this date will be retrieved. Default is None.
+
+    Returns:
+    list: A list of IDs of all pages that were processed.
+    """
     space_key = choose_space()
-    all_page_ids = get_all_pages_recursive(space_key)
+    all_page_ids = get_all_page_ids_recursive(space_key)
     if update_date is not None:
         all_page_ids = check_date_filter(update_date, all_page_ids)
 
@@ -116,9 +205,9 @@ def get_space_content(update_date=None):
         last_updated = page['version']['when']
         page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
         page_comments_content = ""
-        page_comments = get_all_comments_recursive(page_id)
+        page_comment_ids = get_all_comment_ids_recursive(page_id)
 
-        for comment_id in page_comments:
+        for comment_id in page_comment_ids:
             comment = confluence.get_page_by_id(comment_id, expand='body.storage')
             comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
             page_comments_content += strip_html_tags(comment_content)
@@ -150,4 +239,3 @@ if __name__ == "__main__":
     get_space_content()
     # Space update retrieve
     # get_space_content(update_date=datetime(2023, 12, 1, 0, 0, 0))
-
