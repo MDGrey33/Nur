@@ -7,11 +7,10 @@ from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
-from configuration import file_system_path
 from file_system.file_manager import FileManager
 from vector.chroma import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
-import os
+from configuration import bot_user_id
 
 
 # Abstract base class for Slack event handlers
@@ -151,10 +150,13 @@ class SlackBot:
             logging.critical("Bot stopped due to an exception", exc_info=True)
 
 
-# Start the bot if this script is run directly
-if __name__ == "__main__":
+def load_slack_bot():
     logging.basicConfig(level=logging.DEBUG)
-    bot_user_id = "U069C17DCE5"  # Replace with your bot's actual user ID
     event_handlers = [ChannelMessageHandler(), ReactionHandler()]
     bot = SlackBot(slack_bot_user_oauth_token, slack_app_level_token, bot_user_id, event_handlers)
     bot.start()
+
+
+# Start the bot if this script is run directly
+if __name__ == "__main__":
+    load_slack_bot()

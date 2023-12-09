@@ -1,6 +1,7 @@
 from confluence_integration.retrieve_space import get_space_content
 from vector.chroma import add_to_vector, retrieve_relevant_documents
-from oai_assistants.query_assistant_from_documents import get_response_from_assistant
+from oai_assistants.query_assistant_from_documents import query_assistant_with_context
+from slack.channel_reaction import load_slack_bot
 
 
 def add_space():
@@ -11,7 +12,7 @@ def add_space():
 
 def answer_question(question):
     relevant_document_ids = retrieve_relevant_documents(question)
-    response = get_response_from_assistant(question, relevant_document_ids)
+    response = query_assistant_with_context(question, relevant_document_ids)
     return response
 
 
@@ -32,8 +33,9 @@ def main_menu():
         print("\nMain Menu:")
         print("1. Load New Documentation Space")
         print("2. Ask a Question to Existing Documentation")
+        print("3. Start Slack Bot")
         print("0. Cancel/Quit")
-        choice = input("Enter your choice (0-2): ")
+        choice = input("Enter your choice (0-3): ")
 
         if choice == "1":
             add_space()
@@ -43,11 +45,15 @@ def main_menu():
             if question:
                 answer = answer_question(question)
                 print("\nAnswer:", answer)
+        elif choice == "3":
+            print("Starting Slack Bot...")
+            load_slack_bot()
+            print("Slack Bot is running.")
         elif choice == "0":
             print("Exiting program.")
             break
         else:
-            print("Invalid choice. Please enter 0, 1, or 2.")
+            print("Invalid choice. Please enter 0, 1, 2, or 3.")
 
 
 def ask_question():

@@ -11,6 +11,7 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Listens on specific slack channels for questions relevant to its domain
 
 ### Todo:
+- Delete Open AI assistant after use
 - Implement fast response using Gpt-4 Turbo without assistant
 - Implement Pulsar message infrastructure for scalability and resilience
 - Gets user feedback to either increase confidence or decrease confidence
@@ -30,5 +31,6 @@ Setup script not functional at this point.
 ## Usage
 1. Add openai api key to credentials
 2. Add confluence credentials to ./credentials
-3. Add project absolute path to ./confiduration 
-4. Run the main.py file
+3. Add project absolute path to ./confiduration
+4. To listen to slack create slack app and add bot_user_id to ./configuration
+5. Run the main.py file and follow the menu
