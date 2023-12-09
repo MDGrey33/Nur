@@ -8,7 +8,10 @@ from oai_assistants.assistant_manager import AssistantManager
 
 def create_new_assistant():
     """
-    Creates a new assistant with the specified parameters.
+    Creates and initializes a new assistant with predefined parameters.
+
+    Returns:
+    Assistant: An instance of the newly created assistant.
     """
     client = initiate_client()
 
@@ -25,7 +28,7 @@ def create_new_assistant():
         "description": "The ultimate librarian",
         "file_ids": []
     }
-
+    # Create the assistant and print its details
     assistant = create_assistant(client, new_assistant)
     print(assistant)
     return assistant
@@ -33,7 +36,11 @@ def create_new_assistant():
 
 def add_files_to_assistant(assistant, file_ids):
     """
-    Adds multiple files to an assistant's list of files.
+    Adds specified files to the assistant's context for referencing in responses.
+
+    Args:
+    assistant (Assistant): The assistant to which files will be added.
+    file_ids (list of str): List of file IDs to be added to the assistant.
     """
     client = initiate_client()
     file_manager = FileManager(client)
@@ -49,30 +56,38 @@ def add_files_to_assistant(assistant, file_ids):
         print(f"File {chosen_file_path} added to assistant {assistant.id}")
 
 
-def ask_assistant(assistant, question):
+def query_assistant_with_context(question, page_ids):
     """
-    Asks an assistant a question.
+    Queries the assistant with a specific question, after setting up the necessary context by adding relevant files.
+
+    Args:
+    question (str): The question to be asked.
+    page_ids (list): A list of page IDs representing the files to be added to the assistant's context.
+
+    Returns:
+    list: A list of messages, including the assistant's response to the question.
     """
-    client = initiate_client()
-    thread_manager = ThreadManager(client, assistant.id)
-    thread_manager.create_thread()
-    question = (f"You will answer the following question with a summary, then provide a comprehensive answer, "
-                f"then provide the references aliasing them as Technical trace: {question}")
-    messages = thread_manager.add_message_and_wait_for_reply(question, [])
-    return messages
-
-
-def get_response_from_assistant(question, page_ids):
+    # Create a new assistant instance
     assistant = create_new_assistant()
 
+    # Ensure page_ids is a list
     if not isinstance(page_ids, list):
         page_ids = [page_ids]
 
+    # Add relevant files to the assistant
     add_files_to_assistant(assistant, page_ids)
-    messages = ask_assistant(assistant, question)
-    # print(messages)
+
+    # Format the question and query the assistant
+    client = initiate_client()
+    thread_manager = ThreadManager(client, assistant.id)
+    thread_manager.create_thread()
+    formatted_question = (f"You will answer the following question with a summary, then provide a comprehensive answer, "
+                          f"then provide the references aliasing them as Technical trace: {question}")
+    messages = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
     return messages
 
 
 if __name__ == "__main__":
-    get_response_from_assistant("Do we support payment matching in our solution? and if the payment is not matched do we already have a way to notify the client that they have a delayed payment?", ["458841", "491570"])
+    query_assistant_with_context("Do we support payment matching in our solution? and if the payment is not matched "
+                                 "do we already have a way to notify the client that they have a delayed payment?",
+                                 ["458841", "491570"])
