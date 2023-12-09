@@ -7,9 +7,12 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Pulls the confluence space and stores it in a sqlite database
 - Vectorizes the confluence space pages and stores the embeds in a chroma db collection
 - Uses the vectorized embeds to find the most similar pages to a question
-- Creates an assistant with the relevant pages and allows it to engage to provide the answer if confident enough
-### Todo:
+- Creates an assistant with the relevant pages and allows it to engage to provide the answer
 - Listens on specific slack channels for questions relevant to its domain
+
+### Todo:
+- Implement fast response using Gpt-4 Turbo without assistant
+- Implement Pulsar message infrastructure for scalability and resilience
 - Gets user feedback to either increase confidence or decrease confidence
 - If confidence is below a certain threashold the assistant will add the question to a trivia quizz and runs it with the specialist team and recommends the update in a confluence comment
 
