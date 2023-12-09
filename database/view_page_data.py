@@ -4,6 +4,9 @@ from configuration import sql_file_path
 
 
 def display_page_data():
+    """
+    Display all records in the "page_data" table of the SQLite database.
+    """
     # Connect to the SQLite database
     conn = sqlite3.connect(sql_file_path)
     cursor = conn.cursor()
