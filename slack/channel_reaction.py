@@ -11,6 +11,7 @@ from file_system.file_manager import FileManager
 from vector.chroma import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from configuration import bot_user_id
+from gpt_4t.query_from_documents import query_gpt_4t_with_context
 
 
 # Abstract base class for Slack event handlers
@@ -95,19 +96,22 @@ class ChannelMessageHandler(SlackEventHandler):
         # Use FileManager's create method to save the file
         file_manager.create(file_name, context)
 
-    def generate_response(self, question, file_name):
+    def generate_response(self, question, file_name, respond_with_assistant=False):
         """ Generate a response for a question """
         file_id = file_name[:-4]
         relevant_document_ids = retrieve_relevant_documents(question)
-        relevant_document_ids.append(file_id)
-        response_obj = query_assistant_with_context(question, relevant_document_ids)
+        if respond_with_assistant:
+            relevant_document_ids.append(file_id)
+            response_obj = query_assistant_with_context(question, relevant_document_ids)
+            response_text = "No valid response found."  # Default response
+            for message in response_obj.data:
+                if message.role == "assistant":
+                    response_text = message.content[0].text.value
+                    break  # Assuming you only need the first assistant message
+        else:
+            response_text = query_gpt_4t_with_context(question, relevant_document_ids)
 
         # Extract the text from the first assistant message
-        response_text = "No valid response found."  # Default response
-        for message in response_obj.data:
-            if message.role == "assistant":
-                response_text = message.content[0].text.value
-                break  # Assuming you only need the first assistant message
 
         return response_text
 

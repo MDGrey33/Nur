@@ -1,6 +1,7 @@
 from confluence_integration.retrieve_space import get_space_content
 from vector.chroma import add_to_vector, retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
+from gpt_4t.query_from_documents import query_gpt_4t_with_context
 from slack.channel_reaction import load_slack_bot
 
 
@@ -10,11 +11,15 @@ def add_space():
     return retrieved_page_ids, indexed_page_ids
 
 
-def answer_question(question):
+def answer_question_with_assistant(question):
     relevant_document_ids = retrieve_relevant_documents(question)
     response = query_assistant_with_context(question, relevant_document_ids)
     return response
 
+def answer_question_with_gpt_4t(question):
+    relevant_document_ids = retrieve_relevant_documents(question)
+    response = query_gpt_4t_with_context(question, relevant_document_ids)
+    return response
 
 question1 = "Do we support payment matching in our solution? and if the payment is not matched do we already have a way to notify the client that they have a delayed payment?"
 
@@ -32,8 +37,9 @@ def main_menu():
     while True:
         print("\nMain Menu:")
         print("1. Load New Documentation Space")
-        print("2. Ask a Question to Existing Documentation")
-        print("3. Start Slack Bot")
+        print("2. Ask a Question to Existing Documentation with Assistant")
+        print("3. Ask a question to Existing Documentation with GPT-4T")
+        print("4. Start Slack Bot")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-3): ")
 
@@ -43,9 +49,14 @@ def main_menu():
         elif choice == "2":
             question = ask_question()
             if question:
-                answer = answer_question(question)
+                answer = answer_question_with_assistant(question)
                 print("\nAnswer:", answer)
         elif choice == "3":
+            question = ask_question()
+            if question:
+                answer = answer_question_with_gpt_4t(question)
+                print("\nAnswer:", answer)
+        elif choice == "4":
             print("Starting Slack Bot...")
             load_slack_bot()
             print("Slack Bot is running.")
