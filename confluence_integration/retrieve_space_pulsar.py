@@ -3,8 +3,12 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
-from database.confluence_database import store_space_data, store_pages_data
+from database.confluence_database import store_space_data, store_page_data
 from file_system.file_manager import FileManager
+from messaging_service.pulsar_client import PulsarClient
+from configuration import pulsar_client_url
+
+pulsar_client = PulsarClient(pulsar_client_url)
 
 # Initialize Confluence API
 confluence = Confluence(
@@ -46,18 +50,7 @@ def get_child_ids(item_id, content_type):
 
 
 def get_all_page_ids_recursive(space_key):
-    """
-    Recursively retrieves all page IDs in a given space, including child pages.
-
-    Args:
-    space_key (str): The key of the Confluence space.
-
-    Returns:
-    list: A list of all page IDs in the space.
-    """
-
     def get_child_pages_recursively(page_id):
-        # Inner function to recursively get child page IDs
         child_pages = []
         child_page_ids = get_child_ids(page_id, content_type='page')
         for child_id in child_page_ids:
@@ -65,13 +58,18 @@ def get_all_page_ids_recursive(space_key):
             child_pages.extend(get_child_pages_recursively(child_id))
         return child_pages
 
-    all_pages = []
+    all_page_ids = []
     top_level_ids = get_top_level_ids(space_key)
-    for top_level_id in top_level_ids:
-        all_pages.append(top_level_id)
-        all_pages.extend(get_child_pages_recursively(top_level_id))
+    topic_name = "confluence_page_ids"  # Define the topic name here
 
-    return all_pages
+    for top_level_id in top_level_ids:
+        all_page_ids.append(top_level_id)
+        all_page_ids.extend(get_child_pages_recursively(top_level_id))
+
+    for page_id in all_page_ids:
+        pulsar_client.publish_message(topic_name, str(page_id))  # Include the topic name
+
+    return all_page_ids
 
 
 def get_all_comment_ids_recursive(page_id):
@@ -176,68 +174,62 @@ def format_page_content_for_llm(page_data):
     return content
 
 
-def get_space_content(update_date=None):
-    """
-    Retrieve content from a specified Confluence space and process it.
-
-    This function allows the user to choose a Confluence space, retrieves all relevant page and comment data,
-    formats it, and stores it both in files and a database.
-
-    Args:
-    update_date (datetime, optional): If provided, only pages updated after this date will be retrieved. Default is None.
-
-    Returns:
-    list: A list of IDs of all pages that were processed.
-    """
-    space_key = choose_space()
+def publish_space_ids(space_key, update_date=None):
+    topic_name = "confluence_page_ids"
     all_page_ids = get_all_page_ids_recursive(space_key)
     if update_date is not None:
         all_page_ids = check_date_filter(update_date, all_page_ids)
 
-    file_manager = FileManager()  # Initialize FileManager instance
-    page_content_map = {}  # For storing page data for database
-
     for page_id in all_page_ids:
-        # publish IDs to pulsar
+        pulsar_client.publish_message(topic_name, str(page_id))
 
-        page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
-        page_title = strip_html_tags(page['title'])
-        page_author = page['history']['createdBy']['displayName']
-        created_date = page['history']['createdDate']
-        last_updated = page['version']['when']
-        page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
-        page_comments_content = ""
-        page_comment_ids = get_all_comment_ids_recursive(page_id)
-
-        for comment_id in page_comment_ids:
-            comment = confluence.get_page_by_id(comment_id, expand='body.storage')
-            comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
-            page_comments_content += strip_html_tags(comment_content)
-
-        page_data = {
-            'title': page_title,
-            'author': page_author,
-            'createdDate': created_date,
-            'lastUpdated': last_updated,
-            'content': page_content,
-            'comments': page_comments_content
-        }
-
-        # Store data for database
-        page_content_map[page_id] = page_data
-
-        formatted_content = format_page_content_for_llm(page_data)
-        file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
-
-    # Store all page data in the database
-    store_pages_data(space_key, page_content_map)
-
-    print("Page content written to individual files and database.")
+    print("Page IDs published to Pulsar.")
     return all_page_ids
 
 
+def retrieve_and_process_page_data(page_id, space_key):
+    page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
+    if not page:
+        print(f"No data found for page ID: {page_id}")
+        return
+
+    page_title = page.get('title', '')
+    page_author = page.get('history', {}).get('createdBy', {}).get('displayName', '')
+    created_date = page.get('history', {}).get('createdDate', '')
+    last_updated = page.get('version', {}).get('when', '')
+    page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
+
+    page_comments_content = ""
+    page_comment_ids = get_all_comment_ids_recursive(page_id)
+    for comment_id in page_comment_ids:
+        comment = confluence.get_page_by_id(comment_id, expand='body.storage')
+        comment_content = strip_html_tags(comment.get('body', {}).get('storage', {}).get('value', ''))
+        page_comments_content += comment_content + '\n'
+
+    page_data = {
+        'title': page_title,
+        'author': page_author,
+        'createdDate': created_date,
+        'lastUpdated': last_updated,
+        'content': page_content,
+        'comments': page_comments_content
+    }
+
+    store_page_data(page_id, space_key, page_data)
+    formatted_content = format_page_content_for_llm(page_data)
+    file_manager = FileManager()
+    file_manager.create(f"{page_id}.txt", formatted_content)
+
+
+def consume_pages_and_store_data(topic_name, subscription_name, space_key):
+    while True:
+        page_id = pulsar_client.consume_message(topic_name, subscription_name)
+        if page_id:
+            retrieve_and_process_page_data(page_id, space_key)
+    pulsar_client.close()
+
+
 if __name__ == "__main__":
-    # Initial space retrieve
-    get_space_content()
-    # Space update retrieve
-    # get_space_content(update_date=datetime(2023, 12, 1, 0, 0, 0))
+    chosen_space_key = choose_space()
+    publish_space_ids(chosen_space_key)
+    consume_pages_and_store_data("confluence_page_ids", "default_processor", chosen_space_key)
