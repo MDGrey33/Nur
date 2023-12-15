@@ -1,10 +1,8 @@
 # ./database/confluence_database.py
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, LargeBinary
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 from configuration import sql_file_path
-
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
@@ -40,6 +38,7 @@ class PageData(Base):
     lastUpdated = Column(DateTime)
     content = Column(Text)
     comments = Column(Text)
+    last_embedded = Column(DateTime)
 
 
 # Setup the database engine and create tables if they don't exist
