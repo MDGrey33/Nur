@@ -67,6 +67,8 @@ def add_to_vector():
         return []
 
     vectorize_documents(all_documents, page_ids)
+    print(f'Vectorized {len(all_documents)} documents.')
+    print(f'Vectorized page ids: {page_ids}')
     return page_ids
 
 

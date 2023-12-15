@@ -198,6 +198,7 @@ def get_space_content(update_date=None):
     page_content_map = {}  # For storing page data for database
 
     for page_id in all_page_ids:
+        current_time = datetime.now()
         page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
         page_title = strip_html_tags(page['title'])
         page_author = page['history']['createdBy']['displayName']
@@ -220,7 +221,8 @@ def get_space_content(update_date=None):
             'createdDate': created_date,
             'lastUpdated': last_updated,
             'content': page_content,
-            'comments': page_comments_content
+            'comments': page_comments_content,
+            'datePulledFromConfluence': current_time
         }
 
         # Store data for database

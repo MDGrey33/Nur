@@ -39,6 +39,7 @@ class PageData(Base):
     content = Column(Text)
     comments = Column(Text)
     last_embedded = Column(DateTime)
+    date_pulled_from_confluence = Column(DateTime)
 
 
 # Setup the database engine and create tables if they don't exist
@@ -92,6 +93,7 @@ def store_pages_data(space_key, pages_data):
     for page_id, page_info in pages_data.items():
         created_date = parse_datetime(page_info['createdDate'])
         last_updated = parse_datetime(page_info['lastUpdated'])
+        date_pulled_from_confluence = page_info['datePulledFromConfluence']
 
         new_page = PageData(page_id=page_id,
                             space_key=space_key,
@@ -100,7 +102,9 @@ def store_pages_data(space_key, pages_data):
                             createdDate=created_date,
                             lastUpdated=last_updated,
                             content=page_info['content'],
-                            comments=page_info['comments'])
+                            comments=page_info['comments'],
+                            date_pulled_from_confluence=date_pulled_from_confluence
+                            )
         session.add(new_page)
         print(f"Page with ID {page_id} written to database")
     session.commit()
