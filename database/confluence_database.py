@@ -1,8 +1,10 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+# ./database/confluence_database.py
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from configuration import sql_file_path
+
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
@@ -10,7 +12,11 @@ Base = declarative_base()
 
 # Define the SpaceData model
 class SpaceData(Base):
+    """
+    SQLAlchemy model for storing Confluence space data.
+    """
     __tablename__ = 'space_data'
+
     id = Column(Integer, primary_key=True)
     space_key = Column(String)
     url = Column(String)
@@ -20,7 +26,11 @@ class SpaceData(Base):
 
 # Define the PageData model
 class PageData(Base):
+    """
+    SQLAlchemy model for storing Confluence page data.
+    """
     __tablename__ = 'page_data'
+
     id = Column(Integer, primary_key=True)
     page_id = Column(String)
     space_key = Column(String)
@@ -39,29 +49,51 @@ Base.metadata.create_all(engine)
 
 # Create a sessionmaker object to manage database sessions
 Session = sessionmaker(bind=engine)
-
-
-def parse_datetime(date_string):
-    return datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+session = Session()
 
 
 def store_space_data(space_data):
-    session = Session()
+    """
+    Store Confluence space data into the database.
+
+    Args:
+    space_data (dict): A dictionary containing space data to store.
+    """
+    # Create a new SpaceData object and add it to the session
     new_space = SpaceData(space_key=space_data['space_key'],
                           url=space_data['url'],
                           login=space_data['login'],
                           token=space_data['token'])
     session.add(new_space)
     session.commit()
-    session.close()
     print(f"Space with key {space_data['space_key']} written to database")
 
 
+def parse_datetime(date_string):
+    """
+    Convert an ISO format datetime string to a datetime object.
+
+    Args:
+    date_string (str): ISO format datetime string.
+
+    Returns:
+    datetime: A datetime object.
+    """
+    return datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+
+
 def store_pages_data(space_key, pages_data):
-    session = Session()
+    """
+    Store Confluence page data into the database.
+
+    Args:
+    space_key (str): The key of the Confluence space.
+    pages_data (dict): A dictionary of page data, keyed by page ID.
+    """
     for page_id, page_info in pages_data.items():
         created_date = parse_datetime(page_info['createdDate'])
         last_updated = parse_datetime(page_info['lastUpdated'])
+
         new_page = PageData(page_id=page_id,
                             space_key=space_key,
                             title=page_info['title'],
@@ -72,24 +104,6 @@ def store_pages_data(space_key, pages_data):
                             comments=page_info['comments'])
         session.add(new_page)
     session.commit()
-    session.close()
-    print(f"Pages from space {space_key} written to database")
-
-
-def store_page_data(page_id, space_key, page_data):
-    session = Session()
-    created_date = parse_datetime(page_data['createdDate'])
-    last_updated = parse_datetime(page_data['lastUpdated'])
-    new_page = PageData(page_id=page_id,
-                        space_key=space_key,
-                        title=page_data['title'],
-                        author=page_data['author'],
-                        createdDate=created_date,
-                        lastUpdated=last_updated,
-                        content=page_data['content'],
-                        comments=page_data['comments'])
-
-    session.add(new_page)
-    session.commit()
-    session.close()
     print(f"Page with ID {page_id} written to database")
+
+

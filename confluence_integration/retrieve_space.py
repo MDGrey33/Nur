@@ -198,8 +198,6 @@ def get_space_content(update_date=None):
     page_content_map = {}  # For storing page data for database
 
     for page_id in all_page_ids:
-        # publish IDs to pulsar
-
         page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
         page_title = strip_html_tags(page['title'])
         page_author = page['history']['createdBy']['displayName']

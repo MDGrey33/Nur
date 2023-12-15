@@ -61,7 +61,7 @@ else
     echo "No requirements.txt found in $setup_path. Skipping Python dependencies installation."
 fi
 
-# python "$project_root_path/main.py"
+python "$project_root_path/main.py"
 # Install Python dependencies from the setup directory
 # requirements_file="$setup_path/requirements.txt"
 # if [ -f "$requirements_file" ]; then
@@ -74,5 +74,5 @@ fi
 # Add run create_db.sh to this script
 # Start the Docker containers
 # echo "Starting Docker containers from $project_root_path."
-docker run -it -p 6650:6650 -p 8080:8080 --mount source=pulsardata,target=/pulsar/data --mount source=pulsarconf,target=/pulsar/conf apachepulsar/pulsar:3.1.1 bin/pulsar standalone
+# docker run -it -p 6650:6650 -p 8080:8080 --mount source=pulsardata,target=/pulsar/data --mount source=pulsarconf,target=/pulsar/conf apachepulsar/pulsar:3.1.1 bin/pulsar standalone
 

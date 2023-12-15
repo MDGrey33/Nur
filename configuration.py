@@ -11,5 +11,3 @@ sql_file_path = database_path + "/confluence_pages_sql.db"
 # Slack Bot User ID
 bot_user_id = "U069C17DCE5"
 
-# Pulsar client
-pulsar_client_url = "pulsar://localhost:6650"
