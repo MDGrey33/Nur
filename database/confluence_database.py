@@ -103,7 +103,7 @@ def store_pages_data(space_key, pages_data):
                             content=page_info['content'],
                             comments=page_info['comments'])
         session.add(new_page)
+        print(f"Page with ID {page_id} written to database")
     session.commit()
-    print(f"Page with ID {page_id} written to database")
 
 

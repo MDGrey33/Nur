@@ -213,6 +213,8 @@ def get_space_content(update_date=None):
             page_comments_content += strip_html_tags(comment_content)
 
         page_data = {
+            'spaceKey': space_key,
+            'pageId': page_id,
             'title': page_title,
             'author': page_author,
             'createdDate': created_date,
