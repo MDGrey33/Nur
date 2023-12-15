@@ -3,6 +3,8 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 from configuration import sql_file_path
+import sqlite3
+
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
@@ -110,3 +112,37 @@ def store_pages_data(space_key, pages_data):
     session.commit()
 
 
+def get_page_data_from_db():
+    # Connect to the SQLite database
+    conn = sqlite3.connect(sql_file_path)
+    cursor = conn.cursor()
+
+    # Retrieve records from the "page_data" table where "lastUpdated" is newer than "last_embedded"
+    cursor.execute("SELECT * FROM page_data WHERE lastUpdated > last_embedded OR last_embedded IS NULL")
+    records = cursor.fetchall()
+
+    # Process each record into a string
+    all_documents = []
+    page_ids = []
+    for record in records:
+        document = (
+            f"Page id: {record[1]}, space key: {record[2]}, title: {record[3]}, "
+            f"author: {record[4]}, created date: {record[5]}, last updated: {record[6]}, "
+            f"content: {record[7]}, comments: {record[8]}"
+        )
+        all_documents.append(document)
+        page_ids.append(record[1])
+
+    # Close the SQLite connection
+    conn.close()
+    return all_documents, page_ids
+
+
+def update_embed_date(page_ids):
+    conn = sqlite3.connect(sql_file_path)
+    cursor = conn.cursor()
+    current_time = datetime.now()
+    for page_id in page_ids:
+        cursor.execute("UPDATE page_data SET last_embedded = ? WHERE page_id = ?", (current_time, page_id))
+    conn.commit()
+    conn.close()
