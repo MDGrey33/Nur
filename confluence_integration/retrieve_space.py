@@ -191,6 +191,7 @@ def get_comment_content(comment_id):
     comment_text = strip_html_tags(comment_content)
     return comment_text
 
+
 def process_page(page_id, space_key, file_manager, page_content_map):
     current_time = datetime.now()
     page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
@@ -217,6 +218,7 @@ def process_page(page_id, space_key, file_manager, page_content_map):
         'datePulledFromConfluence': current_time
     }
 
+    # Store data for files
     formatted_content = format_page_content_for_llm(page_data)
     file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
     print(f"Page with ID {page_id} processed and written to file.")
