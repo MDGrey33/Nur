@@ -193,6 +193,14 @@ def get_comment_content(comment_id):
 
 
 def process_page(page_id, space_key, file_manager, page_content_map):
+    """
+    Process a page and store its data in files and a database.
+    :param page_id:
+    :param space_key:
+    :param file_manager:
+    :param page_content_map:
+    :return: page_data
+    """
     current_time = datetime.now()
     page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
     page_title = strip_html_tags(page['title'])
@@ -230,6 +238,7 @@ def process_page(page_id, space_key, file_manager, page_content_map):
     # Mark the page as processed
     mark_page_as_processed(page_id)
     print(f"Page with ID {page_id} processed and written to file and database.")
+    return page_data
 
 
 def get_space_content(update_date=None):
