@@ -1,8 +1,9 @@
 from confluence_integration.retrieve_space import get_space_content
-from vector.chroma import add_to_vector, retrieve_relevant_documents
+from vector.chroma import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
 from slack.channel_reaction import load_slack_bot
+from vector.chroma import add_to_vector
 
 
 def add_space():
@@ -45,6 +46,7 @@ def main_menu():
 
         if choice == "1":
             get_space_content()
+            add_to_vector()
             print("\nSpace retrieval and indexing complete.")
         elif choice == "2":
             question = ask_question()
