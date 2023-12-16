@@ -176,6 +176,21 @@ def format_page_content_for_llm(page_data):
     return content
 
 
+def get_comment_content(comment_id):
+    """
+    Retrieve the content of a comment.
+
+    Args:
+    comment_id (str): The ID of the comment.
+
+    Returns:
+    str: The content of the comment.
+    """
+    comment = confluence.get_page_by_id(comment_id, expand='body.storage')
+    comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
+    comment_text = strip_html_tags(comment_content)
+    return comment_text
+
 def process_page(page_id, space_key, file_manager, page_content_map):
     current_time = datetime.now()
     page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
@@ -188,9 +203,7 @@ def process_page(page_id, space_key, file_manager, page_content_map):
     page_comment_ids = get_all_comment_ids_recursive(page_id)
 
     for comment_id in page_comment_ids:
-        comment = confluence.get_page_by_id(comment_id, expand='body.storage')
-        comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
-        page_comments_content += strip_html_tags(comment_content)
+        page_comments_content += get_comment_content(comment_id)
 
     page_data = {
         'spaceKey': space_key,
