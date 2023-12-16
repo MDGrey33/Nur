@@ -140,6 +140,11 @@ def get_page_data_from_db():
 
 
 def update_embed_date(page_ids):
+    """
+    Update the last_embedded timestamp in the database for the given page IDs.
+    :param page_ids:
+    :return:
+    """
     conn = sqlite3.connect(sql_file_path)
     cursor = conn.cursor()
     current_time = datetime.now()
@@ -147,9 +152,15 @@ def update_embed_date(page_ids):
         cursor.execute("UPDATE page_data SET last_embedded = ? WHERE page_id = ?", (current_time, page_id))
     conn.commit()
     conn.close()
+    return True
 
 
 def mark_page_as_processed(page_id):
+    """
+    Mark a page as processed in the database.
+    :param page_id:
+    :return:
+    """
     session = Session()
     current_time = datetime.now()
     record = session.query(PageProgress).filter_by(page_id=page_id).first()
@@ -161,9 +172,16 @@ def mark_page_as_processed(page_id):
         record.processed_time = current_time
     session.commit()
     session.close()
+    return True
 
 
 def is_page_processed(page_id, last_updated):
+    """
+    Check if a page has already been processed.
+    :param page_id:
+    :param last_updated:
+    :return:
+    """
     session = Session()
     record = session.query(PageProgress).filter_by(page_id=page_id).first()
     session.close()
@@ -173,13 +191,23 @@ def is_page_processed(page_id, last_updated):
 
 
 def reset_processed_status():
+    """
+    Reset the processed status of all pages.
+    :return:
+    """
     session = Session()
     session.query(PageProgress).update({PageProgress.processed: False})
     session.commit()
     session.close()
+    return True
 
 
 def get_last_updated_timestamp(page_id):
+    """
+    Get the last updated timestamp for a page.
+    :param page_id:
+    :return:
+    """
     session = Session()
     page_record = session.query(PageData).filter_by(page_id=page_id).first()
     session.close()
@@ -188,8 +216,6 @@ def get_last_updated_timestamp(page_id):
         return page_record.lastUpdated
     else:
         return None
-
-
 
 
 # Setup the database engine and create tables if they don't exist
