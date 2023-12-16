@@ -1,5 +1,5 @@
 # ./database/confluence_database.py
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 from configuration import sql_file_path
@@ -42,6 +42,14 @@ class PageData(Base):
     comments = Column(Text)
     last_embedded = Column(DateTime)
     date_pulled_from_confluence = Column(DateTime)
+
+
+class PageProgress(Base):
+    __tablename__ = 'page_progress'
+    id = Column(Integer, primary_key=True)
+    page_id = Column(String, unique=True)
+    processed = Column(Boolean, default=False)
+    processed_time = Column(DateTime)
 
 
 # Setup the database engine and create tables if they don't exist
@@ -146,3 +154,44 @@ def update_embed_date(page_ids):
         cursor.execute("UPDATE page_data SET last_embedded = ? WHERE page_id = ?", (current_time, page_id))
     conn.commit()
     conn.close()
+
+
+def mark_page_as_processed(page_id):
+    session = Session()
+    current_time = datetime.now()
+    record = session.query(PageProgress).filter_by(page_id=page_id).first()
+    if not record:
+        record = PageProgress(page_id=page_id, processed=True, processed_time=current_time)
+        session.add(record)
+    else:
+        record.processed = True
+        record.processed_time = current_time
+    session.commit()
+    session.close()
+
+
+def is_page_processed(page_id, last_updated):
+    session = Session()
+    record = session.query(PageProgress).filter_by(page_id=page_id).first()
+    session.close()
+    if record and record.processed:
+        return last_updated <= record.processed_time
+    return False
+
+
+def reset_processed_status():
+    session = Session()
+    session.query(PageProgress).update({PageProgress.processed: False})
+    session.commit()
+    session.close()
+
+
+def get_last_updated_timestamp(page_id):
+    session = Session()
+    page_record = session.query(PageData).filter_by(page_id=page_id).first()
+    session.close()
+
+    if page_record:
+        return page_record.lastUpdated
+    else:
+        return None

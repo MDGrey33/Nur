@@ -3,7 +3,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
-from database.confluence_database import store_space_data, store_pages_data
+from database.confluence_database import store_space_data, store_pages_data, is_page_processed, mark_page_as_processed, reset_processed_status, get_last_updated_timestamp
 from file_system.file_manager import FileManager
 
 # Initialize Confluence API
@@ -176,6 +176,47 @@ def format_page_content_for_llm(page_data):
     return content
 
 
+def process_page(page_id, space_key, file_manager, page_content_map):
+    current_time = datetime.now()
+    page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
+    page_title = strip_html_tags(page['title'])
+    page_author = page['history']['createdBy']['displayName']
+    created_date = page['history']['createdDate']
+    last_updated = page['version']['when']
+    page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
+    page_comments_content = ""
+    page_comment_ids = get_all_comment_ids_recursive(page_id)
+
+    for comment_id in page_comment_ids:
+        comment = confluence.get_page_by_id(comment_id, expand='body.storage')
+        comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
+        page_comments_content += strip_html_tags(comment_content)
+
+    page_data = {
+        'spaceKey': space_key,
+        'pageId': page_id,
+        'title': page_title,
+        'author': page_author,
+        'createdDate': created_date,
+        'lastUpdated': last_updated,
+        'content': page_content,
+        'comments': page_comments_content,
+        'datePulledFromConfluence': current_time
+    }
+
+    formatted_content = format_page_content_for_llm(page_data)
+    file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
+    print(f"Page with ID {page_id} processed and written to file.")
+
+    # Store data for database
+    page_content_map[page_id] = page_data
+    print(f"Page with ID {page_id} processed and written database.")
+
+    # Mark the page as processed
+    mark_page_as_processed(page_id)
+    print(f"Page with ID {page_id} processed and written to file and database.")
+
+
 def get_space_content(update_date=None):
     """
     Retrieve content from a specified Confluence space and process it.
@@ -189,53 +230,30 @@ def get_space_content(update_date=None):
     Returns:
     list: A list of IDs of all pages that were processed.
     """
+
     space_key = choose_space()
     all_page_ids = get_all_page_ids_recursive(space_key)
+
     if update_date is not None:
         all_page_ids = check_date_filter(update_date, all_page_ids)
 
-    file_manager = FileManager()  # Initialize FileManager instance
-    page_content_map = {}  # For storing page data for database
-
+    file_manager = FileManager()
+    page_content_map = {}
+    print(f"Processing {len(all_page_ids)} pages...")
     for page_id in all_page_ids:
-        current_time = datetime.now()
-        page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
-        page_title = strip_html_tags(page['title'])
-        page_author = page['history']['createdBy']['displayName']
-        created_date = page['history']['createdDate']
-        last_updated = page['version']['when']
-        page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
-        page_comments_content = ""
-        page_comment_ids = get_all_comment_ids_recursive(page_id)
-
-        for comment_id in page_comment_ids:
-            comment = confluence.get_page_by_id(comment_id, expand='body.storage')
-            comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
-            page_comments_content += strip_html_tags(comment_content)
-
-        page_data = {
-            'spaceKey': space_key,
-            'pageId': page_id,
-            'title': page_title,
-            'author': page_author,
-            'createdDate': created_date,
-            'lastUpdated': last_updated,
-            'content': page_content,
-            'comments': page_comments_content,
-            'datePulledFromConfluence': current_time
-        }
-
-        # Store data for database
-        page_content_map[page_id] = page_data
-
-        formatted_content = format_page_content_for_llm(page_data)
-        file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
-
+        print(f"Processing page with ID {page_id}...")
+        last_updated_in_db = get_last_updated_timestamp(page_id)
+        print(f"Last updated in database: {last_updated_in_db}")
+        if last_updated_in_db and not is_page_processed(page_id, last_updated_in_db):
+            process_page(page_id, space_key, file_manager, page_content_map)
+        elif not last_updated_in_db:
+            process_page(page_id, space_key, file_manager, page_content_map)
     # Store all page data in the database
     store_pages_data(space_key, page_content_map)
-
+    reset_processed_status()
     print("Page content written to individual files and database.")
     return all_page_ids
+
 
 
 if __name__ == "__main__":
