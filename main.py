@@ -44,7 +44,7 @@ def main_menu():
         choice = input("Enter your choice (0-3): ")
 
         if choice == "1":
-            add_space()
+            get_space_content()
             print("\nSpace retrieval and indexing complete.")
         elif choice == "2":
             question = ask_question()

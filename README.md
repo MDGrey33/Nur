@@ -9,28 +9,36 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Uses the vectorized embeds to find the most similar pages to a question
 - Creates an assistant with the relevant pages and allows it to engage to provide the answer
 - Listens on specific slack channels for questions relevant to its domain
+- Implement fast response using Gpt-4 Turbo without assistant
+
 
 ### Todo:
 - Delete Open AI assistant after use
-- Implement fast response using Gpt-4 Turbo without assistant
+- allow supporting mulltiple confluence spaces separation 
+- add questions, answers and reactions and credibility rating to database 
+- trivia question collector 
+- enable confluence edit or new page recommendation
 - Implement Pulsar message infrastructure for scalability and resilience
-- Gets user feedback to either increase confidence or decrease confidence
-- If confidence is below a certain threashold the assistant will add the question to a trivia quizz and runs it with the specialist team and recommends the update in a confluence comment
+
 
 
 ## Setup
-Still n forming phase
+Still in forming phase
 For now clone the repo
 There is one module in each package
 Familiarize yourself with the modules
 ````
 git clone https://github.com/MDGrey33/Nur.git
 ````
-Setup script not functional at this point.
+Run setup script inside setup package.
+
 
 ## Usage
 1. Add openai api key to credentials
 2. Add confluence credentials to ./credentials
 3. Add project absolute path to ./confiduration
 4. To listen to slack create slack app and add bot_user_id to ./configuration
-5. Run the main.py file and follow the menu
+5. Run with python the module ./confluence_integration/retrieve_confluence_space.py
+6. Run with python the module ./vector/chrome
+7. Run with pythin the modul ./slack/channel_reaction.py
+8. Go to slack, channel test and ask a question and the bot will reply
