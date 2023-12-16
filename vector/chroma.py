@@ -7,6 +7,13 @@ from database.confluence_database import update_embed_date
 
 
 def vectorize_documents(all_documents, page_ids):
+    """
+    Vectorize a list of documents and add them to the vectorstore.
+    :param all_documents:
+    :param page_ids:
+    :return: page ids of the vectorized documents
+    """
+
     # Initialize OpenAI embeddings with the API key
     embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
 
@@ -25,7 +32,15 @@ def vectorize_documents(all_documents, page_ids):
     # Update the last_embedded timestamp in the database
     update_embed_date(page_ids)
 
+    # Return the page ids of the vectorized documents
+    return page_ids
+
+
 def add_to_vector():
+    """
+    Vectorize all new or updated documents and add them to the vectorstore.
+    :return: page ids
+    """
     all_documents, page_ids = get_page_data_from_db()
 
     # Check if the lists are empty
@@ -40,6 +55,11 @@ def add_to_vector():
 
 
 def retrieve_relevant_documents(question):
+    """
+    Retrieve the most relevant documents for a given question.
+    :param question:
+    :return: document ids
+    """
     # Initialize OpenAI embeddings with the API key
     embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
 
