@@ -45,21 +45,14 @@ class PageData(Base):
 
 
 class PageProgress(Base):
+    """
+    SQLAlchemy model for storing Confluence page progress.
+    """
     __tablename__ = 'page_progress'
     id = Column(Integer, primary_key=True)
     page_id = Column(String, unique=True)
     processed = Column(Boolean, default=False)
     processed_time = Column(DateTime)
-
-
-# Setup the database engine and create tables if they don't exist
-engine = create_engine('sqlite:///' + sql_file_path)
-Base.metadata.bind = engine
-Base.metadata.create_all(engine)
-
-# Create a sessionmaker object to manage database sessions
-Session = sessionmaker(bind=engine)
-session = Session()
 
 
 def store_space_data(space_data):
@@ -195,3 +188,15 @@ def get_last_updated_timestamp(page_id):
         return page_record.lastUpdated
     else:
         return None
+
+
+
+
+# Setup the database engine and create tables if they don't exist
+engine = create_engine('sqlite:///' + sql_file_path)
+Base.metadata.bind = engine
+Base.metadata.create_all(engine)
+
+# Create a sessionmaker object to manage database sessions
+Session = sessionmaker(bind=engine)
+session = Session()
