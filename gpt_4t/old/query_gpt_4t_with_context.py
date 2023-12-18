@@ -7,13 +7,15 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms import LLM
 from gpt_4t_response.load_document import process_document
 from credentials import oai_api_key
-from configuration import file_system_path, vector_chunk_folder_path
+from configuration import file_system_path
+from configuration import vector_chunk_folder_path
 
 # Set API key in environment variables
 os.environ["OPENAI_API_KEY"] = oai_api_key
 
 # Create OpenAI client and wrapper class
 client = openai.OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+
 
 class OpenAIWrapper(LLM):
     def __init__(self, client):

@@ -258,6 +258,7 @@ def get_space_content(update_date=None):
 
     space_key = choose_space()
     all_page_ids = get_all_page_ids_recursive(space_key)
+    all_page_ids = set(all_page_ids)
 
     if update_date is not None:
         all_page_ids = check_date_filter(update_date, all_page_ids)
@@ -265,7 +266,7 @@ def get_space_content(update_date=None):
     # Setting up the persist-queue
     queue_path = os.path.join(persist_page_processing_queue_path, space_key)
     page_queue = Queue(queue_path)
-
+    # make all page ids a set to eliminate duplicates
     for page_id in all_page_ids:
         page_queue.put(page_id)
 

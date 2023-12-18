@@ -139,6 +139,47 @@ def get_page_data_from_db():
     return all_documents, page_ids
 
 
+import sqlite3
+from configuration import sql_file_path  # Ensure this is the correct path to your SQLite file
+
+def get_page_data_by_ids(page_ids):
+    """
+    Retrieve specific page data from the database by page IDs.
+    :param page_ids: A list of page IDs to retrieve data for.
+    :return: Tuple of all_documents (list of document strings) and page_ids (list of page IDs)
+    """
+    if not page_ids:
+        return [], []
+
+    # Connect to the SQLite database
+    conn = sqlite3.connect(sql_file_path)
+    cursor = conn.cursor()
+
+    # Prepare the query with placeholders for page IDs
+    placeholders = ','.join('?' for _ in page_ids)
+    query = f"SELECT * FROM page_data WHERE page_id IN ({placeholders})"
+
+    # Execute the query with the list of page IDs
+    cursor.execute(query, page_ids)
+    records = cursor.fetchall()
+
+    # Process each record into a string
+    all_documents = []
+    retrieved_page_ids = []
+    for record in records:
+        document = (
+            f"Page id: {record[1]}, space key: {record[2]}, title: {record[3]}, "
+            f"author: {record[4]}, created date: {record[5]}, last updated: {record[6]}, "
+            f"content: {record[7]}, comments: {record[8]}"
+        )
+        all_documents.append(document)
+        retrieved_page_ids.append(record[1])
+
+    # Close the SQLite connection
+    conn.close()
+    return all_documents, retrieved_page_ids
+
+
 def update_embed_date(page_ids):
     """
     Update the last_embedded timestamp in the database for the given page IDs.
