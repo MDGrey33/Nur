@@ -8,3 +8,5 @@ langchain
 tiktoken
 prettytable
 slack_sdk
+numpy
+deprecated

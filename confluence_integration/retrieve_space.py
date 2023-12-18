@@ -3,8 +3,10 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
-from database.confluence_database import store_space_data, store_pages_data, is_page_processed, mark_page_as_processed, reset_processed_status, get_last_updated_timestamp
-from file_system.file_manager import FileManager
+from database.confluence_database import store_space_data, mark_page_as_processed
+from persistqueue import Queue
+import os
+from configuration import persist_page_processing_queue_path
 
 # Initialize Confluence API
 confluence = Confluence(
@@ -119,7 +121,7 @@ def choose_space():
                   'login': confluence_credentials['username'],
                   'token': confluence_credentials['api_token']
                   }
-    store_space_data(space_data)
+    # store_space_data(space_data)
     return spaces['results'][choice]['key']
 
 
@@ -237,7 +239,6 @@ def process_page(page_id, space_key, file_manager, page_content_map):
 
     # Mark the page as processed
     mark_page_as_processed(page_id)
-    print(f"Page with ID {page_id} processed and written to file and database.")
     return page_data
 
 
@@ -261,27 +262,19 @@ def get_space_content(update_date=None):
     if update_date is not None:
         all_page_ids = check_date_filter(update_date, all_page_ids)
 
-    file_manager = FileManager()
-    page_content_map = {}
-    print(f"Processing {len(all_page_ids)} pages...")
-    for page_id in all_page_ids:
-        print(f"Processing page with ID {page_id}...")
-        last_updated_in_db = get_last_updated_timestamp(page_id)
-        print(f"Last updated in database: {last_updated_in_db}")
-        if last_updated_in_db and not is_page_processed(page_id, last_updated_in_db):
-            process_page(page_id, space_key, file_manager, page_content_map)
-        elif not last_updated_in_db:
-            process_page(page_id, space_key, file_manager, page_content_map)
-    # Store all page data in the database
-    store_pages_data(space_key, page_content_map)
-    reset_processed_status()
-    print("Page content written to individual files and database.")
-    return all_page_ids
+    # Setting up the persist-queue
+    queue_path = os.path.join(persist_page_processing_queue_path, space_key)
+    page_queue = Queue(queue_path)
 
+    for page_id in all_page_ids:
+        page_queue.put(page_id)
+
+    print(f"Enqueued {len(all_page_ids)} pages for processing.")
+    return space_key
 
 
 if __name__ == "__main__":
     # Initial space retrieve
-    get_space_content()
+    space_key = get_space_content()
     # Space update retrieve
     # get_space_content(update_date=datetime(2023, 12, 1, 0, 0, 0))

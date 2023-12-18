@@ -4,6 +4,7 @@ from oai_assistants.query_assistant_from_documents import query_assistant_with_c
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
 from slack.channel_reaction import load_slack_bot
 from vector.chroma import add_to_vector
+from confluence_integration.page_processor import get_page_content_using_queue
 
 
 def add_space():
@@ -45,7 +46,8 @@ def main_menu():
         choice = input("Enter your choice (0-3): ")
 
         if choice == "1":
-            get_space_content()
+            space_key = get_space_content()
+            get_page_content_using_queue(space_key)
             add_to_vector()
             print("\nSpace retrieval and indexing complete.")
         elif choice == "2":

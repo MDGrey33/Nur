@@ -7,7 +7,7 @@ database_path = project_path + "/content/database"
 vector_folder_path = database_path + "/confluence_page_vectors"
 vector_chunk_folder_path = database_path + "/confluence_page_vectors"
 sql_file_path = database_path + "/confluence_pages_sql.db"
+persist_page_processing_queue_path = project_path + "/content/transactional/confluence_page_processing_queue"
 
 # Slack Bot User ID
 bot_user_id = "U069C17DCE5"
-
