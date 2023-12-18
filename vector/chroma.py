@@ -1,3 +1,4 @@
+# ./vector/chroma.py
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from credentials import oai_api_key
@@ -85,10 +86,26 @@ def retrieve_relevant_documents(question):
     return document_ids
 
 
+def retrieve_all_documents():
+    # Create a Chroma vector store
+    vectorstore = Chroma()
+
+    # Get all the records in the database
+    records = vectorstore.get()
+    Chroma.get
+
+
+    # Print the metadata of each record
+    for record in records:
+        print(record)
+
+
+
 if __name__ == '__main__':
-    vectorized_page_ids = add_to_vector()
-    question = "do we use any reminder functionality in our solution?"
-    relevant_document_ids = retrieve_relevant_documents(question)
-    for result in relevant_document_ids:
-        print(result)
-        print("---------------------------------------------------")
+    #vectorized_page_ids = add_to_vector()
+    #question = "do we use any reminder functionality in our solution?"
+    #relevant_document_ids = retrieve_relevant_documents(question)
+    #for result in relevant_document_ids:
+    #    print(result)
+    #    print("---------------------------------------------------")
+    retrieve_all_documents()
