@@ -86,26 +86,46 @@ def retrieve_relevant_documents(question):
     return document_ids
 
 
-def retrieve_all_documents():
-    # Create a Chroma vector store
-    vectorstore = Chroma()
+def retrieve_relevant_documents_with_proximity(question, max_proximity=0.5, max_results=10):
+    """
+    Retrieve the most relevant documents for a given question, filtering them by maximum proximity.
+    :param question: The query text.
+    :param max_proximity: The maximum proximity value for filtering documents.
+    :param max_results: The maximum number of results to return.
+    :return: A list of tuples containing document ids and their proximity values.
+    """
+    # Initialize OpenAI embeddings with the API key
+    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
 
-    # Get all the records in the database
-    records = vectorstore.get()
-    Chroma.get
+    # Create the Chroma vectorstore with the embedding function
+    vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
 
+    # Embed the query text using the embedding function
+    query_embedding = embedding.embed_query(question)
 
-    # Print the metadata of each record
-    for record in records:
-        print(record)
+    # Perform a similarity search in the vectorstore
+    similar_documents_with_scores = vectordb.similarity_search_by_vector_with_relevance_scores(
+        query_embedding, k=max_results
+    )
+
+    # Process the results, filtering by the maximum proximity value
+    filtered_results = []
+    for doc, score in similar_documents_with_scores:
+        if score <= max_proximity:
+            result = {
+                "page_id": doc.metadata.get('page_id'),
+                "proximity_value": score
+            }
+            filtered_results.append(result)
+
+    return filtered_results
 
 
 
 if __name__ == '__main__':
-    #vectorized_page_ids = add_to_vector()
-    #question = "do we use any reminder functionality in our solution?"
-    #relevant_document_ids = retrieve_relevant_documents(question)
-    #for result in relevant_document_ids:
-    #    print(result)
-    #    print("---------------------------------------------------")
-    retrieve_all_documents()
+    # vectorized_page_ids = add_to_vector()
+    question = "what is the functionality of this solution?"
+    relevant_document_ids = retrieve_relevant_documents_with_proximity(question)
+    for result in relevant_document_ids:
+        print(result)
+        print("---------------------------------------------------")

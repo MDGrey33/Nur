@@ -10,15 +10,17 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Creates an assistant with the relevant pages and allows it to engage to provide the answer
 - Listens on specific slack channels for questions relevant to its domain
 - Implement fast response using Gpt-4 Turbo without assistant
+- Implemented persist queue for page content retrieval and vectorization
 
 
 ### Todo:
-- Delete Open AI assistant after use
-- allow supporting mulltiple confluence spaces separation 
+- filter updated and new documents
+- store embeds in database
+- create new vector database nightly and on trigger from sql database
 - add questions, answers and reactions and credibility rating to database 
 - trivia question collector 
 - enable confluence edit or new page recommendation
-- Implement Pulsar message infrastructure for scalability and resilience
+- consider removing assistants all together
 
 
 

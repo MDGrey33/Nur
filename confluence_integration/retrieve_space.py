@@ -3,7 +3,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
-from database.confluence_database import store_space_data, mark_page_as_processed
+from database.confluence_database import mark_page_as_processed
 from persistqueue import Queue
 import os
 from configuration import persist_page_processing_queue_path
