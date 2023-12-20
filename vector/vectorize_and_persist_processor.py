@@ -5,6 +5,7 @@ from database.confluence_database import get_page_data_by_ids
 from configuration import persist_page_vector_queue_path
 from vector.chroma import vectorize_documents
 from confluence_integration.retrieve_space import choose_space
+from confluence_integration.confluence_client import ConfluenceClient
 
 
 # Main processing function for the vectorization queue
@@ -27,5 +28,6 @@ def process_vectorization_queue(space_key):
 
 
 if __name__ == '__main__':
+    confluence_client = ConfluenceClient()
     space_key = choose_space()
     process_vectorization_queue(space_key)

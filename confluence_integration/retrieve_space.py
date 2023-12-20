@@ -7,6 +7,7 @@ from database.confluence_database import mark_page_as_processed
 from persistqueue import Queue
 import os
 from configuration import persist_page_processing_queue_path
+from confluence_integration.confluence_client import ConfluenceClient
 
 # Initialize Confluence API
 confluence = Confluence(
@@ -108,21 +109,18 @@ def choose_space():
     """
     Prompt the user to choose a Confluence space from a list of available spaces.
 
+    Args:
+    confluence_client (ConfluenceClient): The Confluence client object.
+
     Returns:
     str: The key of the chosen Confluence space.
     """
-    spaces = confluence.get_all_spaces(start=0, limit=50, expand='description.plain,body.view,value')
-    for i, space in enumerate(spaces['results']):
+    confluence_client = ConfluenceClient()
+    spaces = confluence_client.retrieve_space_list()
+    for i, space in enumerate(spaces):
         print(f"{i + 1}. {space['name']} (Key: {space['key']})")
     choice = int(input("Choose a space (number): ")) - 1
-    space_key = spaces['results'][choice]['key']
-    space_data = {'space_key': space_key,
-                  'url': confluence_credentials['base_url'],
-                  'login': confluence_credentials['username'],
-                  'token': confluence_credentials['api_token']
-                  }
-    # store_space_data(space_data)
-    return spaces['results'][choice]['key']
+    return spaces[choice]['key']
 
 
 def strip_html_tags(content):
@@ -275,7 +273,9 @@ def get_space_content(update_date=None):
 
 
 if __name__ == "__main__":
+
     # Initial space retrieve
     space_key = get_space_content()
+    # Initial space retrieve
     # Space update retrieve
     # get_space_content(update_date=datetime(2023, 12, 1, 0, 0, 0))
