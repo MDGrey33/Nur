@@ -70,6 +70,7 @@ class QAInteractions(Base):
     answer_timestamp = Column(DateTime)
     comments = Column(Text)  # Store as serialized JSON
 
+
 class QAInteractionManager:
     def __init__(self, session):
         self.session = session
@@ -97,7 +98,6 @@ class QAInteractionManager:
 
     def get_interaction_by_thread_id(self, thread_id):
         return self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
-
 
 
 def store_space_data(space_data):
@@ -182,7 +182,6 @@ def get_page_data_from_db():
     # Close the SQLite connection
     conn.close()
     return all_documents, page_ids
-
 
 
 def get_page_data_by_ids(page_ids):
