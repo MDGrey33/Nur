@@ -1,10 +1,10 @@
 # ./database/confluence_database.py
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import
 from datetime import datetime
-from configuration import sql_file_path
 import sqlite3
-
+import json
+from configuration import sql_file_path
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
@@ -53,6 +53,51 @@ class PageProgress(Base):
     page_id = Column(String, unique=True)
     processed = Column(Boolean, default=False)
     processed_time = Column(DateTime)
+
+
+class QAInteractions(Base):
+    """
+    SQLAlchemy model for storing Q&A interactions from Slack.
+    """
+    __tablename__ = 'qa_interactions'
+
+    interaction_id = Column(Integer, primary_key=True)
+    question_text = Column(Text)
+    thread_id = Column(String)
+    answer_text = Column(Text)
+    channel_id = Column(String)
+    question_timestamp = Column(DateTime)
+    answer_timestamp = Column(DateTime)
+    comments = Column(Text)  # Store as serialized JSON
+
+class QAInteractionManager:
+    def __init__(self, session):
+        self.session = session
+
+    def add_question_and_answer(self, question, answer, thread_id, channel_id, question_ts, answer_ts):
+        interaction = QAInteractions(
+            question_text=question,
+            thread_id=thread_id,
+            answer_text=answer,
+            channel_id=channel_id,
+            question_timestamp=question_ts,
+            answer_timestamp=answer_ts,
+            comments=json.dumps([])  # Initialize an empty list of comments
+        )
+        self.session.add(interaction)
+        self.session.commit()
+
+    def add_comment_to_interaction(self, thread_id, comment):
+        interaction = self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
+        if interaction:
+            comments = json.loads(interaction.comments) if interaction.comments else []
+            comments.append(comment)
+            interaction.comments = json.dumps(comments)
+            self.session.commit()
+
+    def get_interaction_by_thread_id(self, thread_id):
+        return self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
+
 
 
 def store_space_data(space_data):
@@ -139,8 +184,6 @@ def get_page_data_from_db():
     return all_documents, page_ids
 
 
-import sqlite3
-from configuration import sql_file_path  # Ensure this is the correct path to your SQLite file
 
 def get_page_data_by_ids(page_ids):
     """
