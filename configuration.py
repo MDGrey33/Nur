@@ -1,4 +1,5 @@
 # /Users/roland/code/Nur/configuration.py
+import os
 
 project_path = "/Users/roland/code/Nur"
 # build file_system_path and database_path from project_path
@@ -10,9 +11,15 @@ sql_file_path = database_path + "/confluence_pages_sql.db"
 
 # paths for queues
 # queue for extracting ans storing page content from Confluence
-persist_page_processing_queue_path = project_path + "/content/transactional/confluence_page_processing_queue"
+persist_page_processing_queue_path = os.path.join(project_path, "content", "transactional", "confluence_page_processing_queue")
 # queue for creating page vectors and storing them in chroma db
-persist_page_vector_queue_path = project_path + "/content/transactional/confluence_page_vector_queue"
+persist_page_vector_queue_path = os.path.join(project_path, "content", "transactional", "confluence_page_vector_queue")
+# queue for slack messages
+persist_message_queue_path = os.path.join(project_path, "content", "transactional", "slack_message_queue")
+# queue for slack reactions
+persist_reaction_queue_path = os.path.join(project_path, "content", "transactional", "slack_reaction_queue")
+
+
 
 # Slack Bot User ID
 bot_user_id = "U069C17DCE5"

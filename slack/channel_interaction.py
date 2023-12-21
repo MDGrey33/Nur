@@ -1,4 +1,4 @@
-# ./slack/channel_reaction.py
+# ./slack/channel_interaction.py
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -13,6 +13,10 @@ from vector.chroma import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from configuration import bot_user_id
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
+from slack.event_publisher import EventPublisher
+
+# Initialize EventPublisher instance
+event_publisher = EventPublisher()
 
 
 # Abstract base class for Slack event handlers
@@ -43,6 +47,9 @@ class ChannelMessageHandler(SlackEventHandler):
                     text = event.get("text", "")
                     channel_id = event["channel"]
 
+                    # Publish the message event
+                    event_publisher.publish_new_message(event)
+
                     if "?" in text:
                         # Handle question message
                         self.answer_question(channel_id, text, event.get("ts"), web_client)
@@ -72,9 +79,9 @@ class ChannelMessageHandler(SlackEventHandler):
         self.save_context_to_file(context, file_name)
 
         response_text = self.generate_response(question, file_name)
-        print("*"*100)
+        print(("*" * 100, "\n") * 3)
         print(response_text)
-        print("*"*100)
+        print(("*" * 100, "\n") * 3)
         # Send the extracted text as a response in Slack
         web_client.chat_postMessage(channel=channel_id, text=response_text, thread_ts=message_id_to_reply_under)
 
@@ -126,6 +133,8 @@ class ReactionHandler(SlackEventHandler):
                 reaction = event.get("reaction")
                 channel_id = event.get("item", {}).get("channel")
                 message_ts = event.get("item", {}).get("ts")
+
+                event_publisher.publish_new_reaction(event)
                 response_message = f"I saw a :{reaction}: reaction on my message with timestamp {message_ts}"
                 web_client.chat_postMessage(channel=channel_id, text=response_message)
 

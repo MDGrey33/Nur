@@ -3,10 +3,8 @@ from persistqueue import Queue
 import os
 from file_system.file_manager import FileManager
 from database.confluence_database import store_pages_data, is_page_processed, get_last_updated_timestamp
-from confluence_integration.retrieve_space import process_page, choose_space
+from confluence_integration.retrieve_space import process_page
 from configuration import persist_page_processing_queue_path, persist_page_vector_queue_path
-from credentials import confluence_credentials
-from confluence_integration.confluence_client import ConfluenceClient
 
 
 def get_page_content_using_queue(space_key):
