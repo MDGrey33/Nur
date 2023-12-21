@@ -12,3 +12,5 @@
 /content/
 .DS_Store
 *.pyc
+/processed_ids.json
+/slack/processed_ids.json
