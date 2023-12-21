@@ -30,6 +30,20 @@ class SlackEventHandler(ABC):
 class ChannelMessageHandler(SlackEventHandler):
     processed_messages = set()  # To keep track of processed message IDs
 
+    def handle_message(self, event, web_client):
+        text = event.get("text", "")
+        channel_id = event["channel"]
+
+        # Publish the message event
+        event_publisher.publish_new_message(event)
+
+        if "?" in text:
+            # Handle question message
+            self.answer_question(channel_id, text, event.get("ts"), web_client)
+        else:
+            # Handle non-question message
+            self.send_default_response(text, channel_id, event.get("ts"), web_client)
+
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
         # Acknowledge the event immediately
         client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
@@ -44,19 +58,7 @@ class ChannelMessageHandler(SlackEventHandler):
         try:
             if req.type == "events_api":
                 if self.is_valid_message(event, bot_user_id):
-                    text = event.get("text", "")
-                    channel_id = event["channel"]
-
-                    # Publish the message event
-                    event_publisher.publish_new_message(event)
-
-                    if "?" in text:
-                        # Handle question message
-                        self.answer_question(channel_id, text, event.get("ts"), web_client)
-                    else:
-                        # Handle non-question message
-                        self.send_default_response(text, channel_id, event.get("ts"), web_client)
-
+                    self.handle_message(event, web_client)
                     # Add the message ID to the processed set
                     self.processed_messages.add(message_id)
 
