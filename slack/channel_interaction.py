@@ -14,6 +14,7 @@ from oai_assistants.query_assistant_from_documents import query_assistant_with_c
 from configuration import bot_user_id
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
 from slack.event_publisher import EventPublisher
+from slack.event_consumer import consume_events
 
 # Initialize EventPublisher instance
 event_publisher = EventPublisher()
@@ -141,6 +142,7 @@ class SlackBot:
             while True:
                 logging.debug("Bot is running...")
                 time.sleep(10)
+                consume_events()
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
         except Exception as e:

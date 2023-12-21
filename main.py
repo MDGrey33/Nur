@@ -7,6 +7,7 @@ from vector.chroma import add_to_vector
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from vector.vectorize_and_persist_processor import process_vectorization_queue
 
+
 def add_space():
     retrieved_page_ids = get_space_content()
     indexed_page_ids = add_to_vector()
