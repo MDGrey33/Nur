@@ -30,20 +30,6 @@ class SlackEventHandler(ABC):
 class ChannelMessageHandler(SlackEventHandler):
     processed_messages = set()  # To keep track of processed message IDs
 
-    def handle_message(self, event, web_client):
-        text = event.get("text", "")
-        channel_id = event["channel"]
-
-        # Publish the message event
-        event_publisher.publish_new_message(event)
-
-        if "?" in text:
-            # Handle question message
-            self.answer_question(channel_id, text, event.get("ts"), web_client)
-        else:
-            # Handle non-question message
-            self.send_default_response(text, channel_id, event.get("ts"), web_client)
-
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
         # Acknowledge the event immediately
         client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
@@ -52,22 +38,22 @@ class ChannelMessageHandler(SlackEventHandler):
         message_id = event.get("client_msg_id")  # Unique identifier for each message
 
         # Check if the message is a retry and already processed
-        if message_id in self.processed_messages:
+        if message_id in self.processed_messages or not self.is_valid_message(event, bot_user_id):
             return
 
         try:
             if req.type == "events_api":
-                if self.is_valid_message(event, bot_user_id):
-                    self.handle_message(event, web_client)
-                    # Add the message ID to the processed set
-                    self.processed_messages.add(message_id)
+                # Publish the raw message event to the message queue
+                event_publisher.publish_new_message(event)
+                # Add the message ID to the processed set to avoid reprocessing
+                self.processed_messages.add(message_id)
 
         except Exception as e:
             logging.error(f"Error processing event: {e}", exc_info=True)
 
     def is_valid_message(self, event, bot_user_id):
         """ Check if the event is a valid user message """
-        return event.get("type") == "message" and "subtype" not in event and event.get("user") != bot_user_id
+        return event.get("type") == "message" and "subtype" not in event
 
     def send_default_response(self, text, channel_id, thread_ts, web_client):
         """ Send a default response to a non-question message """
@@ -128,17 +114,12 @@ class ChannelMessageHandler(SlackEventHandler):
 
 # Handler for reactions added to messages
 class ReactionHandler(SlackEventHandler):
+
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
         if req.type == "events_api":
             event = req.payload.get("event", {})
             if event.get("type") == "reaction_added" and event.get("item_user") == bot_user_id:
-                reaction = event.get("reaction")
-                channel_id = event.get("item", {}).get("channel")
-                message_ts = event.get("item", {}).get("ts")
-
                 event_publisher.publish_new_reaction(event)
-                response_message = f"I saw a :{reaction}: reaction on my message with timestamp {message_ts}"
-                web_client.chat_postMessage(channel=channel_id, text=response_message)
 
 
 # Main SlackBot class to initialize and manage the bot
