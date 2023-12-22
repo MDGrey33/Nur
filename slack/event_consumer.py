@@ -1,12 +1,9 @@
-# ./slack/event_consumer.py
 import json
-from datetime import datetime
 from slack.event_publisher import EventPublisher
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
 from vector.chroma import retrieve_relevant_documents
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
-from database.confluence_database import QAInteractionManager, session
 
 class EventConsumer:
     def __init__(self, publisher: EventPublisher):
@@ -47,16 +44,6 @@ class EventConsumer:
             # Determine the type of message and generate an appropriate response
             if "?" in text:  # Check if the message is a question
                 response_text = self.generate_response(text)
-                # Update the database with the question and answer
-                qa_manager = QAInteractionManager(session)
-                qa_manager.add_question_and_answer(
-                    question=text,
-                    answer=response_text,
-                    thread_id=thread_ts,  # This becomes the identifier for the interaction
-                    channel_id=channel_id,
-                    question_ts=datetime.fromtimestamp(float(thread_ts)),
-                    answer_ts=datetime.now()
-                )
             else:
                 response_text = f"Received your message: '{text}'"
 
