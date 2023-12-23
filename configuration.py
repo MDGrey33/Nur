@@ -15,9 +15,9 @@ persist_page_processing_queue_path = os.path.join(project_path, "content", "tran
 # queue for creating page vectors and storing them in chroma db
 persist_page_vector_queue_path = os.path.join(project_path, "content", "transactional", "confluence_page_vector_queue")
 # queue for slack messages
-persist_message_queue_path = os.path.join(project_path, "content", "transactional", "slack_message_queue")
+persist_question_queue_path = os.path.join(project_path, "content", "transactional", "slack_question_queue")
 # queue for slack reactions
-persist_reaction_queue_path = os.path.join(project_path, "content", "transactional", "slack_reaction_queue")
+persist_feedback_queue_path = os.path.join(project_path, "content", "transactional", "slack_feedback_queue")
 
 
 

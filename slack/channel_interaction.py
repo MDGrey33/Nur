@@ -33,6 +33,8 @@ class ChannelMessageHandler(SlackEventHandler):
         text = event.get("text", "")
         user_id = event.get("user", "")
         thread_ts = event.get("thread_ts")  # 'thread_ts' if part of a thread
+        channel = event.get("channel", "")  # ID of the channel where the message was sent
+
 
         # Skip processing if the message has already been processed
         if ts in self.processed_messages:
@@ -54,11 +56,32 @@ class ChannelMessageHandler(SlackEventHandler):
         if "?" in text and (not thread_ts):  # It's a question if not part of another thread
             print(f"Question identified: {text}")
             self.questions[ts] = text
+            question_event = {
+                "text": text,
+                "ts": ts,
+                "thread_ts": None,  # Pass None if it's not a thread
+                "channel": channel,
+                "user": user_id
+            }
+            event_publisher.publish_new_question(question_event)
+            print(f"Question published: {question_event}")
+
 
         # Identify and handle feedback
         elif thread_ts in self.questions:  # Message is a reply to a question
             parent_question = self.questions[thread_ts]
             print(f"Feedback identified for question '{parent_question}': {text}")
+            feedback_event = {
+                "text": text,
+                "ts": ts,
+                "thread_ts": thread_ts,
+                "channel": channel,
+                "user": user_id,
+                "parent_question": parent_question
+            }
+            event_publisher.publish_new_feedback(feedback_event)
+            print(f"Feedback published: {feedback_event}, ")
+
 
         # Skip all other messages
         else:
