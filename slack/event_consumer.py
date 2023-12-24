@@ -1,85 +1,74 @@
-import json
+from datetime import datetime
 from slack.event_publisher import EventPublisher
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
 from vector.chroma import retrieve_relevant_documents
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
+from database.confluence_database import QAInteractionManager, Session
 
 class EventConsumer:
     def __init__(self, publisher: EventPublisher):
         self.publisher = publisher
         self.web_client = WebClient(token=slack_bot_user_oauth_token)
-        self.processed_ids_file = 'processed_ids.json'
-        self.load_processed_message_ids()
-        self.bot_user_id = self.web_client.auth_test().get('user_id')  # Get the bot user ID
-
-    def load_processed_message_ids(self):
-        try:
-            with open(self.processed_ids_file, 'r') as file:
-                self.processed_message_ids = set(json.load(file))
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.processed_message_ids = set()
-
-    def save_processed_message_ids(self):
-        with open(self.processed_ids_file, 'w') as file:
-            json.dump(list(self.processed_message_ids), file)
-
-    def process_message_event(self, event_data):
-        print("Processing new event:", event_data)  # Detailed diagnostic output
-
-        message_id = event_data.get("client_msg_id")
-        user_id = event_data.get("user")
-
-        # Skip if the message is from the bot itself or already processed
-        if user_id == self.bot_user_id or message_id in self.processed_message_ids:
-            print(f"Skipping message: {message_id}")
-            return
-
-        # Validate required keys directly from the event_data
-        if "channel" in event_data and "text" in event_data and "ts" in event_data:
-            channel_id = event_data["channel"]
-            text = event_data["text"]
-            thread_ts = event_data["ts"]
-
-            # Determine the type of message and generate an appropriate response
-            if "?" in text:  # Check if the message is a question
-                response_text = self.generate_response(text)
-            else:
-                response_text = f"Received your message: '{text}'"
-
-            # Post response back to Slack if all required information is present
-            if channel_id and thread_ts and response_text:
-                self.web_client.chat_postMessage(channel=channel_id, text=response_text, thread_ts=thread_ts)
-
-            # Mark this message as processed
-            self.processed_message_ids.add(message_id)
-            self.save_processed_message_ids()
-        else:
-            print("Event does not contain expected keys:", event_data)
+        self.db_session = Session()
+        self.interaction_manager = QAInteractionManager(self.db_session)
 
     def generate_response(self, question):
-        file_name = "context.txt"  # Placeholder for actual context retrieval logic
         relevant_document_ids = retrieve_relevant_documents(question)
         response_text = query_gpt_4t_with_context(question, relevant_document_ids)
         return response_text
 
-    def consume_messages(self):
-        while not self.publisher.message_queue.empty():
-            message_event = self.publisher.message_queue.get()
-            self.process_message_event(message_event)
-            self.publisher.message_queue.task_done()
+    def consume_questions(self):
+        while not self.publisher.question_queue.empty():
+            question_event = self.publisher.question_queue.get()
+            print("Processing question event:", question_event)
 
-    def consume_reactions(self):
-        while not self.publisher.reaction_queue.empty():
-            reaction_event = self.publisher.reaction_queue.get()
-            print("Processing reaction event:", reaction_event)
-            self.publisher.reaction_queue.task_done()
+            # Generate response and store the interaction
+            response_text = self.generate_response(question_event["text"])
+            self.interaction_manager.add_question_and_answer(
+                question=question_event["text"],
+                answer=response_text,
+                thread_id=question_event["ts"],
+                channel_id=question_event["channel"],
+                question_ts=datetime.fromtimestamp(float(question_event["ts"])),
+                answer_ts=datetime.now()
+            )
+            print(f"Question and answer stored in the database: {question_event}")
+            # Post the response in the same thread as the question
+            self.web_client.chat_postMessage(
+                channel=question_event["channel"],
+                text=response_text,
+                thread_ts=question_event["ts"]  # This ensures the message is part of the same thread
+            )
+            print(f"Response posted to Slack thread: {question_event['ts']}")
+
+            self.publisher.question_queue.task_done()
+
+    def consume_feedback(self):
+        while not self.publisher.feedback_queue.empty():
+            feedback_event = self.publisher.feedback_queue.get()
+            print("Processing feedback event:", feedback_event)
+
+            # Append the feedback to the corresponding interaction
+            timestamp_str = datetime.now().isoformat()
+            self.interaction_manager.add_comment_to_interaction(
+                thread_id=feedback_event["thread_ts"],
+                comment={
+                    "text": feedback_event["text"],
+                    "user": feedback_event["user"],
+                    "timestamp": timestamp_str
+                }
+            )
+            print(f"Feedback appended to the interaction in the database: {feedback_event}")
+            self.publisher.feedback_queue.task_done()
+
 
 def consume_events():
     publisher = EventPublisher()
     consumer = EventConsumer(publisher)
-    consumer.consume_messages()
-    consumer.consume_reactions()
+    consumer.consume_questions()
+    consumer.consume_feedback()
+
 
 if __name__ == "__main__":
     consume_events()
