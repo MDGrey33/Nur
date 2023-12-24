@@ -9,6 +9,7 @@ from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
 from configuration import bot_user_id
 from slack.event_publisher import EventPublisher
+from slack.event_consumer import consume_events
 
 # Initialize EventPublisher instance
 event_publisher = EventPublisher()
@@ -125,6 +126,7 @@ class SlackBot:
             while True:
                 logging.debug("Bot is running...")
                 time.sleep(10)
+                consume_events()
                 # consume_events()
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
