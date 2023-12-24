@@ -1,11 +1,11 @@
 # ./confluence_integration/retrieve_space.py
+import os
 from datetime import datetime
 from bs4 import BeautifulSoup
 from atlassian import Confluence
 from credentials import confluence_credentials
 from database.confluence_database import mark_page_as_processed
 from persistqueue import Queue
-import os
 from configuration import persist_page_processing_queue_path
 from confluence_integration.confluence_client import ConfluenceClient
 
@@ -269,6 +269,7 @@ def get_space_content(update_date=None):
         page_queue.put(page_id)
 
     print(f"Enqueued {len(all_page_ids)} pages for processing.")
+    print(f"Pages queued {all_page_ids}")
     return space_key
 
 

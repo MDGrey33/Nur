@@ -16,18 +16,17 @@ class ConfluenceClient:
         username (str): The username for authentication.
         api_token (str): The API token for authentication.
         """
-        self.confluence = Confluence(
-            url=confluence_credentials['base_url'],
-            username=confluence_credentials['username'],
-            password=confluence_credentials['api_token']
-        )
+        self.initialize_confluence_client()
 
     def initialize_confluence_client(self):
         """
         Initialize the Confluence client.
         """
-        # Implementation goes here
-
+        self.confluence = Confluence(
+            url=confluence_credentials['base_url'],
+            username=confluence_credentials['username'],
+            password=confluence_credentials['api_token']
+        )
     def retrieve_confluence_pages(self, space_key, limit=50):
         """
         Retrieve pages from a specified Confluence space using pagination.
