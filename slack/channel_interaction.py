@@ -60,7 +60,7 @@ class ChannelMessageHandler(SlackEventHandler):
             question_event = {
                 "text": text,
                 "ts": ts,
-                "thread_ts": None,  # Pass None if it's not a thread
+                "thread_ts": "",
                 "channel": channel,
                 "user": user_id
             }
@@ -127,7 +127,6 @@ class SlackBot:
                 logging.debug("Bot is running...")
                 time.sleep(10)
                 consume_events()
-                # consume_events()
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
         except Exception as e:

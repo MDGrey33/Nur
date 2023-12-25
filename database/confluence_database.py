@@ -98,6 +98,14 @@ class QAInteractionManager:
     def get_interaction_by_thread_id(self, thread_id):
         return self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
 
+    def get_qa_interactions(self):
+        """
+        Retrieve all Q&A interactions.
+
+        Returns:
+            list: A list of QAInteractions objects.
+        """
+        return self.session.query(QAInteractions).all()
 
 
 def store_space_data(space_data):
