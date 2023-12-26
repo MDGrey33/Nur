@@ -6,6 +6,23 @@ from bs4 import BeautifulSoup
 import json
 
 
+def initialize_confluence_client():
+    """
+    Initialize the Confluence client.
+    """
+    confluence = Confluence(
+        url=confluence_credentials['base_url'],
+        username=confluence_credentials['username'],
+        password=confluence_credentials['api_token']
+    )
+
+    confluence_client = ConfluenceClient()
+
+    return confluence_client
+
+
+
+
 def format_comment(raw_comment):
     comment_data = json.loads(raw_comment)
     formatted_comments = []
@@ -17,55 +34,101 @@ def format_comment(raw_comment):
     return ' '.join(formatted_comments)
 
 
-# Initialize Confluence API
-confluence = Confluence(
-    url=confluence_credentials['base_url'],
-    username=confluence_credentials['username'],
-    password=confluence_credentials['api_token']
-)
+def get_space_key_or_create_space(space_name="Nur documentation QnA"):
+    """
+    Get the space key for a given space name or create the space if it doesn't exist.
 
-# Create a session instance
-session = Session()
+    Args:
+    space_name (str): The name of the Confluence space.
 
-# Initialize ConfluenceClient and QAInteractionManager with the session
-confluence_client = ConfluenceClient()
-qa_manager = QAInteractionManager(session)
+    Returns:
+    str: The space key for the given space name.
+    """
+    # Ensure the space exists and get its key
+    space_key = confluence_client.create_space_if_not_found(space_name)
+    return space_key
 
-# Ensure the space exists and get its key
-space_name = "Nur documentation QnA"
-space_key = confluence_client.create_space_if_not_found(space_name)
-print(space_key)
 
-# Fetch all Q&A interactions from the database
-all_interactions = qa_manager.get_qa_interactions()
+def get_qna_interactions_from_database():
+    """
+    Fetch all Q&A interactions from the database.
 
-# Iterate through each interaction
-for interaction in all_interactions:
+    Returns:
+    list: A list of QAInteraction objects.
+    """
+    # Create a session instance
+    session = Session()
+
+    # Initialize QAInteractionManager with the session
+    qa_manager = QAInteractionManager(session)
+
+    # Fetch all Q&A interactions from the database
+    all_interactions = qa_manager.get_qa_interactions()
+    return all_interactions
+
+
+def create_page_title_and_content(interaction):
+    """
+    Create the page title and content for a given interaction.
+
+    Args:
+    interaction (QAInteraction): A QAInteraction object.
+
+    Returns:
+    tuple: A tuple containing the page title and content.
+    """
+    # Create the page title and content
     title = interaction.question_text[:200]  # Use first 200 chars of the question as title
     comments = format_comment(interaction.comments)
     content = f"""
-    <h2>Question</h2>
-    <p>{interaction.question_text}</p>
-    <h2>Answer</h2>
-    <p>{interaction.answer_text}</p>
-    <h2>Comments</h2>
-    <p>{comments}</p>
-    """
+        <h2>Question</h2>
+        <p>{interaction.question_text}</p>
+        <h2>Answer</h2>
+        <p>{interaction.answer_text}</p>
+        <h2>Comments</h2>
+        <p>{comments}</p>
+        """
 
     # Clean and convert to a string using BeautifulSoup
     clean_content = BeautifulSoup(content, "html.parser").prettify()
 
+    return title, clean_content
+
+
+def create_page_on_confluence(space_key, title, clean_content):
+    """
+    Create a page on Confluence.
+
+    Args:
+    space_key (str): The key of the Confluence space.
+    title (str): The title of the page.
+    clean_content (str): The content of the page.
+    """
     # Check if a page with the same title already exists under the same space key
     if confluence_client.page_exists(space_key, title):
         page_id = confluence_client.get_page_id_by_title(space_key, title)
         if page_id:
             # Update the existing page if it's under the same space key
             confluence_client.update_page(page_id, title, clean_content)
-            print(f"Page updated for interaction ID: {interaction.interaction_id}")
+            return f"Page updated for interaction ID: {interaction.interaction_id}"
         else:
             # Skip if it's under a different space key
-            print(f"Skipping update for interaction ID: {interaction.interaction_id} - Page found under a different space key")
+            return f"Skipping update for interaction ID: {interaction.interaction_id} - Page found under a different space key"
     else:
         # Create the page if it doesn't exist
         confluence_client.create_page(space_key, title, clean_content)
-        print(f"Page created for interaction ID: {interaction.interaction_id}")
+        return f"Page created for interaction ID: {interaction.interaction_id}"
+
+
+confluence_client = initialize_confluence_client()
+
+space_key = get_space_key_or_create_space("Nur documentation QnA")
+
+all_interactions = get_qna_interactions_from_database()
+
+# Iterate through each interaction
+for interaction in all_interactions:
+
+    title, clean_content = create_page_title_and_content(interaction)
+    print(create_page_on_confluence(space_key, title, clean_content))
+

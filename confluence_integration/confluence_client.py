@@ -1,5 +1,10 @@
 from atlassian import Confluence
 from credentials import confluence_credentials
+import logging
+
+# Set up basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 
 class ConfluenceClient:
@@ -18,6 +23,7 @@ class ConfluenceClient:
         """
         self.initialize_confluence_client()
 
+
     def initialize_confluence_client(self):
         """
         Initialize the Confluence client.
@@ -27,6 +33,12 @@ class ConfluenceClient:
             username=confluence_credentials['username'],
             password=confluence_credentials['api_token']
         )
+
+    def create_space_thing(self):
+        confluence = self.initialize_confluence_client()
+        space_key = 'NURNUR'
+        space_name = 'Za Nur documentation QnA'
+        self.confluence.create_space(space_key=space_key, space_name=space_name)
 
     def page_exists(self, space_key, title):
         """Check if a page with the given title exists in the given space."""
@@ -108,19 +120,22 @@ class ConfluenceClient:
         Returns:
             str: The key of the existing or newly created space.
         """
-        # Check if the space exists by name
-        if self.space_exists_by_name(space_name):
-            # If the space exists, return its key
-            for space in self.retrieve_space_list():
-                if space['name'] == space_name:
-                    return space['key']
-        else:
-            # If the space doesn't exist, create a new one
-            if space_key is None:
-                space_key = self.generate_space_key(space_name)
-            self.confluence.create_space(space_key=space_key, space_name=space_name)
-            return space_key
-
+        try:
+            # Check if the space exists by name
+            if self.space_exists_by_name(space_name):
+                # If the space exists, return its key
+                for space in self.retrieve_space_list():
+                    if space['name'] == space_name:
+                        return space['key']
+            else:
+                # If the space doesn't exist, create a new one
+                if space_key is None:
+                    space_key = self.generate_space_key(space_name)
+                print(f"Creating space with key: {space_key}, abd name: {space_name}")
+                self.confluence.create_space(space_key=space_key, space_name=space_name)
+                return space_key
+        except Exception as e:
+            logging.error("Error creating space: %s", e, exc_info=True)
 
     def create_page(self, space_key, title, content, parent_id=None):
         """
@@ -179,3 +194,5 @@ class ConfluenceClient:
         str: The content of the page.
         """
         # Implementation goes here
+
+
