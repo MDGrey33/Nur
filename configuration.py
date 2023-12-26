@@ -18,7 +18,8 @@ persist_page_vector_queue_path = os.path.join(project_path, "content", "transact
 persist_question_queue_path = os.path.join(project_path, "content", "transactional", "slack_question_queue")
 # queue for slack reactions
 persist_feedback_queue_path = os.path.join(project_path, "content", "transactional", "slack_feedback_queue")
-
+# queue for qna documents
+persist_qna_document_queue_path = os.path.join(project_path, "content", "transactional", "qna_document_queue")
 
 
 # Slack Bot User ID

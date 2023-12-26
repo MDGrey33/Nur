@@ -28,6 +28,22 @@ class ConfluenceClient:
             password=confluence_credentials['api_token']
         )
 
+    def page_exists(self, space_key, title):
+        """Check if a page with the given title exists in the given space."""
+        return self.confluence.page_exists(space_key, title)
+
+    def get_page_id_by_title(self, space_key, title):
+        """Retrieve the page ID for a given page title in a given space."""
+        try:
+            return self.confluence.get_page_id(space_key, title)
+        except Exception as e:
+            print(f"Error retrieving page ID for {title}: {e}")
+            return None
+
+    def update_page(self, page_id, title, content):
+        """Update an existing page with new content."""
+        return self.confluence.update_page(page_id=page_id, title=title, body=content)
+
     def retrieve_confluence_pages(self, space_key, limit=50):
         """
         Retrieve pages from a specified Confluence space using pagination.
@@ -104,6 +120,7 @@ class ConfluenceClient:
                 space_key = self.generate_space_key(space_name)
             self.confluence.create_space(space_key=space_key, space_name=space_name)
             return space_key
+
 
     def create_page(self, space_key, title, content, parent_id=None):
         """
