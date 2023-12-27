@@ -6,7 +6,7 @@ from slack.channel_interaction import load_slack_bot
 from vector.chroma import add_to_vector
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from vector.vectorize_and_persist_processor import process_vectorization_queue
-
+from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
 
 def add_space():
     retrieved_page_ids = get_space_content()
@@ -43,6 +43,7 @@ def main_menu():
         print("2. Ask a Question to Existing Documentation with Assistant")
         print("3. Ask a question to Existing Documentation with GPT-4T")
         print("4. Start Slack Bot")
+        print("5. Sync up QA articles to Confluence")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-3): ")
 
@@ -65,6 +66,9 @@ def main_menu():
             print("Starting Slack Bot...")
             load_slack_bot()
             print("Slack Bot is running.")
+        elif choice == "5":
+            print("Syncing up QA articles to Confluence...")
+            sync_up_interactions_to_confluence()
         elif choice == "0":
             print("Exiting program.")
             break
