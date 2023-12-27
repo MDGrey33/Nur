@@ -1,7 +1,7 @@
 from atlassian import Confluence
 from credentials import confluence_credentials
 import logging
-
+import time
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -33,12 +33,6 @@ class ConfluenceClient:
             username=confluence_credentials['username'],
             password=confluence_credentials['api_token']
         )
-
-    def create_space_thing(self):
-        confluence = self.initialize_confluence_client()
-        space_key = 'NURNUR'
-        space_name = 'Za Nur documentation QnA'
-        self.confluence.create_space(space_key=space_key, space_name=space_name)
 
     def page_exists(self, space_key, title):
         """Check if a page with the given title exists in the given space."""
@@ -158,18 +152,15 @@ class ConfluenceClient:
             type='page'
         )
 
+    import time
+
     @staticmethod
     def generate_space_key(space_name):
-        """
-        Generates a space key from a space name. This is a simplistic implementation.
-        You might want to add more sophisticated logic.
-        Args:
-            space_name (str): The name of the space.
-        Returns:
-            str: A generated key for the space.
-        """
-        # Create a simplistic space key by taking the first two letters of each word
-        return ''.join(word[:2].upper() for word in space_name.split())
+        # Create a base space key by taking the first two letters of each word
+        base_key = ''.join(word[:2].upper() for word in space_name.split())
+        # Append a timestamp to the base key
+        timestamp = int(time.time())
+        return f"{base_key}{timestamp}"
 
     def retrieve_page_history(self, page_id):
         """
@@ -196,3 +187,5 @@ class ConfluenceClient:
         # Implementation goes here
 
 
+conf_client = ConfluenceClient()
+conf_client.create_space_if_not_found(space_name="Nur documentation QnA")

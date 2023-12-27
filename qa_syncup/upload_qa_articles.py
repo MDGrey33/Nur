@@ -6,23 +6,6 @@ from bs4 import BeautifulSoup
 import json
 
 
-def initialize_confluence_client():
-    """
-    Initialize the Confluence client.
-    """
-    confluence = Confluence(
-        url=confluence_credentials['base_url'],
-        username=confluence_credentials['username'],
-        password=confluence_credentials['api_token']
-    )
-
-    confluence_client = ConfluenceClient()
-
-    return confluence_client
-
-
-
-
 def format_comment(raw_comment):
     comment_data = json.loads(raw_comment)
     formatted_comments = []
@@ -32,21 +15,6 @@ def format_comment(raw_comment):
         timestamp = comment["timestamp"]
         formatted_comments.append(f"{text} (Comment by {user} on {timestamp})")
     return ' '.join(formatted_comments)
-
-
-def get_space_key_or_create_space(space_name="Nur documentation QnA"):
-    """
-    Get the space key for a given space name or create the space if it doesn't exist.
-
-    Args:
-    space_name (str): The name of the Confluence space.
-
-    Returns:
-    str: The space key for the given space name.
-    """
-    # Ensure the space exists and get its key
-    space_key = confluence_client.create_space_if_not_found(space_name)
-    return space_key
 
 
 def get_qna_interactions_from_database():
@@ -120,10 +88,10 @@ def create_page_on_confluence(space_key, title, clean_content):
         return f"Page created for interaction ID: {interaction.interaction_id}"
 
 
-confluence_client = initialize_confluence_client()
+confluence_client = ConfluenceClient()
 
-space_key = get_space_key_or_create_space("Nur documentation QnA")
-
+space_key = confluence_client.create_space_if_not_found("Nur documentation QnA")
+print(f"Space key: {space_key}")
 all_interactions = get_qna_interactions_from_database()
 
 # Iterate through each interaction
