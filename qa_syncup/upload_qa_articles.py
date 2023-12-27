@@ -1,6 +1,4 @@
-from atlassian import Confluence
 from confluence_integration.confluence_client import ConfluenceClient
-from credentials import confluence_credentials
 from database.confluence_database import QAInteractionManager, Session
 from bs4 import BeautifulSoup
 import json
@@ -63,7 +61,7 @@ def create_page_title_and_content(interaction):
     return title, clean_content
 
 
-def create_page_on_confluence(space_key, title, clean_content):
+def create_page_on_confluence(confluence_client, interaction, space_key, title, clean_content):
     """
     Create a page on Confluence.
 
@@ -88,15 +86,21 @@ def create_page_on_confluence(space_key, title, clean_content):
         return f"Page created for interaction ID: {interaction.interaction_id}"
 
 
-confluence_client = ConfluenceClient()
+def sync_up_interactions_to_confluence():
+    """
+    Sync up all Q&A interactions to Confluence.
+    """
+    # Create a Confluence client instance
+    confluence_client = ConfluenceClient()
 
-space_key = confluence_client.create_space_if_not_found("Nur documentation QnA")
-print(f"Space key: {space_key}")
-all_interactions = get_qna_interactions_from_database()
+    space_key = confluence_client.create_space_if_not_found("Nur documentation QnA")
+    print(f"Space key: {space_key}")
+    all_interactions = get_qna_interactions_from_database()
 
-# Iterate through each interaction
-for interaction in all_interactions:
+    # Iterate through each interaction
+    for interaction in all_interactions:
+        title, clean_content = create_page_title_and_content(interaction)
+        print(create_page_on_confluence(confluence_client, interaction, space_key, title, clean_content))
 
-    title, clean_content = create_page_title_and_content(interaction)
-    print(create_page_on_confluence(space_key, title, clean_content))
-
+if __name__ == "__main__":
+    sync_up_interactions_to_confluence()
