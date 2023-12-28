@@ -70,6 +70,21 @@ class QAInteractions(Base):
     answer_timestamp = Column(DateTime)
     comments = Column(Text)  # Store as serialized JSON
 
+
+class SlackMessageDeduplication(Base):
+    """
+    SQLAlchemy model for storing deduplication data for Slack messages to prevent reprocessing.
+    """
+    __tablename__ = 'slack_message_deduplication'
+
+    id = Column(Integer, primary_key=True)
+    channel_id = Column(String, nullable=False)  # Identifier for the Slack channel.
+    message_ts = Column(String, nullable=False, unique=True)  # Timestamp of the message, unique within a channel.
+
+    def __repr__(self):
+        return f"<SlackMessageDeduplication(channel_id='{self.channel_id}', message_ts='{self.message_ts}')>"
+
+
 class QAInteractionManager:
     def __init__(self, session):
         self.session = session
