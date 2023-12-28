@@ -45,29 +45,7 @@ class EventConsumer:
             answer_ts=datetime.now()
         )
         print(f"Question and answer stored in the database: {question_event}")
-    '''
-    def consume_questions(self):
-        while not self.publisher.question_queue.empty():
-            question_event = self.publisher.question_queue.get()
-            self.publisher.question_queue.task_done()
 
-            print("Processing question event:", question_event)
-
-            # Generate response and store the interaction
-            response_text = self.generate_response(question_event["text"])
-            print(f"Response generated: {response_text}")
-
-            # Add the question and response to the database
-            self.add_question_and_response_to_database(question_event, response_text)
-
-            # Post the response in the same thread as the question
-            self.web_client.chat_postMessage(
-                channel=question_event["channel"],
-                text=response_text,
-                thread_ts=question_event["ts"]  # This ensures the message is part of the same thread
-            )
-            print(f"Response posted to Slack thread: {question_event['ts']}")
-    '''
     def consume_questions(self):
         while not self.publisher.question_queue.empty():
             # Retrieve the next question event from the queue
