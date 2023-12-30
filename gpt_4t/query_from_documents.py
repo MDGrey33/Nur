@@ -72,7 +72,7 @@ def query_gpt_4t_with_context(question, page_ids):
     if not isinstance(page_ids, list):
         page_ids = [page_ids]
     context = format_pages_as_context(page_ids)
-    # Query the assistant
+    # Query GPT-4T with the question and context
     response = get_response_from_gpt_4t(question, context)
     return response
 

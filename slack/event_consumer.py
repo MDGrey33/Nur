@@ -6,6 +6,7 @@ from vector.chroma import retrieve_relevant_documents
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
 from database.confluence_database import QAInteractionManager, Session, SlackMessageDeduplication
 
+
 class EventConsumer:
     def __init__(self, publisher: EventPublisher):
         self.publisher = publisher
