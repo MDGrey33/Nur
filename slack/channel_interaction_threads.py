@@ -9,9 +9,10 @@ from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
 from configuration import bot_user_id
 from slack.event_publisher import EventPublisher
-from slack.event_consumer import consume_events
-print("imports completed successfully")
+from slack.event_consumer_threads import consume_events
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+print("imports completed successfully")
 # Initialize EventPublisher instance
 event_publisher = EventPublisher()
 
@@ -37,9 +38,11 @@ class ChannelMessageHandler(SlackEventHandler):
         thread_ts = event.get("thread_ts")  # 'thread_ts' if part of a thread
         channel = event.get("channel", "")  # ID of the channel where the message was sent
 
+        logging.debug(f"Event received: {event}")
 
         # Skip processing if the message has already been processed
         if ts in self.processed_messages:
+            logging.info(f"Message {ts} already processed. Skipping.")
             print(f"Message {ts} already processed. Skipping.")
             return
 
@@ -51,6 +54,7 @@ class ChannelMessageHandler(SlackEventHandler):
 
         # Skip if message is invalid or from the bot itself
         if not self.is_valid_message(event) or user_id == bot_user_id:
+            logging.warning(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
             print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
             return
 
@@ -127,8 +131,6 @@ class SlackBot:
             while True:
                 logging.debug("Bot is running...")
                 time.sleep(10)
-                print("Calling consume events")
-                consume_events()
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
         except Exception as e:

@@ -1,11 +1,15 @@
-# ./slack/event_consumer.py
+# ./slack/event_consumer_threads.py
 from datetime import datetime
+import time
 from slack.event_publisher import EventPublisher
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
-from vector.chroma import retrieve_relevant_documents
-from gpt_4t.query_from_documents import query_gpt_4t_with_context
+from vector.chroma_threads import retrieve_relevant_documents
+from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from database.confluence_database import QAInteractionManager, Session, SlackMessageDeduplication
+from threads.dynamic_executor import DynamicExecutor
+
+print("imports completed successfully")
 
 
 class EventConsumer:
@@ -14,6 +18,8 @@ class EventConsumer:
         self.web_client = WebClient(token=slack_bot_user_oauth_token)
         self.db_session = Session()
         self.interaction_manager = QAInteractionManager(self.db_session)
+        self.executor = DynamicExecutor()
+        print("dynamic executor initiated successfully")
 
     def is_message_processed_in_db(self, channel_id, message_ts):
         """
@@ -48,41 +54,49 @@ class EventConsumer:
         )
         print(f"Question and answer stored in the database: {question_event}")
 
+    def process_question(self, question_event):
+        """
+        Processes a single question event.
+        """
+        channel_id = question_event["channel"]
+        message_ts = question_event["ts"]
+
+        # Retrieve relevant document IDs (context) synchronously as it's fast
+        relevant_document_ids = retrieve_relevant_documents(question_event["text"])
+        context = ','.join(relevant_document_ids)  # Adjust this if needed to match the expected format
+
+        # Generate the response using the dynamic executor
+        self.executor.add_task(question_event["text"], context)
+
+        # Retrieve and process the response as soon as it's available
+        response_text = self.executor.get_next_result()
+
+        if response_text:
+            self.add_question_and_response_to_database(question_event, response_text)
+
+            # Post the response back to the Slack channel
+            self.web_client.chat_postMessage(
+                channel=channel_id,
+                text=response_text,
+                thread_ts=message_ts
+            )
+            print(f"Response posted to Slack thread: {message_ts}")
+
     def consume_questions(self):
-        while not self.publisher.question_queue.empty():
-            # Retrieve the next question event from the queue
-            question_event = self.publisher.question_queue.get()
-            self.publisher.question_queue.task_done()
-            channel_id = question_event["channel"]  # The ID of the channel where the message was posted
-            message_ts = question_event["ts"]  # The timestamp of the message, serving as a unique identifier
+        while True:  # Change this to a more suitable condition for your application
+            if not self.publisher.question_queue.empty():
+                question_event = self.publisher.question_queue.get()
+                self.publisher.question_queue.task_done()
 
-            # Check if the message has already been processed and recorded in the database
-            if not self.is_message_processed_in_db(channel_id, message_ts):
-                print(f"Processing new question event: {question_event}")
-
-                # Generate a response based on the question text
-                response_text = self.generate_response(question_event["text"])
-                print(f"Response generated: {response_text}")
-
-                # Add the question and response to the Q&A interactions database
-                self.add_question_and_response_to_database(question_event, response_text)
-
-                # Record the message as processed in the database to prevent reprocessing in the future
-                self.record_message_as_processed_in_db(channel_id, message_ts)
-
-                # Post the generated response back to the same Slack channel and thread as the original question
-                self.web_client.chat_postMessage(
-                    channel=channel_id,
-                    text=response_text,
-                    thread_ts=message_ts  # Ensures the response is part of the same thread as the question
-                )
-                print(f"Response posted to Slack thread: {message_ts}")
-
+                if not self.is_message_processed_in_db(question_event["channel"], question_event["ts"]):
+                    print(f"Processing new question event: {question_event}")
+                    self.process_question(question_event)
+                else:
+                    print(f"Skipping already processed message: {question_event}")
             else:
-                # If the message has already been processed, skip it and log that occurrence
-                print(f"Skipping already processed message: {question_event}")
-
-            # Mark the current task as done in the queue to allow the queue to proceed to the next item
+                # Sleep or wait for a bit before checking the queue again
+                # to avoid busy-waiting. Adjust the sleep time as necessary.
+                time.sleep(0.1)
 
     def consume_feedback(self):
         while not self.publisher.feedback_queue.empty():
