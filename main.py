@@ -3,6 +3,7 @@ from vector.chroma import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents import query_gpt_4t_with_context
 from slack.channel_interaction import load_slack_bot
+from slack.channel_interaction_threads import load_slack_bot_parallel
 from vector.chroma import add_to_vector
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from vector.vectorize_and_persist_processor import process_vectorization_queue
@@ -43,7 +44,8 @@ def main_menu():
         print("2. Ask a Question to Existing Documentation with Assistant")
         print("3. Ask a question to Existing Documentation with GPT-4T")
         print("4. Start Slack Bot")
-        print("5. Sync up QA articles to Confluence")
+        print("5. Start Parallel Processing Slack Bot")
+        print("6. Sync up QA articles to Confluence")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-3): ")
 
@@ -67,6 +69,10 @@ def main_menu():
             load_slack_bot()
             print("Slack Bot is running.")
         elif choice == "5":
+            print("Starting Slack Bot Parallel Processing...")
+            load_slack_bot_parallel()
+            print("Slack Bot is running in parallel processing mode.")
+        elif choice == "6":
             print("Syncing up QA articles to Confluence...")
             sync_up_interactions_to_confluence()
         elif choice == "0":

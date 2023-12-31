@@ -145,5 +145,12 @@ def load_slack_bot():
     bot.start()
 
 
+def load_slack_bot_parallel():
+    logging.basicConfig(level=logging.DEBUG)
+    event_handlers = [ChannelMessageHandler()]
+    bot = SlackBot(slack_bot_user_oauth_token, slack_app_level_token, bot_user_id, event_handlers)
+    bot.start()
+
+
 if __name__ == "__main__":
     load_slack_bot()

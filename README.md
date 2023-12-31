@@ -15,6 +15,9 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 
 ### Todo:
 - Move slack processed ids to sqlite database
+- move away from persist queue due to lack of support in python 3.11
+- Address the multiple processors issue in persist queue that causes a pickle
+- Address idempotency in sync-up QnA to confluence
 - setup last update date and schedule to update confluence space with log in db
 - store embeds in database
 - create new vector database nightly and on trigger from sql database
