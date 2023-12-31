@@ -130,7 +130,8 @@ class SlackBot:
         try:
             while True:
                 logging.debug("Bot is running...")
-                time.sleep(10)
+                consume_events()
+                time.sleep(50)
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
         except Exception as e:

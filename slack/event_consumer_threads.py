@@ -83,20 +83,15 @@ class EventConsumer:
             print(f"Response posted to Slack thread: {message_ts}")
 
     def consume_questions(self):
-        while True:  # Change this to a more suitable condition for your application
-            if not self.publisher.question_queue.empty():
-                question_event = self.publisher.question_queue.get()
-                self.publisher.question_queue.task_done()
+        while not self.publisher.question_queue.empty():
+            question_event = self.publisher.question_queue.get()
+            self.publisher.question_queue.task_done()
 
-                if not self.is_message_processed_in_db(question_event["channel"], question_event["ts"]):
-                    print(f"Processing new question event: {question_event}")
-                    self.process_question(question_event)
-                else:
-                    print(f"Skipping already processed message: {question_event}")
+            if not self.is_message_processed_in_db(question_event["channel"], question_event["ts"]):
+                print(f"Processing new question event: {question_event}")
+                self.process_question(question_event)
             else:
-                # Sleep or wait for a bit before checking the queue again
-                # to avoid busy-waiting. Adjust the sleep time as necessary.
-                time.sleep(0.1)
+                print(f"Skipping already processed message: {question_event}")
 
     def consume_feedback(self):
         while not self.publisher.feedback_queue.empty():
