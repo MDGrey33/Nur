@@ -2,6 +2,9 @@ from atlassian import Confluence
 from credentials import confluence_credentials
 import logging
 import time
+from bs4 import BeautifulSoup
+import re
+
 # Set up basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -46,9 +49,49 @@ class ConfluenceClient:
             print(f"Error retrieving page ID for {title}: {e}")
             return None
 
+    def validate_and_coerce_xhtml(self, content):
+        """
+        Validates and coerces content to be XHTML compliant.
+        Cleans special characters and converts Slack user mentions and URLs.
+
+        Args:
+            content (str): The HTML content to validate and clean.
+
+        Returns:
+            str: XHTML compliant content.
+        """
+        try:
+            # Parse content using BeautifulSoup
+            soup = BeautifulSoup(content, 'html.parser')
+
+            # Convert Slack user mentions (<@U024UF2F68H>) to a readable format
+            for user_mention in soup.find_all(text=re.compile("<@[A-Z0-9]+>")):
+                readable_mention = re.sub(r"<@([A-Z0-9]+)>", r"User[\1]", user_mention)
+                user_mention.replace_with(readable_mention)
+
+            # Convert Slack URLs to standard anchor tags
+            for link in soup.find_all(text=re.compile("<https?://[^\s]+>")):
+                url = re.search(r"<(https?://[^\s]+)>", link)
+                if url:
+                    new_link = soup.new_tag("a", href=url.group(1))
+                    new_link.string = url.group(1)
+                    link.replace_with(new_link)
+
+            # Escape special characters
+            clean_content = str(soup).replace("<", "&lt;").replace(">", "&gt;")
+
+            # Further clean the content if necessary, e.g., removing or replacing other special characters
+
+            return clean_content
+        except Exception as e:
+            logging.error("Error validating/coercing content to XHTML: %s", e, exc_info=True)
+            # Handle the error as per your policy, e.g., re-raise, return None, or provide default content
+            raise
+
     def update_page(self, page_id, title, content):
         """Update an existing page with new content."""
-        return self.confluence.update_page(page_id=page_id, title=title, body=content)
+        clean_content = self.validate_and_coerce_xhtml(content)  # Validate and clean the content
+        return self.confluence.update_page(page_id=page_id, title=title, body=clean_content)
 
     def retrieve_confluence_pages(self, space_key, limit=50):
         """
@@ -110,7 +153,6 @@ class ConfluenceClient:
         Args:
             space_name (str): The name of the space to find or create.
             space_key (str): The key for the space to create. If not provided, a key is generated from the space name.
-            description (str): A description for the space, if it needs to be created.
         Returns:
             str: The key of the existing or newly created space.
         """
@@ -144,15 +186,16 @@ class ConfluenceClient:
         Returns:
             dict: Response from the Confluence API.
         """
+        clean_content = self.validate_and_coerce_xhtml(content)  # Validate and clean the content
+        clean_title = self.validate_and_coerce_xhtml(title)
         return self.confluence.create_page(
             space=space_key,
-            title=title,
-            body=content,
+            title=clean_title,
+            body=clean_content,
             parent_id=parent_id,
             type='page'
         )
 
-    import time
 
     @staticmethod
     def generate_space_key(space_name):
