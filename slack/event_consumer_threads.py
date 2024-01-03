@@ -1,4 +1,5 @@
 # ./slack/event_consumer_threads.py
+import logging
 from datetime import datetime
 import time
 from slack.event_publisher import EventPublisher
@@ -72,6 +73,8 @@ class EventConsumer:
         response_text = self.executor.get_next_result()
 
         if response_text:
+            # Record the message as processed in the database
+            self.record_message_as_processed_in_db(channel_id, message_ts)
             self.add_question_and_response_to_database(question_event, response_text)
 
             # Post the response back to the Slack channel
@@ -85,13 +88,14 @@ class EventConsumer:
     def consume_questions(self):
         while not self.publisher.question_queue.empty():
             question_event = self.publisher.question_queue.get()
-            self.publisher.question_queue.task_done()
 
             if not self.is_message_processed_in_db(question_event["channel"], question_event["ts"]):
                 print(f"Processing new question event: {question_event}")
                 self.process_question(question_event)
             else:
                 print(f"Skipping already processed message: {question_event}")
+
+            self.publisher.question_queue.task_done()
 
     def consume_feedback(self):
         while not self.publisher.feedback_queue.empty():
