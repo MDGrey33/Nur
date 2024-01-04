@@ -4,7 +4,17 @@ import json
 
 
 def format_comment(raw_comment):
-    comment_data = json.loads(raw_comment)
+    # Return an empty string or a default message if raw_comment is None
+    if raw_comment is None:
+        return "No comments available."
+
+    # Proceed with the original processing
+    try:
+        comment_data = json.loads(raw_comment)
+    except json.JSONDecodeError:
+        # Handle cases where raw_comment is not a valid JSON string
+        return "Invalid comment format."
+
     formatted_comments = []
     for comment in comment_data:
         text = comment["text"].replace('\n', ' ').strip()

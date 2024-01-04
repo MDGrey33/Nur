@@ -68,8 +68,8 @@ class QAInteractions(Base):
     channel_id = Column(String)
     question_timestamp = Column(DateTime)
     answer_timestamp = Column(DateTime)
-    comments = Column(Text)
-    updated_at = Column(DateTime, default=datetime.now)
+    comments = Column(Text, default=json.dumps([]))  # Set default to an empty JSON array
+
 
 class SlackMessageDeduplication(Base):
     """
@@ -97,8 +97,7 @@ class QAInteractionManager:
             channel_id=channel_id,
             question_timestamp=question_ts,
             answer_timestamp=answer_ts,
-            comments=json.dumps([]),  # Initialize an empty list of comments
-            updated_at=datetime.now()
+            comments=json.dumps([])  # Initialize an empty list of comments
         )
         self.session.add(interaction)
         self.session.commit()
@@ -106,10 +105,11 @@ class QAInteractionManager:
     def add_comment_to_interaction(self, thread_id, comment):
         interaction = self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
         if interaction:
-            comments = json.loads(interaction.comments) if interaction.comments else []
+            if interaction.comments is None:
+                interaction.comments = json.dumps([])
+            comments = json.loads(interaction.comments)
             comments.append(comment)
             interaction.comments = json.dumps(comments)
-            interaction.updated_at = datetime.now()
             self.session.commit()
 
     def get_interaction_by_thread_id(self, thread_id):

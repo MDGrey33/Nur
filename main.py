@@ -1,12 +1,12 @@
 from confluence_integration.retrieve_space import get_space_content
-from vector.chroma import retrieve_relevant_documents
+from vector.chroma_threads import retrieve_relevant_documents, add_to_vector
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
-from gpt_4t.query_from_documents import query_gpt_4t_with_context
+from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from slack.channel_interaction_threads import load_slack_bot_parallel
-from vector.chroma import add_to_vector
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from vector.vectorize_and_persist_processor import process_vectorization_queue
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
+
 
 def add_space():
     retrieved_page_ids = get_space_content()
@@ -19,21 +19,11 @@ def answer_question_with_assistant(question):
     response = query_assistant_with_context(question, relevant_document_ids)
     return response
 
+
 def answer_question_with_gpt_4t(question):
     relevant_document_ids = retrieve_relevant_documents(question)
     response = query_gpt_4t_with_context(question, relevant_document_ids)
     return response
-
-question1 = "Do we support payment matching in our solution? and if the payment is not matched do we already have a way to notify the client that they have a delayed payment?"
-
-"""# add_space()
-# print("#"*100 + "\nSpace retrieval and indexing complete\n" + "#"*100)
-print("Question 1: " + question1)
-answer = answer_question(question1)
-# print("Answer: " + answer)
-print(answer)
-print("#"*100 + "\nQuestion 1 answered\n" + "#"*100)
-"""
 
 
 def main_menu():
