@@ -1,7 +1,7 @@
 # ./slack/channel_reaction.py
 from persistqueue import Queue
 import os
-from database.confluence_database import get_page_data_by_ids
+from database.nur_database import get_page_data_by_ids
 from configuration import persist_page_vector_queue_path
 from vector.chroma import vectorize_documents
 from confluence_integration.retrieve_space import choose_space

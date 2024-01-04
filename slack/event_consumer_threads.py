@@ -7,7 +7,7 @@ from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
 from vector.chroma_threads import retrieve_relevant_documents
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
-from database.confluence_database import QAInteractionManager, Session, SlackMessageDeduplication
+from database.nur_database import QAInteractionManager, Session, SlackMessageDeduplication
 from threads.dynamic_executor import DynamicExecutor
 
 print("imports completed successfully")

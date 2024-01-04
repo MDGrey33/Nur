@@ -3,8 +3,8 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from credentials import oai_api_key
 from configuration import vector_folder_path
-from database.confluence_database import get_page_data_from_db
-from database.confluence_database import update_embed_date
+from database.nur_database import get_page_data_from_db
+from database.nur_database import update_embed_date
 
 
 def vectorize_documents(all_documents, page_ids):

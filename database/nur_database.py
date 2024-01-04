@@ -1,4 +1,4 @@
-# ./database/confluence_database.py
+# ./database/nur_database.py
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean
 from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import
 from datetime import datetime
@@ -68,8 +68,8 @@ class QAInteractions(Base):
     channel_id = Column(String)
     question_timestamp = Column(DateTime)
     answer_timestamp = Column(DateTime)
-    comments = Column(Text)  # Store as serialized JSON
-
+    comments = Column(Text)
+    updated_at = Column(DateTime, default=datetime.now)
 
 class SlackMessageDeduplication(Base):
     """
@@ -97,7 +97,8 @@ class QAInteractionManager:
             channel_id=channel_id,
             question_timestamp=question_ts,
             answer_timestamp=answer_ts,
-            comments=json.dumps([])  # Initialize an empty list of comments
+            comments=json.dumps([]),  # Initialize an empty list of comments
+            updated_at=datetime.now()
         )
         self.session.add(interaction)
         self.session.commit()
@@ -108,6 +109,7 @@ class QAInteractionManager:
             comments = json.loads(interaction.comments) if interaction.comments else []
             comments.append(comment)
             interaction.comments = json.dumps(comments)
+            interaction.updated_at = datetime.now()
             self.session.commit()
 
     def get_interaction_by_thread_id(self, thread_id):
