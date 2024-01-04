@@ -1,5 +1,5 @@
 from confluence_integration.confluence_client import ConfluenceClient
-from database.confluence_database import QAInteractionManager, Session
+from database.nur_database import QAInteractionManager, Session
 import json
 
 
