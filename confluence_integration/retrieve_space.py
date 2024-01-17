@@ -8,6 +8,8 @@ from database.nur_database import mark_page_as_processed
 from persistqueue import Queue
 from configuration import persist_page_processing_queue_path
 from confluence_integration.confluence_client import ConfluenceClient
+import requests
+import logging
 
 # Initialize Confluence API
 confluence = Confluence(
@@ -91,10 +93,13 @@ def get_all_comment_ids_recursive(page_id):
     def get_child_comment_ids_recursively(comment_id):
         # Inner function to recursively get child comment IDs
         child_comment_ids = []  # Use a separate list to accumulate child comment IDs
-        immediate_child_ids = get_child_ids(comment_id, content_type='comment')
-        for child_id in immediate_child_ids:
-            child_comment_ids.append(child_id)
-            child_comment_ids.extend(get_child_comment_ids_recursively(child_id))
+        try:
+            immediate_child_ids = get_child_ids(comment_id, content_type='comment')
+            for child_id in immediate_child_ids:
+                child_comment_ids.append(child_id)
+                child_comment_ids.extend(get_child_comment_ids_recursively(child_id))
+        except requests.exceptions.HTTPError as e:
+            logging.error(f"Error retrieving child comments for comment ID {comment_id}: {e}")
         return child_comment_ids
 
     all_comment_ids = []
@@ -186,10 +191,14 @@ def get_comment_content(comment_id):
     Returns:
     str: The content of the comment.
     """
-    comment = confluence.get_page_by_id(comment_id, expand='body.storage')
-    comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
-    comment_text = strip_html_tags(comment_content)
-    return comment_text
+    try:
+        comment = confluence.get_page_by_id(comment_id, expand='body.storage')
+        comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
+        comment_text = strip_html_tags(comment_content)
+        return comment_text
+    except Exception as e:
+        logging.error(f"Error retrieving content for comment ID {comment_id}: {e}")
+        return ""  # Return empty string if an error occurs
 
 
 def process_page(page_id, space_key, file_manager, page_content_map):
