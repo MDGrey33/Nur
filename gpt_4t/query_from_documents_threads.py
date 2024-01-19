@@ -28,10 +28,10 @@ def get_response_from_gpt_4t(question, context):
             },
             {
                 "role": "user",
-                "content": f"You will answer the following question with a summary, then provide a comprehensive answer, then provide the references aliasing them as Technical trace: including strictly as extracted from original documents Space key, Page ID and Page title \nquestion: {question}\npages:{context}"
+                "content": f"You will answer the following question with a summary, then provide a comprehensive answer, then provide the references aliasing them as Technical trace: Include Page Title as it comes from the original document \nquestion: {question}\npages:{context}"
             }
         ],
-        temperature=0.5,
+        temperature=0,
         max_tokens=4095,
         top_p=1,
         frequency_penalty=0,
