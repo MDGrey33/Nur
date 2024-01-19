@@ -23,4 +23,5 @@ persist_qna_document_queue_path = os.path.join(project_path, "content", "transac
 
 
 # Slack Bot User ID
-bot_user_id = "U069C17DCE5"
+bot_user_id_J8 = "U069C17DCE5"
+bot_user_id = "E01HSMSV622"
