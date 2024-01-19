@@ -1,7 +1,5 @@
 # ./slack/event_consumer_threads.py
-import logging
 from datetime import datetime
-import time
 from slack.event_publisher import EventPublisher
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
@@ -9,6 +7,7 @@ from vector.chroma_threads import retrieve_relevant_documents
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from database.nur_database import QAInteractionManager, Session, SlackMessageDeduplication
 from threads.dynamic_executor import DynamicExecutor
+from gpt_4t.query_from_documents_threads import format_pages_as_context
 
 print("imports completed successfully")
 
@@ -64,7 +63,8 @@ class EventConsumer:
 
         # Retrieve relevant document IDs (context) synchronously as it's fast
         relevant_document_ids = retrieve_relevant_documents(question_event["text"])
-        context = ','.join(relevant_document_ids)  # Adjust this if needed to match the expected format
+        context = format_pages_as_context(relevant_document_ids)
+
 
         # Generate the response using the dynamic executor
         self.executor.add_task(question_event["text"], context)

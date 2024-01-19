@@ -1,4 +1,4 @@
-# ./oai_assistants/query_gpt_4t_from_documents_threads.py
+# ./gpt_4t/query_from_documents_threads.py
 from openai import OpenAI
 from credentials import oai_api_key
 
