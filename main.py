@@ -1,5 +1,5 @@
 from confluence_integration.retrieve_space import get_space_content
-from vector.chroma_threads import retrieve_relevant_documents, add_to_vector
+from vector.chroma_threads import retrieve_relevant_documents, add_to_vector, retrieve_relevant_documents_with_proximity
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from slack.channel_interaction_threads import load_slack_bot_parallel
@@ -26,6 +26,12 @@ def answer_question_with_gpt_4t(question):
     return response
 
 
+def answer_question_with_gpt_4t_10(question):
+    relevant_document_ids = retrieve_relevant_documents_with_proximity(question)
+    response = query_gpt_4t_with_context(question, relevant_document_ids)
+    return response
+
+
 def main_menu():
     while True:
         print("\nMain Menu:")
@@ -34,8 +40,9 @@ def main_menu():
         print("3. Ask a question to Existing Documentation with GPT-4T")
         print("4. Start Slack Bot")
         print("5. Sync up QA articles to Confluence")
+        print("6. Ask a question to Existing Documentation with GPT-4T")
         print("0. Cancel/Quit")
-        choice = input("Enter your choice (0-3): ")
+        choice = input("Enter your choice (0-6): ")
 
         if choice == "1":
             space_key = get_space_content()
@@ -59,11 +66,16 @@ def main_menu():
         elif choice == "5":
             print("Syncing up QA articles to Confluence...")
             sync_up_interactions_to_confluence()
+        elif choice == "6":
+            question = ask_question()
+            if question:
+                answer = answer_question_with_gpt_4t_10(question)
+                print("\nAnswer:", answer)
         elif choice == "0":
             print("Exiting program.")
             break
         else:
-            print("Invalid choice. Please enter 0, 1, 2, or 3.")
+            print("Invalid choice. Please enter 0, 1, 2, 3, 4, 5 or 6.")
 
 
 def ask_question():

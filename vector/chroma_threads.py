@@ -117,8 +117,9 @@ def retrieve_relevant_documents_with_proximity(question, max_proximity=0.5, max_
                 "proximity_value": score
             }
             filtered_results.append(result)
-
-    return filtered_results
+    # extract a list of the document ids from filtered_results
+    document_ids = [doc.get('page_id') for doc in filtered_results if doc]
+    return document_ids
 
 
 
