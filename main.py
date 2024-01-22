@@ -36,11 +36,11 @@ def main_menu():
     while True:
         print("\nMain Menu:")
         print("1. Load New Documentation Space")
-        print("2. Ask a Question to Existing Documentation with Assistant")
-        print("3. Ask a question to Existing Documentation with GPT-4T")
+        print("2. Ask a Question to GPT-dT Assistant")
+        print("3. Ask a question to GPT-4T")
         print("4. Start Slack Bot")
         print("5. Sync up QA articles to Confluence")
-        print("6. Ask a question to Existing Documentation with GPT-4T")
+        print("6. Ask a Question with Extended Context to GPT-4T")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
