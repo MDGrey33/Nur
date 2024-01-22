@@ -40,7 +40,7 @@ def main_menu():
         print("3. Ask a question to GPT-4T")
         print("4. Start Slack Bot")
         print("5. Sync up QA articles to Confluence")
-        print("6. Ask a Question with Extended Context to GPT-4T")
+        print("6. Ask a Question with proximity to GPT-4T")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
