@@ -12,7 +12,7 @@ from configuration import bot_user_id
 from slack.event_publisher import EventPublisher
 from slack.event_consumer_threads import consume_events
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 print("imports completed successfully")
 # Initialize EventPublisher instance
 event_publisher = EventPublisher()
