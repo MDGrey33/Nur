@@ -43,18 +43,28 @@ def get_response_from_gpt_4t(question, context):
 
 def format_pages_as_context(file_ids):
     """
-    Adds specified files to the question's context for referencing in responses.
+    Adds specified files to the question's context for referencing in responses,
+    including the document title and space key.
 
     Args:
     file_ids (list of str): List of file IDs to be added to the assistant.
+
+    Returns:
+    str: The formatted context.
     """
     context = ""
     for file_id in file_ids:
         chosen_file_path = f"/Users/roland/code/Nur/content/file_system/{file_id}.txt"
-        # Open file and append file to context
+        # Open file and extract title and space key
         with open(chosen_file_path, 'r') as file:
-            context += file.read()
-        print(f"File {file_id} appended to context successfully")
+            file_content = file.read()
+            title = file_content.split('title: ')[1].split('\n')[0].strip()
+            space_key = file_content.split('spaceKey: ')[1].split('\n')[0].strip()
+
+            context += f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n"
+            context += file_content
+
+        print(f"File {file_id} (Title: {title}, Space Key: {space_key}) appended to context successfully")
 
     return context
 
