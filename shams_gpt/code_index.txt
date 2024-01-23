@@ -1,0 +1,116 @@
+Below is a comprehensive and detailed list of the documents related to the 'Nur' project, including all their capabilities and dependencies, without resorting to generalized 'etc.' descriptions. Here's the exhaustive list:
+
+main.py
+
+Capabilities:
+Orchestrates overall functionality, integrating various modules.
+Manages Confluence integration, vector operations, query handling, and Slack bot interactions.
+Dependencies:
+Modules: confluence_integration.retrieve_space, vector.chroma_threads, oai_assistants.query_assistant_from_documents, gpt_4t.query_from_documents_threads, slack.channel_interaction_threads, confluence_integration.extract_page_content_and_store_processor.
+
+
+vectorize_and_persist_processor.py
+
+Capabilities:
+Processes and vectorizes data for storage.
+Dependencies:
+Python libraries: numpy, sqlalchemy.
+
+
+extract_page_content_and_store_processor.py
+
+Capabilities:
+Extracts and processes content from web pages.
+Dependencies:
+Libraries: beautifulsoup4, requests.
+
+
+confluence_client.py
+
+Capabilities:
+Handles API interactions with Confluence.
+Dependencies:
+Libraries: requests, beautifulsoup4.
+requirements.txt
+
+Capabilities:
+Specifies all Python dependencies for the project.
+Dependencies:
+Libraries: openai, requests, schedule, sqlalchemy, beautifulsoup4, chromadb, langchain, tiktoken, prettytable, slack_sdk, numpy, deprecated.
+
+
+channel_interaction_threads.py
+
+Capabilities:
+Manages threaded interactions within communication channels, specifically with Slack.
+Dependencies:
+Libraries: slack_sdk, Python threading capabilities.
+
+
+event_publisher.py
+
+Capabilities:
+Publishes events across the system.
+Dependencies:
+Event handling and messaging related libraries (specific libraries not specified in the provided information).
+
+
+nur_database.py
+
+Capabilities:
+Handles database operations and interactions.
+Dependencies:
+Database handling libraries, primarily sqlalchemy.
+
+
+sync_up_qa_articles_to_confluence.py
+
+Capabilities:
+Syncs QA articles with Confluence.
+Dependencies:
+Libraries: requests, possibly Confluence API related libraries.
+
+
+retrieve_space.py
+
+Capabilities:
+Retrieves and processes data from specified spaces (likely in Confluence).
+Dependencies:
+Libraries: beautifulsoup4, requests.
+event_consumer_threads.py
+
+Capabilities:
+Manages event consumption in a multi-threaded environment.
+Dependencies:
+Libraries and tools for handling threading and event processing.
+
+
+query_from_documents_threads.py
+
+Capabilities:
+Handles document-based queries using threading.
+Dependencies:
+Document processing and multi-threading related libraries.
+
+
+dynamic_executor.py
+
+Capabilities:
+Dynamically executes tasks based on predefined triggers or conditions.
+Dependencies:
+Task scheduling and execution libraries (specific libraries not specified in the provided information).
+
+
+chroma_threads.py
+
+Capabilities:
+Manages threads for operations involving 'Chroma', likely related to data processing or visualization.
+Dependencies:
+Libraries: chromadb, threading tools in Python.
+
+
+README.md
+
+Capabilities:
+Provides comprehensive documentation and overview of the project.
+This list represents a thorough indexing of each component within the 'Nur' project, detailing their specific roles and the technologies they depend upon. It's a useful reference for understanding the project's architecture and for navigating its various parts.
