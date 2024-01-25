@@ -1,37 +1,9 @@
 # ./oai_assistants/query_assistant_from_documents.py
-from oai_assistants.openai_assistant import create_assistant
 from oai_assistants.utility import initiate_client
 from oai_assistants.file_manager import FileManager
 from oai_assistants.thread_manager import ThreadManager
 from oai_assistants.assistant_manager import AssistantManager
-
-
-def create_new_assistant():
-    """
-    Creates and initializes a new assistant with predefined parameters.
-
-    Returns:
-    Assistant: An instance of the newly created assistant.
-    """
-    client = initiate_client()
-
-    new_assistant = {
-        "model": "gpt-4-1106-preview",
-        "name": "Shams",
-        "instructions": """You are the Q&A Assistant, 
-        you know everything about the uploaded files
-        and you review them and answer primarily from their content
-        if you ever answer from outside the files, you will be penalized
-        if you use your knowledge to explain some information from outside the file, you will clearly state that.
-        """,
-        "tools": [{"type": "code_interpreter"}, {"type": "retrieval"}],
-        "description": "The ultimate librarian",
-        "file_ids": []
-    }
-    # Create the assistant and print its details
-    assistant = create_assistant(client, new_assistant)
-    print(assistant)
-    return assistant
+from configuration import assistant_id
 
 
 def add_files_to_assistant(assistant, file_ids):
@@ -56,19 +28,24 @@ def add_files_to_assistant(assistant, file_ids):
         print(f"File {chosen_file_path} added to assistant {assistant.id}")
 
 
-def query_assistant_with_context(question, page_ids):
+def query_assistant_with_context(question, page_ids, thread_id=None):
     """
     Queries the assistant with a specific question, after setting up the necessary context by adding relevant files.
 
     Args:
     question (str): The question to be asked.
     page_ids (list): A list of page IDs representing the files to be added to the assistant's context.
+    thread_id (str, optional): The ID of an existing thread to continue the conversation. Default is None.
 
     Returns:
     list: A list of messages, including the assistant's response to the question.
     """
-    # Create a new assistant instance
-    assistant = create_new_assistant()
+
+    # Initiate the client
+    client = initiate_client()
+    assistant_manager = AssistantManager(client)
+    # Create or retrieve the assistant instance
+    assistant = assistant_manager.load_assistant(assistant_id=assistant_id)
 
     # Ensure page_ids is a list
     if not isinstance(page_ids, list):
@@ -77,17 +54,21 @@ def query_assistant_with_context(question, page_ids):
     # Add relevant files to the assistant
     add_files_to_assistant(assistant, page_ids)
 
+    # Initialize ThreadManager with or without an existing thread_id
+    thread_manager = ThreadManager(client, assistant.id, thread_id)
+
+    # If no thread_id was provided, create a new thread
+    if thread_id is None:
+        thread_manager.create_thread()
+
     # Format the question and query the assistant
-    client = initiate_client()
-    thread_manager = ThreadManager(client, assistant.id)
-    thread_manager.create_thread()
     formatted_question = (f"You will answer the following question with a summary, then provide a comprehensive answer, "
                           f"then provide the references aliasing them as Technical trace: {question}")
-    messages = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
-    return messages
+    messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
+    return messages, thread_id
 
 
 if __name__ == "__main__":
     query_assistant_with_context("Do we support payment matching in our solution? and if the payment is not matched "
                                  "do we already have a way to notify the client that they have a delayed payment?",
-                                 ["458841", "491570"])
+                                 [])

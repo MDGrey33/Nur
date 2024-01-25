@@ -16,8 +16,8 @@ def add_space():
 
 def answer_question_with_assistant(question):
     relevant_document_ids = retrieve_relevant_documents(question)
-    response = query_assistant_with_context(question, relevant_document_ids)
-    return response
+    response, thread_id = query_assistant_with_context(question, relevant_document_ids)
+    return response, thread_id
 
 
 def answer_question_with_gpt_4t(question):
@@ -52,8 +52,8 @@ def main_menu():
         elif choice == "2":
             question = ask_question()
             if question:
-                answer = answer_question_with_assistant(question)
-                print("\nAnswer:", answer)
+                answer, thread_id = answer_question_with_assistant(question)
+                print(f"\nThread ID: {thread_id}\nAnswer: {answer}")
         elif choice == "3":
             question = ask_question()
             if question:

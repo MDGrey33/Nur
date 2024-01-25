@@ -13,29 +13,31 @@ class ThreadManager:
     Attributes:
     client (OpenAI_Client): An instance of the client used for handling thread operations.
     """
-    def __init__(self, client, assistant_id):
+    def __init__(self, client, assistant_id, thread_id=None):
         """
         Initializes the ThreadManager with a client to manage threads.
 
         Parameters:
         client (OpenAI_Client): The client object used for thread operations.
+        assistant_id (str): The ID of the assistant associated with this thread manager.
+        thread_id (str, optional): The identifier of an existing thread to be managed. Default is None.
         """
         self.client = client
         self.assistant_id = assistant_id
-        self.thread_id = None
+        self.thread_id = thread_id
 
     def create_thread(self):
         """
-        Creates a new thread with the specified thread ID.
-
-        Parameters:
-        thread_id (str): The identifier for the new thread.
+        Creates a new thread and sets its ID to the thread_id attribute.
 
         Returns:
         None
         """
-        thread = self.client.beta.threads.create()
-        self.thread_id = thread.id
+        if self.thread_id is None:
+            thread = self.client.beta.threads.create()
+            self.thread_id = thread.id
+        else:
+            print("Thread already initialized with ID:", self.thread_id)
 
     def add_message_and_wait_for_reply(self, user_message, message_files):
         """
@@ -73,7 +75,7 @@ class ThreadManager:
         # Retrieve and display the messages
         messages = self.retrieve_messages()
         self.display_messages(messages)
-        return messages
+        return messages, self.thread_id
 
     def check_run_status(self, run_id):
         """
