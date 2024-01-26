@@ -1,8 +1,7 @@
 # ./gpt_4t/query_from_documents_threads.py
 from openai import OpenAI
 from credentials import oai_api_key
-
-
+from configuration import file_system_path
 
 
 client = OpenAI(api_key=oai_api_key)
@@ -54,7 +53,8 @@ def format_pages_as_context(file_ids):
     """
     context = ""
     for file_id in file_ids:
-        chosen_file_path = f"/Users/roland/code/Nur/content/file_system/{file_id}.txt"
+        # replace the path till file_system with the variable file_system_path
+        chosen_file_path = file_system_path + f"/{file_id}.txt"
         # Open file and extract title and space key
         with open(chosen_file_path, 'r') as file:
             file_content = file.read()
