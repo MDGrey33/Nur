@@ -94,7 +94,8 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
 
     # Format the question with context and query the assistant
     formatted_question = (f"You will answer the following question with a summary, then provide a comprehensive answer, "
-                          f"then provide the references aliasing them as Technical trace:\n\n{question}\n\nContext:\n{context}")
+                          f"then provide the references aliasing them as Technical trace. "
+                          f"if the message is not a question reply politely and professionally. User Question or Feedback:\n\n{question}\n\nContext:\n{context}")
     messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
     return messages, thread_id
 
