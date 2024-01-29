@@ -18,6 +18,7 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Make a module that use assistants in the slack channel
   - link slack time stamp to thread id coming from the response in a database table.
   - When receiving a feedback match the slack timestamp to the thread ID and try to add a message to the thread instead of making a new one.
+- Identify bot ID on bot start instead of storing it in configuration file
 - setup last update date and schedule to update confluence space with log in db
 - store embeds in database
 - create new vector database nightly and on trigger from sql database
