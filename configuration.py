@@ -1,8 +1,5 @@
 # /Users/roland/code/Nur/configuration.py
 import os
-from credentials import slack_bot_user_oauth_token
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
 
 
 project_path = "/Users/roland/code/Nur"
@@ -25,18 +22,7 @@ persist_feedback_queue_path = os.path.join(project_path, "content", "transaction
 # queue for qna documents
 persist_qna_document_queue_path = os.path.join(project_path, "content", "transactional", "qna_document_queue")
 
-# get slack bot user id
 
-# Initialize WebClient with your bot's token
-slack_client = WebClient(token=slack_bot_user_oauth_token)
-
-try:
-    # Call the auth.test method using the Slack client
-    response = slack_client.auth_test()
-    bot_user_id = response["user_id"]
-    print(f"Bot User ID: {bot_user_id}")
-except SlackApiError as e:
-    print(f"Error fetching bot user ID: {e.response['error']}")
 
 
 assistant_id = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
