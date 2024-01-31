@@ -134,6 +134,9 @@ class QAInteractionManager:
         """
         return self.session.query(QAInteractions).all()
 
+    def get_all_interactions(self):
+        return self.session.query(QAInteractions).all()
+
 
 def store_space_data(space_data):
     """

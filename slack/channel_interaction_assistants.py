@@ -11,6 +11,7 @@ from slack.event_publisher import EventPublisher
 from slack.event_consumer_assistants import consume_events
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from database.nur_database_assistants import Session, QAInteractionManager
 
 
 # get slack bot user id
@@ -43,8 +44,21 @@ class SlackEventHandler(ABC):
 
 
 class ChannelMessageHandler(SlackEventHandler):
-    processed_messages = set()  # Tracks all processed message ts
-    questions = {}  # Maps 'ts' of a question to its text
+    def __init__(self):
+        self.db_session = Session()
+        self.interaction_manager = QAInteractionManager(self.db_session)
+        self.processed_messages = set()
+        self.questions = {}
+        self.load_processed_data()
+
+    def load_processed_data(self):
+        interactions = self.interaction_manager.get_all_interactions()
+        for interaction in interactions:
+            # Add to processed messages
+            self.processed_messages.add(interaction.thread_id)
+            # If it's a question, add to questions
+            if interaction.question_text:
+                self.questions[interaction.thread_id] = interaction.question_text
 
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
         # Acknowledge the event immediately
