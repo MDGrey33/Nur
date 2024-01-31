@@ -4,12 +4,9 @@ from slack.event_publisher import EventPublisher
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
 from vector.chroma_threads import retrieve_relevant_documents
-from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from database.nur_database import QAInteractionManager, Session, SlackMessageDeduplication
 from threads.dynamic_executor import DynamicExecutor
 from gpt_4t.query_from_documents_threads import format_pages_as_context
-
-print("imports completed successfully")
 
 
 class EventConsumer:
@@ -37,11 +34,6 @@ class EventConsumer:
         )
         self.db_session.add(dedup_record)
         self.db_session.commit()
-
-    def generate_response(self, question):
-        relevant_document_ids = retrieve_relevant_documents(question)
-        response_text = query_gpt_4t_with_context(question, relevant_document_ids)
-        return response_text
 
     def add_question_and_response_to_database(self, question_event, response_text):
         self.interaction_manager.add_question_and_answer(
