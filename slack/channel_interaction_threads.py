@@ -15,10 +15,10 @@ from slack_sdk.errors import SlackApiError
 
 # get slack bot user id
 def get_bot_user_id(bot_oauth_token):
-    '''Get the bot user id from the slack api'''
+    """Get the bot user id from the slack api"""
     # Initialize WebClient with your bot's token
     slack_client = WebClient(token=bot_oauth_token)
-
+    bot_id = "unassigned"
     try:
         # Call the auth.test method using the Slack client
         response = slack_client.auth_test()
@@ -92,7 +92,6 @@ class ChannelMessageHandler(SlackEventHandler):
             event_publisher.publish_new_question(question_event)
             print(f"Question published: {question_event}")
 
-
         # Identify and handle feedback
         elif thread_ts in self.questions:  # Message is a reply to a question
             parent_question = self.questions[thread_ts]
@@ -118,7 +117,7 @@ class ChannelMessageHandler(SlackEventHandler):
 
     def is_valid_message(self, event):
         """ Check if the event is a valid user message """
-        return event.get("type") == "message" and "subtype" not in event
+        return "subtype" not in event and (event.get("type") == "message" or event.get("type") == "app_mention")
 
     def determine_skip_reason(self, event, ts, text, thread_ts, user_id, bot_user_id):
         """ Determine the specific reason a message is being skipped """
