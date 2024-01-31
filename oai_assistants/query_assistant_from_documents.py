@@ -96,8 +96,12 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
         f"then provide the references aliasing them as Technical trace. "
         f"if the message is not a question reply politely and professionally. User Question or Feedback:\n\n{question}\n\nContext:\n{context}")
     messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
-    return messages, thread_id
+    if messages and messages.data:
+        assistant_response = messages.data[0].content[0].text.value
+    else:
+        assistant_response = "No response received."
 
+    return assistant_response, thread_id
 
 if __name__ == "__main__":
     # First query - introduce a piece of information

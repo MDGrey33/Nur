@@ -1,19 +1,37 @@
-# ./slack/channel_interaction_threads.py
+# ./slack/channel_interaction_assistants.py
 import logging
 import time
 from abc import ABC, abstractmethod
-from slack_sdk import WebClient
 from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
-from configuration import bot_user_id
 from slack.event_publisher import EventPublisher
-from slack.event_consumer_threads import consume_events
+from slack.event_consumer_assistants import consume_events
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-print("imports completed successfully")
+
+# get slack bot user id
+def get_bot_user_id(bot_oauth_token):
+    """Get the bot user id from the slack api"""
+    # Initialize WebClient with your bot's token
+    slack_client = WebClient(token=bot_oauth_token)
+    bot_id = "unassigned"
+    try:
+        # Call the auth.test method using the Slack client
+        response = slack_client.auth_test()
+        bot_id = response["user_id"]
+        print(f"Bot User ID: {bot_id}")
+    except SlackApiError as e:
+        print(f"Error fetching bot user ID: {e.response['error']}")
+    return bot_id
+
+
+bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
+
+
 # Initialize EventPublisher instance
 event_publisher = EventPublisher()
 
@@ -73,7 +91,6 @@ class ChannelMessageHandler(SlackEventHandler):
             event_publisher.publish_new_question(question_event)
             print(f"Question published: {question_event}")
 
-
         # Identify and handle feedback
         elif thread_ts in self.questions:  # Message is a reply to a question
             parent_question = self.questions[thread_ts]
@@ -99,7 +116,7 @@ class ChannelMessageHandler(SlackEventHandler):
 
     def is_valid_message(self, event):
         """ Check if the event is a valid user message """
-        return event.get("type") == "message" and "subtype" not in event
+        return "subtype" not in event and (event.get("type") == "message" or event.get("type") == "app_mention")
 
     def determine_skip_reason(self, event, ts, text, thread_ts, user_id, bot_user_id):
         """ Determine the specific reason a message is being skipped """
