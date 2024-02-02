@@ -11,3 +11,5 @@ slack_sdk
 numpy
 deprecated
 persistqueue
+
+simpleaichat

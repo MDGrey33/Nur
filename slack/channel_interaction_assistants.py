@@ -24,9 +24,9 @@ def get_bot_user_id(bot_oauth_token):
         # Call the auth.test method using the Slack client
         response = slack_client.auth_test()
         bot_id = response["user_id"]
-        print(f"Bot User ID: {bot_id}")
+        print(f"\n\nBot User ID: {bot_id}\n\n")
     except SlackApiError as e:
-        print(f"Error fetching bot user ID: {e.response['error']}")
+        print(f"\n\nError fetching bot user ID: {e.response['error']}\n\n")
     return bot_id
 
 
@@ -76,7 +76,7 @@ class ChannelMessageHandler(SlackEventHandler):
         # Skip processing if the message has already been processed
         if ts in self.processed_messages:
             logging.info(f"Message {ts} already processed. Skipping.")
-            print(f"Message {ts} already processed. Skipping.")
+            print(f"Message {ts} already processed. Skipping.\n")
             return
 
         # Update the processed_messages set with the 'ts'
@@ -123,10 +123,10 @@ class ChannelMessageHandler(SlackEventHandler):
 
         # Skip all other messages
         else:
-            print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
+            print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}\n")
 
-        print(f"Current Questions: {self.questions}")
-        print(f"Processed Messages: {self.processed_messages}")
+        print(f"Current Questions: {self.questions}\n\n")
+        print(f"Processed Messages: {self.processed_messages}\n\n")
 
     def is_valid_message(self, event):
         """ Check if the event is a valid user message """

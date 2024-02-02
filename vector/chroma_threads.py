@@ -71,7 +71,7 @@ def retrieve_relevant_documents(question):
     query_embedding = embedding.embed_query(question)
 
     # Perform a similarity search in the vectorstore
-    similar_documents = vectordb.similarity_search_by_vector(query_embedding, k=10)
+    similar_documents = vectordb.similarity_search_by_vector(query_embedding, k=15)
 
     # Process and return the results along with their metadata
     results = []
