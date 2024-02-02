@@ -17,7 +17,7 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Dockerize the Solution
 - Make a module that use assistants in the slack channel 
   - Assistants can now answer feedback question(not tested)
-    - Need to add conversation to context
+    - Need to add conversation to context extraction
     - Need to test and debug exiting slack loop
     - Need to test and debug database error (lock might be needed)
 - Identify bot ID on bot start instead of storing it in configuration file
