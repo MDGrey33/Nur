@@ -17,11 +17,10 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Dockerize the Solution
 - Make a module that use assistants in the slack channel 
   - Assistants can now answer feedback question(not tested)
-    - Need to add conversation to context extraction
     - Need to test and debug exiting slack loop
-    - Need to test and debug database error (lock might be needed)
-- Identify bot ID on bot start instead of storing it in configuration file
-- setup last update date and schedule to update confluence space with log in db
+    - Need to add database lock to avoid corrupting the database file
+- Space management
+  - setup last update date and schedule to update confluence space with log in db
 - store embeds in database
 - create new vector database nightly and on trigger from sql database
 - add questions, answers and reactions (- enable confluence edit or new page recommendation)
