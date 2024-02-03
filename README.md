@@ -23,6 +23,7 @@ The self actualizing documentation framework that heals its knowledge gaps as na
   - setup last update date and schedule to update confluence space with log in db
 - store embeds in database
 - create new vector database nightly and on trigger from sql database
+- parallelize open ai requests
 - add questions, answers and reactions (- enable confluence edit or new page recommendation)
 - add credibility rating to database 
 - trivia question collector 
