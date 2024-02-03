@@ -45,9 +45,7 @@ Run setup script inside setup package.
 ## Usage
 1. Add openai api key to credentials
 2. Add confluence credentials to ./credentials
-3. Add project absolute path to ./confiduration
-4. To listen to slack create slack app and add bot_user_id to ./configuration
-5. Run with python the module ./confluence_integration/retrieve_confluence_space.py
-6. Run with python the module ./vector/chrome
-7. Run with pythin the modul ./slack/channel_reaction.py
+3. Add project absolute path to ./configuration
+4. To listen to slack create slack app and add the credentials in ./credentials
+5. Run with python the module main.py clone a space and run the slack bot
 8. Go to slack, channel test and ask a question and the bot will reply
