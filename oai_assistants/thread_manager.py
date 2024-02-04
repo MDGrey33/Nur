@@ -66,12 +66,12 @@ class ThreadManager:
             thread_id=self.thread_id,
             assistant_id=self.assistant_id,
         )
-        print("\nAssistant requested to process the message.")
+        print("\nAssistant thread run started.")
 
         # Wait for a response from the assistant
         run_status = self.check_run_status(run.id)
         while run_status.status != "completed":
-            print("Waiting for assistant...")
+            print("Checking run status")
             time.sleep(20)
             run_status = self.check_run_status(run.id)
             print(f"Run status: {run_status.status}")
@@ -121,20 +121,8 @@ class ThreadManager:
         Returns:
         None
         """
-        messages_dict = self.get_messages_dict(messages)
-        self.print_messages_dict(messages_dict)
-
-    def display_messages_old(self, messages):
-        """
-        Displays the messages from a thread.
-
-        Parameters:
-        messages (list): A list of messages to be displayed.
-
-        Returns:
-        None
-        """
         for message in messages.data:
             if message.role == "assistant":
                 print(f"Assistant: {message.content[0].text.value}")
+
         print("\nMessages displayed.{message.content[0].text.value}")
