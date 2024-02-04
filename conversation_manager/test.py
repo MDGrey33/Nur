@@ -4,7 +4,7 @@ from uuid import uuid4  # For generating a unique session ID
 
 # Ensure your OpenAI API key is stored securely,
 # Note: Hardcoding API keys in your code is not recommended for production environments.
-api_key = "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"
+api_key = ""
 
 # Ask for a session ID or generate a new one
 session_id = input("Enter a session ID to continue a conversation, or press Enter to start a new one: ").strip()
