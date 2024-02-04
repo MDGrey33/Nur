@@ -1,10 +1,12 @@
 import os
 from simpleaichat import AIChat
 from uuid import uuid4  # For generating a unique session ID
+from credentials import oai_api_key
+
 
 # Ensure your OpenAI API key is stored securely,
 # Note: Hardcoding API keys in your code is not recommended for production environments.
-api_key = ""
+api_key = oai_api_key
 
 # Ask for a session ID or generate a new one
 session_id = input("Enter a session ID to continue a conversation, or press Enter to start a new one: ").strip()
