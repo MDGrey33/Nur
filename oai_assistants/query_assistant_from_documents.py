@@ -125,6 +125,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
 
     return assistant_response, thread_id
 
+
 if __name__ == "__main__":
     # First query - introduce a piece of information
     initial_question = "My name is Roland, what do you know about my name?"
