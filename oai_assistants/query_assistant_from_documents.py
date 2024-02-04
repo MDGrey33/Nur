@@ -112,6 +112,8 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     # Format the question with context and query the assistant
     formatted_question = (f"Here is the question and the context\n\n{question}\n\nContext:\n{context}")
     print(f"Formatted question: {formatted_question}\n")
+
+    # Query the assistant
     messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
     print(f"The thread_id is: {thread_id}\n Messages received: {messages}\n")
     if messages and messages.data:
