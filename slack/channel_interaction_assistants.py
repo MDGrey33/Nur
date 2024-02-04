@@ -87,7 +87,7 @@ class ChannelMessageHandler(SlackEventHandler):
 
         # Skip if message is invalid or from the bot itself
         if not self.is_valid_message(event) or user_id == bot_user_id:
-            logging.warning(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
+            logging.warning(f"Skipping message with ID {ts} and Parent id {thread_ts} from user {user_id}. Reason: {skip_reason}")
             print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
             return
 
@@ -96,12 +96,13 @@ class ChannelMessageHandler(SlackEventHandler):
             print(f"Question identified: {text}")
             self.questions[ts] = text
             question_event = {
-                "text": text,
-                "ts": ts,
-                "thread_ts": "",
+                "text": text, # Message content
+                "ts": ts, # Message timestamp acting as unique ID in slack
+                "thread_ts": "",    # Knowing it's a question on the main channel, we can set this to empty string
                 "channel": channel,
                 "user": user_id
             }
+            # publish question event to the persist queue
             event_publisher.publish_new_question(question_event)
             print(f"Question published: {question_event}")
 
@@ -110,13 +111,14 @@ class ChannelMessageHandler(SlackEventHandler):
             parent_question = self.questions[thread_ts]
             print(f"Feedback identified for question '{parent_question}': {text}")
             feedback_event = {
-                "text": text,
-                "ts": ts,
-                "thread_ts": thread_ts,
+                "text": text, # Message content
+                "ts": ts, # Message timestamp acting as unique ID in slack
+                "thread_ts": thread_ts, # Parent message timestamp used to link feedback to question
                 "channel": channel,
                 "user": user_id,
                 "parent_question": parent_question
             }
+            # publish feedback event to the persist queue
             event_publisher.publish_new_feedback(feedback_event)
             print(f"Feedback published: {feedback_event}, ")
 
