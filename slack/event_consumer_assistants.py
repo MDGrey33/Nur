@@ -133,8 +133,15 @@ class EventConsumer:
     def consume_feedback(self):
         while not self.publisher.feedback_queue.empty():
             feedback_event = self.publisher.feedback_queue.get()
-            print(f"Processing feedback event: {feedback_event}\n")
-            self.process_feedback(feedback_event)
+            channel_id = feedback_event["channel"]
+            message_ts = feedback_event["ts"]
+
+            # Check if the feedback has already been processed
+            if not self.is_message_processed_in_db(channel_id, message_ts):
+                print(f"Processing new feedback event: {feedback_event}\n")
+                self.process_feedback(feedback_event)
+            else:
+                print(f"Skipping already processed feedback: {feedback_event}\n")
             self.publisher.feedback_queue.task_done()
 
 
