@@ -97,13 +97,22 @@ class EventConsumer:
         if assistant_thread_id:
             print(f"Assistant thread ID: {assistant_thread_id}\n")
 
+        # record message as processed in the db
         self.record_message_as_processed_in_db(channel_id, message_ts)
         timestamp_str = datetime.now().isoformat()
 
+        # add feedback to the interaction in the db
+        comment = {"text": feedback_event["text"],
+                   "user": feedback_event["user"],
+                   "timestamp": timestamp_str,
+                   "assistant reposnse": response_text}
         self.interaction_manager.add_comment_to_interaction(
             thread_id=thread_ts,
-            comment={"text": feedback_event["text"], "user": feedback_event["user"], "timestamp": timestamp_str, "assistant reposnse": response_text},
+            comment=comment,
         )
+        # convert comment to string and print it
+        print(f"Feedback appended to the interaction in the database: {comment}\n")
+
         print(f"Feedback appended to the interaction in the database: {feedback_event}\n")
 
         # response_text = self.executor.get_next_result()
