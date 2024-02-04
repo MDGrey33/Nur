@@ -17,13 +17,13 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Dockerize the Solution
 - Make a module that use assistants in the slack channel 
   - Assistants can now answer feedback question(not tested)
-    - Need to add conversation to context extraction
     - Need to test and debug exiting slack loop
-    - Need to test and debug database error (lock might be needed)
-- Identify bot ID on bot start instead of storing it in configuration file
-- setup last update date and schedule to update confluence space with log in db
+    - Need to add database lock to avoid corrupting the database file
+- Space management
+  - setup last update date and schedule to update confluence space with log in db
 - store embeds in database
 - create new vector database nightly and on trigger from sql database
+- parallelize open ai requests
 - add questions, answers and reactions (- enable confluence edit or new page recommendation)
 - add credibility rating to database 
 - trivia question collector 
@@ -45,9 +45,7 @@ Run setup script inside setup package.
 ## Usage
 1. Add openai api key to credentials
 2. Add confluence credentials to ./credentials
-3. Add project absolute path to ./confiduration
-4. To listen to slack create slack app and add bot_user_id to ./configuration
-5. Run with python the module ./confluence_integration/retrieve_confluence_space.py
-6. Run with python the module ./vector/chrome
-7. Run with pythin the modul ./slack/channel_reaction.py
+3. Add project absolute path to ./configuration
+4. To listen to slack create slack app and add the credentials in ./credentials
+5. Run with python the module main.py clone a space and run the slack bot
 8. Go to slack, channel test and ask a question and the bot will reply
