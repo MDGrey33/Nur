@@ -2,10 +2,12 @@ from confluence_integration.retrieve_space import get_space_content
 from vector.chroma_threads import retrieve_relevant_documents, add_to_vector, retrieve_relevant_documents_with_proximity
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
-from slack.channel_interaction_threads import load_slack_bot
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from vector.vectorize_and_persist_processor import process_vectorization_queue
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
+from slack.channel_interaction_threads import load_slack_bot
+from slack.channel_interaction_assistants import load_slack_bot as load_slack_bot_assistant
+
 
 
 def add_space():
@@ -41,6 +43,7 @@ def main_menu():
         print("4. Ask a Question with proximity to GPT-4T")
         print("5. Sync up QA articles to Confluence")
         print("6. Start Slack Bot")
+        print("7. Start Slack Bot Using Assistant")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
@@ -75,6 +78,11 @@ def main_menu():
         elif choice == "6":
             print("Starting Slack Bot...")
             load_slack_bot()
+            print("Slack Bot is running in parallel processing mode.")
+
+        elif choice == "7":
+            print("Starting Slack Bot...")
+            load_slack_bot_assistant()
             print("Slack Bot is running in parallel processing mode.")
 
         elif choice == "0":
