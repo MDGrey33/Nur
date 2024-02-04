@@ -86,47 +86,10 @@ def retrieve_relevant_documents(question):
     return document_ids
 
 
-def retrieve_relevant_documents_with_proximity(question, max_proximity=0.5, max_results=10):
-    """
-    Retrieve the most relevant documents for a given question, filtering them by maximum proximity.
-    :param question: The query text.
-    :param max_proximity: The maximum proximity value for filtering documents.
-    :param max_results: The maximum number of results to return.
-    :return: A list of tuples containing document ids and their proximity values.
-    """
-    # Initialize OpenAI embeddings with the API key
-    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
-
-    # Create the Chroma vectorstore with the embedding function
-    vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
-
-    # Embed the query text using the embedding function
-    query_embedding = embedding.embed_query(question)
-
-    # Perform a similarity search in the vectorstore
-    similar_documents_with_scores = vectordb.similarity_search_by_vector_with_relevance_scores(
-        query_embedding, k=max_results
-    )
-
-    # Process the results, filtering by the maximum proximity value
-    filtered_results = []
-    for doc, score in similar_documents_with_scores:
-        if score <= max_proximity:
-            result = {
-                "page_id": doc.metadata.get('page_id'),
-                "proximity_value": score
-            }
-            filtered_results.append(result)
-    # extract a list of the document ids from filtered_results
-    document_ids = [doc.get('page_id') for doc in filtered_results if doc]
-    return document_ids
-
-
-
 if __name__ == '__main__':
     # vectorized_page_ids = add_to_vector()
     question = "what is the functionality of this solution?"
-    relevant_document_ids = retrieve_relevant_documents_with_proximity(question)
+    relevant_document_ids = retrieve_relevant_documents(question)
     for result in relevant_document_ids:
         print(result)
         print("---------------------------------------------------")
