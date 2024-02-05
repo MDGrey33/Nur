@@ -47,7 +47,7 @@ def format_pages_as_context(file_ids, max_length=30000):
     return documents
 
 
-def get_context(context_query, max_length=10000):
+def get_context(context_query, max_length=30000):
     """
     Retrieves relevant documents based on a context query and formats them for use as context,
     with the entire response structured as a JSON-compatible dictionary.
