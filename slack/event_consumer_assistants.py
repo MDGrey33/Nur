@@ -7,7 +7,7 @@ from vector.chroma_threads import retrieve_relevant_documents
 from database.nur_database_assistants import QAInteractionManager, Session, SlackMessageDeduplication
 from threads.dynamic_executor_assistants import DynamicExecutor
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
-
+# from oai_assistants.query_assistant_rag_tool import query_assistant_with_context
 
 class EventConsumer:
     def __init__(self, publisher: EventPublisher):
