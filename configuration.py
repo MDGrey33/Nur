@@ -26,3 +26,4 @@ persist_qna_document_queue_path = os.path.join(project_path, "content", "transac
 
 
 assistant_id = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
+assistant_id_with_rag = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
