@@ -43,16 +43,6 @@ class ThreadManager:
             print("\nThread already initialized with ID:", self.thread_id)
 
     def add_message_and_wait_for_reply(self, user_message, message_files=[]):
-        """
-        Adds a message to a thread, waits for the reply, and handles any required function calls.
-
-        Parameters:
-        user_message (str): The message from the user to add to the thread.
-        message_files (list): List of file IDs associated with the message (optional).
-
-        Returns:
-        tuple: A list of messages constituting the conversation thread, and the thread ID.
-        """
         # Add the user's message to the thread
         self.client.beta.threads.messages.create(
             thread_id=self.thread_id,
@@ -77,10 +67,25 @@ class ThreadManager:
             if run_status.status == "completed":
                 print("\nAssistant run completed.")
                 break
+            elif run_status.status == "failed":
+                print("\nAssistant run failed.")
+                # If there's a last_error, use it to inform the user
+                if run_status.last_error:
+                    error_message = f"Run failed with error: {run_status.last_error.message}"
+                else:
+                    error_message = "Run failed without a specific error message."
+
+                # Instead of returning None, create and return a custom message indicating failure
+                failure_message = {
+                    "role": "assistant",
+                    "content": [{"text": {"value": error_message}}]
+                }
+                # Here you can decide to log the error, inform the user, or take other actions
+                print(error_message)
+                return [failure_message], self.thread_id
             elif run_status.status == "requires_action":
                 print("\nRun requires action. Handling function calls.")
                 self.handle_function_calls(run.id)
-                # After handling, submit the output and wait for completion
                 print("\nFunction call handled. Continuing to wait for run completion.")
             else:
                 print("Waiting for run to complete...")
@@ -88,6 +93,7 @@ class ThreadManager:
 
         # Retrieve and display the messages after the run completes
         messages = self.retrieve_messages()
+        # If the run was successful, display messages as usual
         self.display_messages(messages)
         return messages, self.thread_id
 
