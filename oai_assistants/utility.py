@@ -60,11 +60,12 @@ def select_file_for_upload(file_path):
 # Sample assistant template used for creating new assistants in the system.
 new_assistant = {
     "model": "gpt-4-1106-preview",
-    "name": "Shams",
+    "name": "Mendil",
     "instructions": """Your role is to serve as a Q&A-based knowledge base assistant.
 Prioritize reviewing and referencing the documents provided as context or conversation history.
 Generate responses exclusively from the information available in the provided context documents previous context documents and conversation history or context you retrieved using the context retrieval tool.
-Refrain from improvisation or sourcing content from external files.
+You can use the retrieval tool multiple times with different queries to satisfy the question.
+Refrain from improvisation or sourcing content from other sources.
 Utilize logical reasoning and deduction based on the conversation history and previous context.
 If you lack an answer from the files and you attempted context retrieval without success, clearly state it and abstain from responding.
 Disclose when using external knowledge to explain information beyond the provided files.
@@ -76,23 +77,26 @@ technical trace: [providing the source of the information]""",
     "file_ids": [],
     "tools": [
         {
-            "name": "get_context",
-            "description": "Retrieve relevant documents based on a context query",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "context_query": {
-                        "type": "string",
-                        "description": "The query to retrieve relevant context for"
+            "type": "function",
+            "function": {
+                "name": "get_context",
+                "description": "Retrieve relevant documents based on a context query",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "context_query": {
+                            "type": "string",
+                            "description": "The query to retrieve relevant context for"
+                        },
+                        "max_length": {
+                            "type": "integer",
+                            "description": "The maximum length of the returned context"
+                        }
                     },
-                    "max_length": {
-                        "type": "integer",
-                        "description": "The maximum length of the returned context"
-                    }
-                },
-                "required": [
-                    "context_query"
-                ]
+                    "required": [
+                        "context_query"
+                    ]
+                }
             }
         }
     ]
