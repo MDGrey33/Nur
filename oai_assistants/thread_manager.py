@@ -1,5 +1,7 @@
 # ./oai_assistants/thread_manager.py
 import time
+import json
+from context.prepare_context import get_context
 
 
 class ThreadManager:
@@ -40,17 +42,16 @@ class ThreadManager:
         else:
             print("\nThread already initialized with ID:", self.thread_id)
 
-    def add_message_and_wait_for_reply(self, user_message, message_files):
+    def add_message_and_wait_for_reply(self, user_message, message_files=[]):
         """
-        Adds a message to a thread and waits for the reply.
+        Adds a message to a thread, waits for the reply, and handles any required function calls.
 
         Parameters:
-        thread_id (str): The ID of the thread to add the message to.
         user_message (str): The message from the user to add to the thread.
-        message_files (list): List of file IDs associated with the message.
+        message_files (list): List of file IDs associated with the message (optional).
 
         Returns:
-        list: A list of messages constituting the conversation thread.
+        tuple: A list of messages constituting the conversation thread, and the thread ID.
         """
         # Add the user's message to the thread
         self.client.beta.threads.messages.create(
@@ -68,16 +69,24 @@ class ThreadManager:
         )
         print("\nAssistant thread run started.")
 
-        # Wait for a response from the assistant
-        run_status = self.check_run_status(run.id)
-        while run_status.status != "completed":
-            print("Checking run status")
-            time.sleep(20)
+        # Continuously check the run status
+        while True:
             run_status = self.check_run_status(run.id)
             print(f"Run status: {run_status.status}")
-        print("\nAssistant run status is [completed].")
 
-        # Retrieve and display the messages
+            if run_status.status == "completed":
+                print("\nAssistant run completed.")
+                break
+            elif run_status.status == "requires_action":
+                print("\nRun requires action. Handling function calls.")
+                self.handle_function_calls(run.id)
+                # After handling, submit the output and wait for completion
+                print("\nFunction call handled. Continuing to wait for run completion.")
+            else:
+                print("Waiting for run to complete...")
+                time.sleep(5)  # Adjust sleep time as needed
+
+        # Retrieve and display the messages after the run completes
         messages = self.retrieve_messages()
         self.display_messages(messages)
         return messages, self.thread_id
@@ -126,3 +135,34 @@ class ThreadManager:
                 print(f"Assistant: {message.content[0].text.value}")
 
         print("\nMessages displayed.{message.content[0].text.value}")
+
+    def handle_function_calls(self, run_id):
+        run = self.check_run_status(run_id)
+        if run.status == "requires_action" and run.required_action:
+            # Directly access submit_tool_outputs.tool_calls based on the provided module structure
+            tool_calls = run.required_action.submit_tool_outputs.tool_calls
+
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                arguments = json.loads(tool_call.function.arguments)
+                output = None
+
+                # Here, you should match the function_name to your actual function handling logic
+                # For example, if you have a local function to handle 'get_context'
+                if function_name == "get_context":
+                    # Assuming you have a method defined to handle this
+                    # Make sure to define get_context or any required function to match this call
+                    output = get_context(**arguments)
+
+                    # Submit the output back to the assistant
+                self.submit_function_output(run.thread_id, run.id, tool_call.id, output)
+
+    def submit_function_output(self, thread_id, run_id, tool_call_id, output):
+        self.client.beta.threads.runs.submit_tool_outputs(
+            thread_id=thread_id,
+            run_id=run_id,
+            tool_outputs=[{
+                "tool_call_id": tool_call_id,
+                "output": json.dumps(output),
+            }]
+        )
