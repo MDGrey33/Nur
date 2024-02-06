@@ -53,7 +53,7 @@ class EventConsumer:
         channel_id = question_event["channel"]
         message_ts = question_event["ts"]
 
-        # Retrieve relevant document IDs (context) synchronously as it's fast
+        # Retrieve relevant document IDs
         relevant_document_ids = retrieve_relevant_documents(question_event["text"])
         context = format_pages_as_context(relevant_document_ids)
 
@@ -78,23 +78,26 @@ class EventConsumer:
             print(f"Response posted to Slack thread: {message_ts}")
 
     def consume_questions(self):
+        # Process all the questions in the queue
         while not self.publisher.question_queue.empty():
             question_event = self.publisher.question_queue.get()
-
+            # Check if the message has already been processed
             if not self.is_message_processed_in_db(question_event["channel"], question_event["ts"]):
                 print(f"Processing new question event: {question_event}")
+                # Process the question
                 self.process_question(question_event)
             else:
                 print(f"Skipping already processed message: {question_event}")
-
+            # Mark the task as done
             self.publisher.question_queue.task_done()
 
     def consume_feedback(self):
+        # Process all the feedback in the queue
         while not self.publisher.feedback_queue.empty():
             feedback_event = self.publisher.feedback_queue.get()
             print("Processing feedback event:", feedback_event)
 
-            # Append the feedback to the corresponding interaction
+            # Append the feedback to the corresponding interaction in database by matching the thread time stamp of the message to the timestamp of the question
             timestamp_str = datetime.now().isoformat()
             self.interaction_manager.add_comment_to_interaction(
                 thread_id=feedback_event["thread_ts"],
