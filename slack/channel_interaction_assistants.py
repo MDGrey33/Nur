@@ -1,6 +1,7 @@
 # ./slack/channel_interaction_assistants.py
 import logging
 import time
+from functools import partial
 from abc import ABC, abstractmethod
 from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
@@ -32,7 +33,6 @@ def get_bot_user_id(bot_oauth_token):
 
 bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
 
-
 # Initialize EventPublisher instance
 event_publisher = EventPublisher()
 
@@ -44,6 +44,8 @@ class SlackEventHandler(ABC):
 
 
 class ChannelMessageHandler(SlackEventHandler):
+    """Handles incoming messages from the channel and publishes questions and feedback to the persist queue"""
+
     def __init__(self):
         self.db_session = Session()
         self.interaction_manager = QAInteractionManager(self.db_session)
@@ -52,6 +54,7 @@ class ChannelMessageHandler(SlackEventHandler):
         self.load_processed_data()
 
     def load_processed_data(self):
+        """ Load processed messages and questions from the database """
         interactions = self.interaction_manager.get_all_interactions()
         for interaction in interactions:
             # Add to processed messages
@@ -61,6 +64,7 @@ class ChannelMessageHandler(SlackEventHandler):
                 self.questions[interaction.thread_id] = interaction.question_text
 
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
+        """Handle incoming messages from the channel and publish questions and feedback to the persist queue"""
         # Acknowledge the event immediately
         client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
 
@@ -79,15 +83,13 @@ class ChannelMessageHandler(SlackEventHandler):
             print(f"Message {ts} already processed. Skipping.\n")
             return
 
-        # Update the processed_messages set with the 'ts'
-        self.processed_messages.add(ts)
-
         # Determine the reason for skipping before the checks
         skip_reason = self.determine_skip_reason(event, ts, text, thread_ts, user_id, bot_user_id)
 
         # Skip if message is invalid or from the bot itself
         if not self.is_valid_message(event) or user_id == bot_user_id:
-            logging.warning(f"Skipping message with ID {ts} and Parent id {thread_ts} from user {user_id}. Reason: {skip_reason}")
+            logging.warning(
+                f"Skipping message with ID {ts} and Parent id {thread_ts} from user {user_id}. Reason: {skip_reason}")
             print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
             return
 
@@ -96,9 +98,9 @@ class ChannelMessageHandler(SlackEventHandler):
             print(f"Question identified: {text}")
             self.questions[ts] = text
             question_event = {
-                "text": text, # Message content
-                "ts": ts, # Message timestamp acting as unique ID in slack
-                "thread_ts": "",    # Knowing it's a question on the main channel, we can set this to empty string
+                "text": text,  # Message content
+                "ts": ts,  # Message timestamp acting as unique ID in slack
+                "thread_ts": "",  # Knowing it's a question on the main channel, we can set this to empty string
                 "channel": channel,
                 "user": user_id
             }
@@ -111,9 +113,9 @@ class ChannelMessageHandler(SlackEventHandler):
             parent_question = self.questions[thread_ts]
             print(f"Feedback identified for question '{parent_question}': {text}")
             feedback_event = {
-                "text": text, # Message content
-                "ts": ts, # Message timestamp acting as unique ID in slack
-                "thread_ts": thread_ts, # Parent message timestamp used to link feedback to question
+                "text": text,  # Message content
+                "ts": ts,  # Message timestamp acting as unique ID in slack
+                "thread_ts": thread_ts,  # Parent message timestamp used to link feedback to question
                 "channel": channel,
                 "user": user_id,
                 "parent_question": parent_question
@@ -127,6 +129,9 @@ class ChannelMessageHandler(SlackEventHandler):
         else:
             print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}\n")
 
+        # Update the processed_messages set with the 'ts'
+        self.processed_messages.add(ts)
+
         print(f"Current Questions: {self.questions}\n\n")
         print(f"Processed Messages: {self.processed_messages}\n\n")
 
@@ -139,41 +144,51 @@ class ChannelMessageHandler(SlackEventHandler):
         if user_id == bot_user_id:
             return "Message is from the bot itself"
         if not self.is_valid_message(event):
-            return "Invalid message type or subtype"
+            return "Invalid message type or subtype" # Usually a modification or deletion
         if thread_ts and thread_ts != ts:
-            return "Message is a reply in a thread"
+            return "Message is a reply in a thread that is not a question"
         if not "?" in text:
-            return "Message does not contain a '?' and is not identified as a question"
+            return "Message on main channel and does not contain a '?' it is not identified as a question"
         return "Unknown reason"
 
 
 class SlackBot:
+    """A bot that listens to events from slack and processes them using event handlers"""
     def __init__(self, token: str, app_token: str, bot_user_id: str, event_handlers: List[SlackEventHandler]):
+        """ Initialize the bot with the necessary tokens and event handlers"""
         self.web_client = WebClient(token=token)
         self.socket_mode_client = SocketModeClient(app_token=app_token, web_client=self.web_client)
         self.bot_user_id = bot_user_id
         self.event_handlers = event_handlers
 
     def start(self):
-        from functools import partial
+        """Start the bot and listen to events"""
+        # Add event handlers to the socket mode client
         for event_handler in self.event_handlers:
             event_handler_func = partial(event_handler.handle, web_client=self.web_client, bot_user_id=self.bot_user_id)
             self.socket_mode_client.socket_mode_request_listeners.append(event_handler_func)
 
+        # Connect to the slack RTM API
         self.socket_mode_client.connect()
         try:
             while True:
                 logging.debug("Bot is running...")
+                # Consume events from the persist queue
                 consume_events()
-                time.sleep(50)
+                # Sleep for 10 seconds should be moved to 50 if we are facing errors
+                time.sleep(10)
+        # Stop the bot if the user interrupts
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
+        # Stop the bot if an exception occurs
         except Exception as e:
             logging.critical("Bot stopped due to an exception", exc_info=True)
 
 
 def load_slack_bot():
+    """Load the slack bot"""
     logging.basicConfig(level=logging.DEBUG)
+    # Initialize the bot with the necessary tokens and event handlers
     event_handlers = [ChannelMessageHandler()]
     bot = SlackBot(slack_bot_user_oauth_token, slack_app_level_token, bot_user_id, event_handlers)
     bot.start()
