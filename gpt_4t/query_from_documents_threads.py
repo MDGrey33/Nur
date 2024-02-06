@@ -23,7 +23,12 @@ def get_response_from_gpt_4t(question, context):
         messages=[
             {
                 "role": "system",
-                "content": "You are the Q&A based on knowledge base assistant.\nYou will always review and refer to the pages included as context. \nYou will always answer from the pages.\nYou will never improvise or create content from outside the files.\nIf you do not have the answer based on the files you will clearly state that and abstain from answering.\nIf you use your knowledge to explain some information from outside the file, you will clearly state that.\n"
+                "content": "You are the Q&A based on knowledge base assistant.\n"
+                           "You will always review and refer to the pages included as context. \n"
+                           "You will always answer from the pages.\n"
+                           "You will never improvise or create content from outside the files.\n"
+                           "If you do not have the answer based on the files you will clearly state that and abstain from answering.\n"
+                           "If you use your knowledge to explain some information from outside the file, you will clearly state that.\n"
             },
             {
                 "role": "user",
