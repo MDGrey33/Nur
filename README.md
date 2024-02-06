@@ -15,13 +15,20 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 
 ### Todo:
 - Dockerize the Solution
+- Some messages from slack are skipped: 
+  - Will need to add all messages to message queue and run the processing separately.
 - Make a module that use assistants in the slack channel 
-  - Assistants can now answer feedback question(not tested)
-    - Need to test and debug exiting slack loop
-    - Need to add database lock to avoid corrupting the database file
+  - Assistants can now answer feedback questions
+  - Need to enable context retrieval function calling by the assistant
 - Space management
   - setup last update date and schedule to update confluence space with log in db
-- store embeds in database
+- Refactor
+  - store embeds in database
+  - move from event consumer to database model
+    - is_message_processed_in_db, 
+    - record_message_as_processed_in_db 
+    - add_question_and_response_to_database
+- integrate GPT-3 for fast summarization in generate_extended_context_query in event consumer assistants module
 - create new vector database nightly and on trigger from sql database
 - parallelize open ai requests
 - add questions, answers and reactions (- enable confluence edit or new page recommendation)
