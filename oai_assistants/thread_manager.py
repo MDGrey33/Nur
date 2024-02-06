@@ -65,6 +65,10 @@ class ThreadManager:
             print(f"Run status: {run_status.status}")
 
             if run_status.status == "completed":
+                # Retrieve and display the messages after the run completes
+                messages = self.retrieve_messages()
+                # If the run was successful, display messages as usual
+                self.display_messages(messages)
                 print("\nAssistant run completed.")
                 break
             elif run_status.status == "failed":
@@ -91,10 +95,6 @@ class ThreadManager:
                 print("Waiting for run to complete...")
                 time.sleep(5)  # Adjust sleep time as needed
 
-        # Retrieve and display the messages after the run completes
-        messages = self.retrieve_messages()
-        # If the run was successful, display messages as usual
-        self.display_messages(messages)
         return messages, self.thread_id
 
     def check_run_status(self, run_id):
