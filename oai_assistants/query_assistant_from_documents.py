@@ -86,6 +86,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     print(f"Client initiated: {client}\n")
     assistant_manager = AssistantManager(client)
     print(f"Assistant manager initiated: {assistant_manager}\n")
+
     # Retrieve the assistant instance
     assistant = assistant_manager.load_assistant(assistant_id=assistant_id)
     print(f"Assistant loaded: {assistant}\n")
@@ -102,6 +103,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     # Initialize ThreadManager with or without an existing thread_id
     thread_manager = ThreadManager(client, assistant.id, thread_id)
     print(f"Thread manager initiated: {thread_manager}\n")
+
     # If no thread_id was provided, create a new thread
     if thread_id is None:
         thread_manager.create_thread()
@@ -110,7 +112,9 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
         print(f"Thread loaded with the following ID: {thread_id}\n")
 
     # Format the question with context and query the assistant
-    formatted_question = (f"Here is the question and the context\n\n{question}\n\nContext:\n{context}")
+    formatted_question = (f"Here is the question and the context\n\n"
+                          f"{question}\n\n"
+                          f"Context:\n{context}")
     print(f"Formatted question: {formatted_question}\n")
 
     # Query the assistant
