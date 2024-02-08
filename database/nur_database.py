@@ -64,6 +64,7 @@ class QAInteractions(Base):
     interaction_id = Column(Integer, primary_key=True)
     question_text = Column(Text)
     thread_id = Column(String)
+    assistant_thread_id = Column(String)
     answer_text = Column(Text)
     channel_id = Column(String)
     question_timestamp = Column(DateTime)
