@@ -31,12 +31,6 @@ def get_bot_user_id(bot_oauth_token):
     return bot_id
 
 
-bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
-
-# Initialize EventPublisher instance
-event_publisher = EventPublisher()
-
-
 class SlackEventHandler(ABC):
     @abstractmethod
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
@@ -193,6 +187,10 @@ def load_slack_bot():
     bot = SlackBot(slack_bot_user_oauth_token, slack_app_level_token, bot_user_id, event_handlers)
     bot.start()
 
+bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
+
+# Initialize EventPublisher instance
+event_publisher = EventPublisher()
 
 if __name__ == "__main__":
     load_slack_bot()
