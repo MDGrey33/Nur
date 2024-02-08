@@ -26,6 +26,14 @@ persist_qna_document_queue_path = os.path.join(project_path, "content", "transac
 
 
 
-
+# Assistant IDs
 assistant_id = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
 assistant_id_with_rag = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
+
+# Model IDs
+model_id = "gpt-4-1106-preview"
+
+# Embedding model IDs
+embedding_model_id_latest_large = "text-embedding-3-large"
+embedding_model_id_latest_small = "text-embedding-3-small"
+embedding_model_id = "text-embedding-ada-002"

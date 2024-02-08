@@ -2,6 +2,8 @@
 from openai import OpenAI
 from credentials import oai_api_key
 from configuration import file_system_path
+from configuration import model_id
+
 
 
 client = OpenAI(api_key=oai_api_key)
@@ -19,7 +21,7 @@ def get_response_from_gpt_4t(question, context):
     str: The response from the GPT-4T model.
     """
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model=model_id,
         messages=[
             {
                 "role": "system",

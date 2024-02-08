@@ -2,6 +2,8 @@
 from openai import OpenAI
 from credentials import oai_api_key
 import os
+from configuration import model_id
+
 
 
 def initiate_client():
@@ -59,8 +61,8 @@ def select_file_for_upload(file_path):
 
 # Sample assistant template used for creating new assistants in the system.
 new_assistant = {
-    "model": "gpt-4-1106-preview",
-    "name": "Mendil",
+    "model": model_id,
+    "name": "Shams",
     "instructions": """Your role is to serve as a Q&A-based knowledge base assistant.
 Prioritize reviewing and referencing the documents provided as context or conversation history.
 Generate responses exclusively from the information available in the provided context documents previous context documents and conversation history or context you retrieved using the context retrieval tool.

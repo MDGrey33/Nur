@@ -2,7 +2,7 @@
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from credentials import oai_api_key
-from configuration import vector_folder_path
+from configuration import vector_folder_path, embedding_model_id
 from database.nur_database import get_page_data_from_db
 from database.nur_database import update_embed_date
 
@@ -16,7 +16,7 @@ def vectorize_documents(all_documents, page_ids):
     """
 
     # Initialize OpenAI embeddings with the API key
-    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
+    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key, model=embedding_model_id)
 
     # Create the Chroma vectorstore with the embedding function
     vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
@@ -62,7 +62,7 @@ def retrieve_relevant_documents(question):
     :return: document ids
     """
     # Initialize OpenAI embeddings with the API key
-    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key)
+    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key, model=embedding_model_id)
 
     # Create the Chroma vectorstore with the embedding function
     vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
