@@ -25,9 +25,9 @@ def get_bot_user_id(bot_oauth_token):
         # Call the auth.test method using the Slack client
         response = slack_client.auth_test()
         bot_id = response["user_id"]
-        print(f"\n\nBot User ID: {bot_id}\n\n")
+        logging.info(f"\n\nBot User ID: {bot_id}\n\n")
     except SlackApiError as e:
-        print(f"\n\nError fetching bot user ID: {e.response['error']}\n\n")
+        logging.info(f"\n\nError fetching bot user ID: {e.response['error']}\n\n")
     return bot_id
 
 
@@ -49,13 +49,23 @@ class ChannelMessageHandler(SlackEventHandler):
 
     def load_processed_data(self):
         """ Load processed messages and questions from the database """
-        interactions = self.interaction_manager.get_all_interactions()
+        try:
+            interactions = self.interaction_manager.get_all_interactions()
+        except Exception as e:
+            logging.error(f"Error loading processed messages and questions: {e}")
+            interactions = []
         for interaction in interactions:
             # Add to processed messages
-            self.processed_messages.add(interaction.thread_id)
+            try:
+                self.processed_messages.add(interaction.thread_id)
+            except Exception as e:
+                logging.error(f"Error adding processed message to interaction: {e}")
             # If it's a question, add to questions
             if interaction.question_text:
-                self.questions[interaction.thread_id] = interaction.question_text
+                try:
+                    self.questions[interaction.thread_id] = interaction.question_text
+                except Exception as e:
+                    logging.error(f"Error adding question to interaction: {e}")
 
     def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
         """Handle incoming messages from the channel and publish questions and feedback to the persist queue"""
@@ -74,7 +84,7 @@ class ChannelMessageHandler(SlackEventHandler):
         # Skip processing if the message has already been processed
         if ts in self.processed_messages:
             logging.info(f"Message {ts} already processed. Skipping.")
-            print(f"Message {ts} already processed. Skipping.\n")
+            logging.info(f"Message {ts} already processed. Skipping.\n")
             return
 
         # Determine the reason for skipping before the checks
@@ -84,12 +94,12 @@ class ChannelMessageHandler(SlackEventHandler):
         if not self.is_valid_message(event) or user_id == bot_user_id:
             logging.warning(
                 f"Skipping message with ID {ts} and Parent id {thread_ts} from user {user_id}. Reason: {skip_reason}")
-            print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
+            logging.info(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
             return
 
         # Identify and handle questions
         if "?" in text and (not thread_ts):  # It's a question if not part of another thread
-            print(f"Question identified: {text}")
+            logging.debug(f"Question identified: {text}")
             self.questions[ts] = text
             question_event = {
                 "text": text,  # Message content
@@ -99,13 +109,16 @@ class ChannelMessageHandler(SlackEventHandler):
                 "user": user_id
             }
             # publish question event to the persist queue
-            event_publisher.publish_new_question(question_event)
-            print(f"Question published: {question_event}")
+            try:
+                event_publisher.publish_new_question(question_event)
+                logging.info(f"Question event published: {question_event}")
+            except Exception as e:
+                logging.error(f"Error publishing question event: {e}")
 
         # Identify and handle feedback
         elif thread_ts in self.questions:  # Message is a reply to a question
             parent_question = self.questions[thread_ts]
-            print(f"Feedback identified for question '{parent_question}': {text}")
+            logging.debug(f"Feedback identified for question '{parent_question}': {text}")
             feedback_event = {
                 "text": text,  # Message content
                 "ts": ts,  # Message timestamp acting as unique ID in slack
@@ -115,19 +128,24 @@ class ChannelMessageHandler(SlackEventHandler):
                 "parent_question": parent_question
             }
             # publish feedback event to the persist queue
-            event_publisher.publish_new_feedback(feedback_event)
-            print(f"Feedback published: {feedback_event}, ")
-
+            try:
+                event_publisher.publish_new_feedback(feedback_event)
+                logging.info(f"Feedback published: {feedback_event}")
+            except Exception as e:
+                logging.error(f"Error publishing feedback event: {e}")
 
         # Skip all other messages
         else:
-            print(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}\n")
+            logging.info(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
 
         # Update the processed_messages set with the 'ts'
-        self.processed_messages.add(ts)
+        try:
+            self.processed_messages.add(ts)
+        except Exception as e:
+            logging.error(f"Error adding message to processed messages: {e}")
 
-        print(f"Current Questions: {self.questions}\n\n")
-        print(f"Processed Messages: {self.processed_messages}\n\n")
+        logging.debug(f"Current Questions: {self.questions}")
+        logging.debug(f"Processed Messages: {self.processed_messages}")
 
     def is_valid_message(self, event):
         """ Check if the event is a valid user message """
@@ -163,7 +181,11 @@ class SlackBot:
             self.socket_mode_client.socket_mode_request_listeners.append(event_handler_func)
 
         # Connect to the slack RTM API
-        self.socket_mode_client.connect()
+        try:
+            self.socket_mode_client.connect()
+        except Exception as e:
+            logging.error(f"Error connecting to the slack RTM API: {e}")
+
         try:
             while True:
                 logging.debug("Bot is running...")
@@ -181,11 +203,12 @@ class SlackBot:
 
 def load_slack_bot():
     """Load the slack bot"""
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     # Initialize the bot with the necessary tokens and event handlers
     event_handlers = [ChannelMessageHandler()]
     bot = SlackBot(slack_bot_user_oauth_token, slack_app_level_token, bot_user_id, event_handlers)
     bot.start()
+
 
 bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
 
@@ -193,4 +216,7 @@ bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
 event_publisher = EventPublisher()
 
 if __name__ == "__main__":
-    load_slack_bot()
+    try:
+        load_slack_bot()
+    except Exception as e:
+        logging.critical("Error loading slack bot", exc_info=True)
