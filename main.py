@@ -5,8 +5,8 @@ from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from vector.vectorize_and_persist_processor import process_vectorization_queue
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
-from slack.channel_interaction_threads import load_slack_bot
-from slack.channel_interaction_assistants import load_slack_bot as load_slack_bot_assistant
+from slack.channel_interaction import load_slack_bot
+5
 
 
 def add_space():
@@ -34,7 +34,7 @@ def main_menu():
         print("2. Ask a Question to GPT-4T Assistant")
         print("3. Ask a question to GPT-4T")
         print("4. Sync up QA articles to Confluence")
-        print("5. Start Slack Bot")
+        print("5. Start Slack Bot Using Assistants API")
         print("6. Start Slack Bot Using Assistant")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
@@ -62,7 +62,10 @@ def main_menu():
             sync_up_interactions_to_confluence()
 
         elif choice == "5":
-            print("Starting Slack Bot...")
+            print("Starting Slack Bot Using Assistants API...")
+            # Run the FastAPI server
+            input("Have you started the FastAPI server './api/endpoint'? Press Enter to continue.")
+            # Start the Slack bot in the main thread
             load_slack_bot()
             print("Slack Bot is running in parallel processing mode.")
 
