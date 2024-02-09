@@ -1,8 +1,27 @@
 # /Users/roland/code/Nur/configuration.py
 import os
+# /Users/roland/code/Nur/configuration.py
+import logging
+from pathlib import Path
+import os
 
 
-project_path = "/Users/roland/code/Nur"
+def get_project_root() -> str:
+    """Get the project root directory as a string.
+
+    Assumes this script is located in the project root.
+    """
+    # Get the directory of the current script
+    project_root = Path(__file__).parent
+    # Convert the Path object to a string and return it
+    return str(project_root)
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+project_path = get_project_root()
+logging.log(logging.DEBUG, f"Project path: {project_path}")
+
 # build file_system_path and database_path from project_path
 file_system_path = project_path + "/content/file_system"
 database_path = project_path + "/content/database"
