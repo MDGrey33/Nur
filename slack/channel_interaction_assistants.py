@@ -83,7 +83,6 @@ class ChannelMessageHandler(SlackEventHandler):
 
         # Skip processing if the message has already been processed
         if ts in self.processed_messages:
-            logging.info(f"Message {ts} already processed. Skipping.")
             logging.info(f"Message {ts} already processed. Skipping.\n")
             return
 
