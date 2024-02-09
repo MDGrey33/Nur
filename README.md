@@ -16,7 +16,7 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 ### Todo:
 - Dockerize the Solution
 - Some messages from slack are skipped: 
-  - Will need to add all messages to message queue and run the processing separately.
+  - considered async and now im more convinced the solution is to use API for paralellization and I will remove the file queues eventually
 - Make a module that use assistants in the slack channel 
   - Assistants can now answer feedback questions
   - Need to enable context retrieval function calling by the assistant
