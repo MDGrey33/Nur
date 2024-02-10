@@ -10,20 +10,6 @@ from configuration import sql_file_path
 Base = declarative_base()
 
 
-# Define the SpaceData model
-class SpaceData(Base):
-    """
-    SQLAlchemy model for storing Confluence space data.
-    """
-    __tablename__ = 'space_data'
-
-    id = Column(Integer, primary_key=True)
-    space_key = Column(String)
-    url = Column(String)
-    login = Column(String)
-    token = Column(String)
-
-
 # Define the PageData model
 class PageData(Base):
     """
@@ -87,6 +73,9 @@ class SlackMessageDeduplication(Base):
 
 
 class QAInteractionManager:
+    """
+    Manages the storage and retrieval of Q&A interactions from Slack.
+    """
     def __init__(self, session):
         self.session = session
 
@@ -113,6 +102,12 @@ class QAInteractionManager:
         self.session.commit()
 
     def add_comment_to_interaction(self, thread_id, comment):
+        """
+        Add a comment to an existing Q&A interaction.
+        :param thread_id:
+        :param comment:
+        :return:
+        """
         interaction = self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
         if interaction:
             if interaction.comments is None:
@@ -136,23 +131,6 @@ class QAInteractionManager:
 
     def get_all_interactions(self):
         return self.session.query(QAInteractions).all()
-
-
-def store_space_data(space_data):
-    """
-    Store Confluence space data into the database.
-
-    Args:
-    space_data (dict): A dictionary containing space data to store.
-    """
-    # Create a new SpaceData object and add it to the session
-    new_space = SpaceData(space_key=space_data['space_key'],
-                          url=space_data['url'],
-                          login=space_data['login'],
-                          token=space_data['token'])
-    session.add(new_space)
-    session.commit()
-    print(f"Space with key {space_data['space_key']} written to database")
 
 
 def parse_datetime(date_string):
@@ -197,6 +175,10 @@ def store_pages_data(space_key, pages_data):
 
 
 def get_page_data_from_db():
+    """
+    Retrieve all page data from the database.
+    :return: Tuple of all_documents (list of document strings) and page_ids (list of page IDs)
+    """
     # Connect to the SQLite database
     conn = sqlite3.connect(sql_file_path)
     cursor = conn.cursor()
