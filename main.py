@@ -10,9 +10,40 @@ from slack.channel_interaction import load_slack_bot
 
 
 def add_space():
-    retrieved_page_ids = get_space_content()
-    indexed_page_ids = add_to_vector()
-    return retrieved_page_ids, indexed_page_ids
+    '''
+    Add a new space to the system, process its content, and store its information.
+    :return: space_key
+    '''
+    space_key = None
+    try:
+        space_key = choose_space()  # Let the user choose a space.
+        if space_key:
+            print("Retrieving space content...")
+            # Additional logic to retrieve space name and last import date as needed
+            space_name = "Example Space Name"  # This should be dynamically retrieved
+            last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Example timestamp, adjust as necessary
+
+            get_space_content(space_key)  # Retrieve content for the chosen space.
+            print("Processing content...")
+            space_key = get_page_content_using_queue(space_key)  # Process the retrieved content.
+            print("Vectorizing content...")
+            process_vectorization_queue(space_key)  # Vectorize the processed content for search.
+
+            # Store space information in the database
+            space_manager = SpaceManager()
+            space_manager.add_space_info(space_key, space_name, last_import_date)
+            print(f"\nSpace '{space_name}' retrieval and indexing complete.")
+    except Exception as e:
+        print(f"An error occurred while adding the space: {e}")
+    return space_key
+
+
+def update_spaces():
+    '''
+    Update all existing spaces from their last update date
+    :return:
+    '''
+    pass
 
 
 def answer_question_with_assistant(question):
