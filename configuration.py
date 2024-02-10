@@ -17,7 +17,7 @@ def get_project_root() -> str:
     return str(project_root)
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 project_path = get_project_root()
 logging.log(logging.DEBUG, f"Project path: {project_path}")

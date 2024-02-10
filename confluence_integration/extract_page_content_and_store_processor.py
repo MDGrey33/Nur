@@ -8,7 +8,7 @@ from configuration import persist_page_processing_queue_path, persist_page_vecto
 from confluence_integration.retrieve_space import choose_space
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 def get_page_content_using_queue(space_key):
