@@ -28,6 +28,7 @@ class PageData(Base):
     comments = Column(Text)
     last_embedded = Column(DateTime)
     date_pulled_from_confluence = Column(DateTime)
+    embed = Column(Text)
 
 
 class PageProgress(Base):
