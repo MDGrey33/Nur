@@ -14,7 +14,9 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 
 ### Todo:
 - Dockerize the Solution
-- enable function calling for context retrieval
+- adding a new space doesn't update the last updated date
+- Control vector record duplication and updating records
+- Enable function calling for context retrieval
 - Space management
   - setup last update date and schedule to update confluence space with log in db 
   - create new vector database nightly and on trigger from sql database

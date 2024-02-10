@@ -7,7 +7,7 @@ from configuration import assistant_id_with_rag
 from configuration import file_system_path
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def add_files_to_assistant(assistant, file_ids):

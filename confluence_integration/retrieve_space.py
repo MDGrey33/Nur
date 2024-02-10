@@ -249,7 +249,7 @@ def process_page(page_id, space_key, file_manager, page_content_map):
     return page_data
 
 
-def get_space_content(update_date=None):
+def get_space_content(space_key, update_date=None):
     """
     Retrieve content from a specified Confluence space and process it.
 
@@ -263,7 +263,6 @@ def get_space_content(update_date=None):
     list: A list of IDs of all pages that were processed.
     """
 
-    space_key = choose_space()
     all_page_ids = get_all_page_ids_recursive(space_key)
     all_page_ids = set(all_page_ids)
 
@@ -285,7 +284,8 @@ def get_space_content(update_date=None):
 if __name__ == "__main__":
 
     # Initial space retrieve
-    space_key = get_space_content()
+    space_key = choose_space()
+    get_space_content(space_key)
     # Initial space retrieve
     # Space update retrieve
     # get_space_content(update_date=datetime(2023, 12, 1, 0, 0, 0))

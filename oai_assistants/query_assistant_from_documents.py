@@ -6,7 +6,7 @@ from oai_assistants.assistant_manager import AssistantManager
 from configuration import assistant_id, file_system_path
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def add_files_to_assistant(assistant, file_ids):
