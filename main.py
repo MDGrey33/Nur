@@ -1,12 +1,14 @@
 from confluence_integration.retrieve_space import get_space_content
-from vector.chroma_threads import retrieve_relevant_documents, add_to_vector
+from vector.chroma_threads import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
-from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
+from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue, choose_space
 from vector.vectorize_and_persist_processor import process_vectorization_queue
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
 from slack.channel_interaction import load_slack_bot
-5
+from slack.channel_interaction_assistants import load_slack_bot as load_slack_bot_assistant
+from datetime import datetime
+from database.space_manager import SpaceManager
 
 
 def add_space():
@@ -16,6 +18,7 @@ def add_space():
     '''
     space_key = None
     try:
+
         space_key = choose_space()  # Let the user choose a space.
         if space_key:
             print("Retrieving space content...")
@@ -71,8 +74,9 @@ def main_menu():
         choice = input("Enter your choice (0-6): ")
 
         if choice == "1":
-            space_key = get_space_content()
-            space_key = get_page_content_using_queue(space_key)
+            space_key = choose_space()
+            get_space_content(space_key)
+            get_page_content_using_queue(space_key)
             process_vectorization_queue(space_key)
             print("\nSpace retrieval and indexing complete.")
 
