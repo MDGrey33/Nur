@@ -90,11 +90,20 @@ class QAInteractionManager:
     def __init__(self, session):
         self.session = session
 
-    def add_question_and_answer(self, question, answer, thread_id, channel_id, question_ts, answer_ts):
+    def add_question_and_answer(self, question, answer, thread_id, assistant_thread_id, channel_id, question_ts, answer_ts):
+        serialized_answer = json.dumps(answer.__dict__) if not isinstance(answer, str) else answer
+
+        # Log the types and values of the parameters
+        print(
+            f"Inserting into database: question={question}, answer={answer}, thread_id={thread_id}, assistant_thread_id={assistant_thread_id}, channel_id={channel_id}, question_ts={question_ts}, answer_ts={answer_ts}")
+        print(
+            f"Data types: question={type(question)}, answer={type(answer)}, thread_id={type(thread_id)}, assistant_thread_id={type(assistant_thread_id)}, channel_id={type(channel_id)}, question_ts={type(question_ts)}, answer_ts={type(answer_ts)}")
+
         interaction = QAInteractions(
             question_text=question,
             thread_id=thread_id,
-            answer_text=answer,
+            assistant_thread_id=assistant_thread_id,
+            answer_text=serialized_answer,
             channel_id=channel_id,
             question_timestamp=question_ts,
             answer_timestamp=answer_ts,
@@ -123,6 +132,9 @@ class QAInteractionManager:
         Returns:
             list: A list of QAInteractions objects.
         """
+        return self.session.query(QAInteractions).all()
+
+    def get_all_interactions(self):
         return self.session.query(QAInteractions).all()
 
 

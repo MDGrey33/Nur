@@ -12,7 +12,7 @@ from slack.event_publisher import EventPublisher
 from slack.event_consumer_assistants import consume_events
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from database.nur_database_assistants import Session, QAInteractionManager
+from database.nur_database import Session, QAInteractionManager
 
 
 # get slack bot user id
