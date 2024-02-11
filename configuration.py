@@ -55,4 +55,5 @@ model_id = "gpt-4-1106-preview"
 # Embedding model IDs
 embedding_model_id_latest_large = "text-embedding-3-large"
 embedding_model_id_latest_small = "text-embedding-3-small"
-embedding_model_id = "text-embedding-ada-002"
+embedding_model_id_ada = "text-embedding-ada-002"
+embedding_model_id = embedding_model_id_latest_small
