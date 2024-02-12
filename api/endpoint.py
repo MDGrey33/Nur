@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI
 import uvicorn
 from openai import OpenAI
@@ -5,6 +6,24 @@ import threading
 from credentials import oai_api_key
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
+from vector.chroma_threads import generate_embedding
+from database.nur_database import add_or_update_embed_vector
+
+
+def vectorize_document_and_store_in_db(page_id):
+    """
+    Vectorize a document and store it in the database.
+    :param page_id: The ID of the page to vectorize.
+    :return: None
+    """
+    embedding = generate_embedding(page_id)
+    if embedding:
+        # Store the embedding in the database
+        add_or_update_embed_vector(page_id, embedding)
+        print(f"Embedding for page with ID {page_id} stored in the database.")
+    else:
+        print(f"Embedding for page with ID {page_id} could not be generated.")
+
 
 processor = FastAPI()
 
@@ -26,33 +45,9 @@ class FeedbackEvent(BaseModel):
     channel: str
     user: str
 
-'''
-def get_response_from_gpt_4t(question, context=""):
-    response = client.chat.completions.create(
-        model=model_id,
-        messages=[
-            {"role": "system", "content": "You are the Q&A assistant.\n"},
-            {"role": "user", "content": f"question: {question}\npages:{context}"}
-        ],
-        temperature=0,
-        max_tokens=4095,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
-    answer = response.choices[0].message.content.strip()
-    return answer
 
-
-def process_question(question_event: QuestionEvent):
-    answer = get_response_from_gpt_4t(question_event.text)
-    print(f"question processed by the api {answer}")
-
-
-def process_feedback(question_event: QuestionEvent):
-    answer = get_response_from_gpt_4t(question_event.text)
-    print(f"feedback processed by the api {answer}")
-'''
+class EmbedRequest(BaseModel):
+    page_id: str
 
 
 @processor.post("/api/v1/questions")
@@ -69,6 +64,18 @@ def create_feedback(feedback_event: FeedbackEvent):  # Changed to handle feedbac
                               args=(feedback_event,))  # You may need a different function for processing feedback
     thread.start()
     return {"message": "Feedback received, processing in background", "data": feedback_event}
+
+
+@processor.post("/api/v1/embeds")
+def create_embeds(EmbedRequest: EmbedRequest):
+    """
+    Endpoint to initiate the embedding generation and storage process in the background.
+    """
+    # Using threading to process the embedding generation and storage without blocking the endpoint response
+    page_id = EmbedRequest.page_id
+    thread = threading.Thread(target=vectorize_document_and_store_in_db, args=(page_id,))
+    thread.start()
+    return {"message": "Embedding generation initiated, processing in background", "page_id": page_id}
 
 
 def main():

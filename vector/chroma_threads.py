@@ -1,19 +1,18 @@
 # ./vector/chroma_threads.py
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from credentials import oai_api_key
-from configuration import vector_folder_path, embedding_model_id
+from configuration import vector_folder_path, file_system_path, embedding_model_id
 from database.nur_database import get_page_data_from_db
 from database.nur_database import update_embed_date
 import openai
 from credentials import oai_api_key
-from database.nur_database import add_or_update_embed_vector
+from file_system.file_manager import FileManager
 
 
 client = openai.OpenAI(api_key=oai_api_key)
 
 
-def generate_embedding(text, model="text-embedding-ada-002"):
+def generate_embedding(page_id, model=embedding_model_id):
     """
     Generates an embedding for the given text using the specified OpenAI model.
 
@@ -24,8 +23,16 @@ def generate_embedding(text, model="text-embedding-ada-002"):
     Returns:
         list: The embedding vector as a list of floats.
     """
+    # Get the page content from the file system
+    file_manager = FileManager()
     try:
-        response = client.embeddings.create(input=text, model=model)
+        page_content = file_manager.read(f"{file_system_path}/{page_id}.txt")
+    except Exception as e:
+        print(f"Error reading page content: {e}")
+        return []
+    # Generate the embedding using the OpenAI API
+    try:
+        response = client.embeddings.create(input=page_content, model=model)
         embedding = response.data[0].embedding
         return embedding
     except Exception as e:

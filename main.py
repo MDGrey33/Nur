@@ -80,6 +80,13 @@ def main_menu():
             process_vectorization_queue(space_key)
             print("\nSpace retrieval and indexing complete.")
 
+        if choice == "7":
+            space_key = choose_space()
+            get_space_content(space_key)
+            get_page_content_using_queue(space_key)
+            # process_vectorization_queue(space_key)
+            print("\nSpace retrieval and indexing complete No vector db created.")
+
         elif choice == "2":
             question = ask_question()
             if question:

@@ -31,37 +31,6 @@ class PageData(Base):
     embed = Column(Text)
 
 
-def add_or_update_embed_vector(page_id, embed_vector):
-    """
-    Add or update the embed vector data for a specific page in the database, and update the last_embedded timestamp.
-
-    Args:
-        page_id (str): The ID of the page to update.
-        embed_vector: The embed vector data to be added or updated, expected to be a serializable object.
-    """
-    # Serialize the embed_vector to a JSON string
-    embed_vector_json = json.dumps(embed_vector)
-
-    # Start a session
-    session = Session()
-
-    # Find the page by page_id
-    page = session.query(PageData).filter_by(page_id=page_id).first()
-
-    if page:
-        # Page found, update the embed field and last_embedded timestamp
-        page.embed = embed_vector_json
-        page.last_embedded = datetime.now()  # Update the last_embedded to the current datetime
-        session.commit()
-        print(f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated.")
-    else:
-        # Page not found, handle the case where the page does not exist
-        print(f"No page found with ID {page_id}")
-
-    # Close the session
-    session.close()
-
-
 class PageProgress(Base):
     """
     SQLAlchemy model for storing Confluence page progress.
@@ -204,6 +173,7 @@ def store_pages_data(space_key, pages_data):
         session.add(new_page)
         print(f"Page with ID {page_id} written to database")
     session.commit()
+    session.close()
 
 
 def get_page_data_from_db():
@@ -234,6 +204,37 @@ def get_page_data_from_db():
     # Close the SQLite connection
     conn.close()
     return all_documents, page_ids
+
+
+def add_or_update_embed_vector(page_id, embed_vector):
+    """
+    Add or update the embed vector data for a specific page in the database, and update the last_embedded timestamp.
+
+    Args:
+        page_id (str): The ID of the page to update.
+        embed_vector: The embed vector data to be added or updated, expected to be a serializable object.
+    """
+    # Serialize the embed_vector to a JSON string
+    embed_vector_json = json.dumps(embed_vector)
+
+    # Start a session
+    session = Session()
+
+    # Find the page by page_id
+    page = session.query(PageData).filter_by(page_id=page_id).first()
+
+    if page:
+        # Page found, update the embed field and last_embedded timestamp
+        page.embed = embed_vector_json
+        page.last_embedded = datetime.now()  # Update the last_embedded to the current datetime
+        session.commit()
+        print(f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated.")
+    else:
+        # Page not found, handle the case where the page does not exist
+        print(f"No page found with ID {page_id}")
+
+    # Close the session
+    session.close()
 
 
 def get_page_data_by_ids(page_ids):

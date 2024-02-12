@@ -11,6 +11,7 @@ from confluence_integration.confluence_client import ConfluenceClient
 import requests
 import logging
 
+
 # Initialize Confluence API
 confluence = Confluence(
     url=confluence_credentials['base_url'],
@@ -199,6 +200,7 @@ def get_comment_content(comment_id):
     except Exception as e:
         logging.error(f"Error retrieving content for comment ID {comment_id}: {e}")
         return ""  # Return empty string if an error occurs
+
 
 
 def process_page(page_id, space_key, file_manager, page_content_map):
