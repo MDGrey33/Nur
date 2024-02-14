@@ -1,11 +1,14 @@
+# ./confluence_integration/extract_page_content_and_store_processor.py
 import os
-import logging
 import requests
 from persistqueue import Queue
 from file_system.file_manager import FileManager
 from database.nur_database import store_pages_data, is_page_processed, get_last_updated_timestamp
-from confluence_integration.retrieve_space import process_page, choose_space
+from confluence_integration.retrieve_space import process_page
 from configuration import persist_page_processing_queue_path, persist_page_vector_queue_path
+from database.nur_database import get_page_ids_missing_embeds
+import time
+import logging
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -123,7 +126,48 @@ def get_page_content_using_queue(space_key):
     store_pages_data(space_key, page_content_map)
 
 
+def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 30) -> None:
+    for attempt in range(retry_limit):
+        # Retrieve the IDs of pages that are still missing embeddings.
+        page_ids = get_page_ids_missing_embeds()
+
+        # If there are no pages missing embeddings, exit the loop and end the process.
+        if not page_ids:
+            print("All pages have embeddings. Process complete.")
+            return
+
+        print(f"Attempt {attempt + 1} of {retry_limit}: Processing {len(page_ids)} pages missing embeddings.")
+        for page_id in page_ids:
+            # Submit a request to generate an embedding for each page ID.
+            sumit_embedding_creation_request(page_id)
+            # A brief delay between requests to manage load and potentially avoid rate limiting.
+            time.sleep(0.5)
+
+        print(f"Waiting for {wait_time} seconds for embeddings to be processed...")
+        time.sleep(wait_time)
+
+        # After waiting, retrieve the list of pages still missing embeddings to see if the list has decreased.
+        # This retrieval is crucial to ensure that the loop only continues if there are still pages that need processing.
+        page_ids = get_page_ids_missing_embeds()
+        if not page_ids:
+            print("All pages now have embeddings. Process complete.")
+            break  # Break out of the loop if there are no more pages missing embeddings.
+
+        print(f"After attempt {attempt + 1}, {len(page_ids)} pages are still missing embeds.")
+
+    # After exhausting the retry limit, check if there are still pages without embeddings.
+    if page_ids:
+        print("Some pages still lack embeddings after all attempts.")
+    else:
+        print("All pages now have embeddings. Process complete.")
+
+
 if __name__ == "__main__":
+    embed_pages_missing_embeds()
+
+    '''
     space_key = choose_space()
     logging.info(f"Script started for space key: {space_key}")
     get_page_content_using_queue(space_key)
+    '''
+

@@ -9,6 +9,10 @@ from pydantic import BaseModel
 from vector.chroma_threads import generate_embedding
 from database.nur_database import add_or_update_embed_vector
 
+processor = FastAPI()
+
+client = OpenAI(api_key=oai_api_key)
+
 
 def vectorize_document_and_store_in_db(page_id):
     """
@@ -16,18 +20,13 @@ def vectorize_document_and_store_in_db(page_id):
     :param page_id: The ID of the page to vectorize.
     :return: None
     """
-    embedding = generate_embedding(page_id)
+    embedding, error_message = generate_embedding(page_id)
     if embedding:
         # Store the embedding in the database
         add_or_update_embed_vector(page_id, embedding)
-        print(f"Embedding for page with ID {page_id} stored in the database.")
+        logging.info(f"Embedding for page ID {page_id} stored in the database.")
     else:
-        print(f"Embedding for page with ID {page_id} could not be generated.")
-
-
-processor = FastAPI()
-
-client = OpenAI(api_key=oai_api_key)
+        logging.error(f"Embedding for page ID {page_id} could not be generated. {error_message}")
 
 
 class QuestionEvent(BaseModel):

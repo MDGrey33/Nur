@@ -57,3 +57,6 @@ embedding_model_id_latest_large = "text-embedding-3-large"
 embedding_model_id_latest_small = "text-embedding-3-small"
 embedding_model_id_ada = "text-embedding-ada-002"
 embedding_model_id = embedding_model_id_latest_small
+
+# document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
+document_count = 5

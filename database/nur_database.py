@@ -176,34 +176,69 @@ def store_pages_data(space_key, pages_data):
     session.close()
 
 
+def get_page_ids_missing_embeds():
+    """
+    Retrieve the page IDs of pages that are missing embeddings.
+    :return: A list of page IDs.
+    """
+    session = Session()
+    records = session.query(PageData).filter(
+        (PageData.lastUpdated > PageData.last_embedded) |
+        (PageData.last_embedded.is_(None))
+    ).all()
+    page_ids = [record.page_id for record in records]
+    session.close()
+    return page_ids
+
+def get_all_page_data_from_db():
+    """
+    Retrieve all page data and embeddings from the database without any filters.
+    :return: Tuple of page_ids (list of page IDs), all_documents (list of document strings), and embeddings (list of embeddings as strings)
+    """
+    session = Session()
+    records = session.query(PageData).all()
+
+    page_ids = [record.page_id for record in records]
+    embeddings = [record.embed for record in records]  # Assuming embed is directly stored as a string
+    all_documents = [
+        f"Page id: {record.page_id}, space key: {record.space_key}, title: {record.title}, "
+        f"author: {record.author}, created date: {record.createdDate}, last updated: {record.lastUpdated}, "
+        f"content: {record.content}, comments: {record.comments}"
+        for record in records
+    ]
+
+    session.close()
+    return page_ids, all_documents, embeddings
+
+
+
 def get_page_data_from_db():
     """
-    Retrieve all page data from the database.
-    :return: Tuple of all_documents (list of document strings) and page_ids (list of page IDs)
+    Retrieve all page data and embeddings from the database.
+    This query filter does the following:
+        PageData.lastUpdated > PageData.last_embedded:
+            It selects records where the lastUpdated timestamp is more recent than the last_embedded timestamp. This would typically mean that the page has been updated since the last time its embedding was generated and stored.
+        PageData.last_embedded.is_(None):
+            It selects records where the last_embedded field is None, which likely indicates that an embedding has never been generated for the page.
+    :return: Tuple of page_ids (list of page IDs), all_documents (list of document strings), and embeddings (list of embeddings as strings)
     """
-    # Connect to the SQLite database
-    conn = sqlite3.connect(sql_file_path)
-    cursor = conn.cursor()
+    session = Session()
+    records = session.query(PageData).filter(
+        (PageData.lastUpdated > PageData.last_embedded) |
+        (PageData.last_embedded.is_(None))
+    ).all()
 
-    # Retrieve records from the "page_data" table where "lastUpdated" is newer than "last_embedded"
-    cursor.execute("SELECT * FROM page_data WHERE lastUpdated > last_embedded OR last_embedded IS NULL")
-    records = cursor.fetchall()
+    page_ids = [record.page_id for record in records]
+    embeddings = [record.embed for record in records]  # Assuming embed is directly stored as a string
+    all_documents = [
+        f"Page id: {record.page_id}, space key: {record.space_key}, title: {record.title}, "
+        f"author: {record.author}, created date: {record.createdDate}, last updated: {record.lastUpdated}, "
+        f"content: {record.content}, comments: {record.comments}"
+        for record in records
+    ]
 
-    # Process each record into a string
-    all_documents = []
-    page_ids = []
-    for record in records:
-        document = (
-            f"Page id: {record[1]}, space key: {record[2]}, title: {record[3]}, "
-            f"author: {record[4]}, created date: {record[5]}, last updated: {record[6]}, "
-            f"content: {record[7]}, comments: {record[8]}"
-        )
-        all_documents.append(document)
-        page_ids.append(record[1])
-
-    # Close the SQLite connection
-    conn.close()
-    return all_documents, page_ids
+    session.close()
+    return page_ids, all_documents, embeddings
 
 
 def add_or_update_embed_vector(page_id, embed_vector):

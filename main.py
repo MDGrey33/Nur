@@ -1,14 +1,19 @@
-from confluence_integration.retrieve_space import get_space_content
-from vector.chroma_threads import retrieve_relevant_documents
+from confluence_integration.retrieve_space import get_space_content, choose_space
+# Uncomment to use with the the combination ada embed model and retrieve_relevant_documents
+# from vector.chroma_threads import retrieve_relevant_documents
+# Uncomment to use with the combination latest small embed model and retrieve_relevant_documents_chroma
+from vector.chroma_threads import retrieve_relevant_documents_chroma as retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
-from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue, choose_space
+from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
+from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
 from vector.vectorize_and_persist_processor import process_vectorization_queue
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
 from slack.channel_interaction import load_slack_bot
 from slack.channel_interaction_assistants import load_slack_bot as load_slack_bot_assistant
 from datetime import datetime
 from database.space_manager import SpaceManager
+from vector.create_vector_db import add_embeds_to_vector_db
 
 
 def add_space():
@@ -41,14 +46,6 @@ def add_space():
     return space_key
 
 
-def update_spaces():
-    '''
-    Update all existing spaces from their last update date
-    :return:
-    '''
-    pass
-
-
 def answer_question_with_assistant(question):
     relevant_document_ids = retrieve_relevant_documents(question)
     response, thread_id = query_assistant_with_context(question, relevant_document_ids)
@@ -74,18 +71,18 @@ def main_menu():
         choice = input("Enter your choice (0-6): ")
 
         if choice == "1":
-            space_key = choose_space()
-            get_space_content(space_key)
-            get_page_content_using_queue(space_key)
-            process_vectorization_queue(space_key)
+            space_key, space_name = choose_space()
+            if space_key and space_name:
+                print("Retrieving space content...")
+                get_space_content(space_key)
+                get_page_content_using_queue(space_key)
+                embed_pages_missing_embeds()
+                space_manager = SpaceManager()
+                last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                space_manager.upsert_space_info(space_key, space_name, last_import_date)
+                add_embeds_to_vector_db()
+                print(f"\nSpace '{space_name}' retrieval and indexing complete.")
             print("\nSpace retrieval and indexing complete.")
-
-        if choice == "7":
-            space_key = choose_space()
-            get_space_content(space_key)
-            get_page_content_using_queue(space_key)
-            # process_vectorization_queue(space_key)
-            print("\nSpace retrieval and indexing complete No vector db created.")
 
         elif choice == "2":
             question = ask_question()

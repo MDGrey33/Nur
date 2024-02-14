@@ -7,38 +7,45 @@ from database.nur_database import update_embed_date
 import openai
 from credentials import oai_api_key
 from file_system.file_manager import FileManager
-
-
+import chromadb
+import logging
+from typing import List
+from configuration import document_count
 client = openai.OpenAI(api_key=oai_api_key)
+
+
+def embed_text(text, model):
+    response = client.embeddings.create(input=text, model=model)
+    embedding = response.data[0].embedding
+    return embedding
 
 
 def generate_embedding(page_id, model=embedding_model_id):
     """
     Generates an embedding for the given text using the specified OpenAI model.
-
-    Args:
-        text (str): The text to embed.
-        model (str): The model to use for embedding. Defaults to "text-embedding-ada-002".
-
-    Returns:
-        list: The embedding vector as a list of floats.
+    Returns a tuple of (embedding, error_message).
     """
-    # Get the page content from the file system
     file_manager = FileManager()
     try:
         page_content = file_manager.read(f"{file_system_path}/{page_id}.txt")
+        # Ensure the content does not exceed the maximum token limit
+        page_content = page_content[:8190]
     except Exception as e:
-        print(f"Error reading page content: {e}")
-        return []
-    # Generate the embedding using the OpenAI API
+        logging.error(f"Error reading page content for page ID {page_id}: {e}")
+        return None, f"Error reading page content: {e}"
+
     try:
         response = client.embeddings.create(input=page_content, model=model)
-        embedding = response.data[0].embedding
-        return embedding
+        # Extract the embedding correctly from the response object
+        if response.data and len(response.data) > 0:
+            embedding = response.data[0].embedding
+            return embedding, None
+        else:
+            return None, "No embedding data returned for the page."
     except Exception as e:
-        print(f"Error generating embedding: {e}")
-        return []
-
+        error_message = f"Error generating embedding for page ID {page_id}: {e}"
+        logging.error(error_message)
+        return None, error_message
 
 
 def vectorize_documents(all_documents, page_ids):
@@ -89,6 +96,49 @@ def add_to_vector():
     return page_ids
 
 
+def retrieve_relevant_documents_chroma(question: str) -> List[str]:
+    """
+    Retrieve the most relevant documents for a given question using ChromaDB.
+
+    Args:
+    question (str): The question to retrieve relevant documents for.
+
+    Returns:
+    List[str]: A list of document IDs of the most relevant documents.
+    """
+
+    # Generate the query embedding using OpenAI
+    query_embedding = embed_text(text=question, model=embedding_model_id)
+
+    # Initialize the ChromaDB client
+    client = chromadb.PersistentClient(path=vector_folder_path)
+
+    collections = client.list_collections()
+
+    # Assuming you have a collection named 'documents' in your ChromaDB
+    collection = client.get_collection('TopAssist')
+
+    count_result = collection.count()
+
+    print()
+
+    # Perform a similarity search in the collection
+    similar_items = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=document_count
+    )
+
+    # Extract and return the document IDs from the metadata of similar items
+    #document_ids = [item['metadata']['page_id'] for item in similar_items['results'] if'metadata' in item and 'page_id' in item['metadata']]
+    if 'ids' in similar_items:
+        document_ids = [id for sublist in similar_items['ids'] for id in sublist]
+    else:
+        print("No 'ids' key found in similar_items")
+        document_ids = []
+
+    return document_ids
+
+
 def retrieve_relevant_documents(question):
     """
     Retrieve the most relevant documents for a given question.
@@ -105,7 +155,7 @@ def retrieve_relevant_documents(question):
     query_embedding = embedding.embed_query(question)
 
     # Perform a similarity search in the vectorstore
-    similar_documents = vectordb.similarity_search_by_vector(query_embedding, k=15)
+    similar_documents = vectordb.similarity_search_by_vector(query_embedding, k=document_count)
 
     # Process and return the results along with their metadata
     results = []
@@ -135,4 +185,12 @@ if __name__ == '__main__':
         print(result)
         print("---------------------------------------------------")
     '''
-    pass
+    '''
+    document_ids = retrieve_relevant_documents_chroma("what is the scope of the billing team?")
+    print(document_ids)
+    '''
+    # Call the function with a test page ID and print the outcome
+    page_id = 420577502  # Example page ID for debugging
+    embedding, error = generate_embedding(page_id)
+    print("Embedding:", embedding)
+    print("Error:", error)

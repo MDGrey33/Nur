@@ -126,7 +126,7 @@ def choose_space():
     for i, space in enumerate(spaces):
         print(f"{i + 1}. {space['name']} (Key: {space['key']})")
     choice = int(input("Choose a space (number): ")) - 1
-    return spaces[choice]['key']
+    return spaces[choice]['key'], spaces[choice]['name']
 
 
 def strip_html_tags(content):
