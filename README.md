@@ -2,6 +2,9 @@
 The self actualizing documentation framework that heals its knowledge gaps as naturally as a ray of light
 [Custom GPT to discuss the code base](https://chat.openai.com/g/g-zKBLXtfrD-shams-nur)
 ## Feature list
+### announcements:
+current setup breaks slack integration due to a new and enhanced implementation of the vector db.
+we will be back on track by 18th of February 2024
 ### Done:
 #### Capabilities
 - add a confluence space to the bots knowledge
