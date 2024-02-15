@@ -7,7 +7,8 @@ from vector.chroma_threads import retrieve_relevant_documents
 from database.nur_database import QAInteractionManager, Session, SlackMessageDeduplication
 from threads.dynamic_executor_assistants import DynamicExecutor
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
-# from oai_assistants.query_assistant_rag_tool import query_assistant_with_context
+import logging
+
 
 class EventConsumer:
     """ Consumes events from the event queue and processes them."""
@@ -18,7 +19,7 @@ class EventConsumer:
         self.db_session = Session()
         self.interaction_manager = QAInteractionManager(self.db_session)
         self.executor = DynamicExecutor()
-        print("\n\nSlack Event Consumer initiated successfully\n\n")
+        logging.log(logging.DEBUG, f"Slack Event Consumer initiated successfully")
 
     def is_message_processed_in_db(self, channel_id, message_ts):
         """
