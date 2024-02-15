@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from pydantic import BaseModel
 from slack_sdk import WebClient
@@ -30,7 +31,7 @@ class EventConsumer:
         self.db_session = Session()
         self.interaction_manager = QAInteractionManager(self.db_session)
         self.executor = DynamicExecutor()
-        print("\n\nSlack Event Consumer initiated successfully\n\n")
+        logging.log(logging.DEBUG, f"Slack Event Consumer initiated successfully")
 
     def is_message_processed_in_db(self, channel_id, message_ts):
         return self.db_session.query(SlackMessageDeduplication).filter_by(channel_id=channel_id, message_ts=message_ts).first() is not None
