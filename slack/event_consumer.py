@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
-from vector.chroma_threads import retrieve_relevant_documents
+from vector.chroma_threads import retrieve_relevant_documents_chroma as retrieve_relevant_documents
 from database.nur_database import QAInteractionManager, Session, SlackMessageDeduplication
 from threads.dynamic_executor_assistants import DynamicExecutor
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
