@@ -50,7 +50,9 @@ assistant_id = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
 assistant_id_with_rag = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
 
 # Model IDs
-model_id = "gpt-4-1106-preview"
+gpt_3t = ""
+gpt_4t = "gpt-4-1106-preview"
+model_id = gpt_4t
 
 # Embedding model IDs
 embedding_model_id_latest_large = "text-embedding-3-large"
@@ -59,4 +61,4 @@ embedding_model_id_ada = "text-embedding-ada-002"
 embedding_model_id = embedding_model_id_latest_small
 
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
-document_count = 5
+document_count = 10
