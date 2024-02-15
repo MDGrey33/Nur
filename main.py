@@ -1,8 +1,8 @@
 from confluence_integration.retrieve_space import get_space_content, choose_space
-# Uncomment to use with the the combination ada embed model and retrieve_relevant_documents
-# from vector.chroma_threads import retrieve_relevant_documents
-# Uncomment to use with the combination latest small embed model and retrieve_relevant_documents_chroma
-from vector.chroma_threads import retrieve_relevant_documents_chroma as retrieve_relevant_documents
+# Uncomment to use with the combination ada embed model and retrieve_relevant_documents
+# from vector.chroma_threads import retrieve_relevant_documents_langchain as retrieve_relevant_documents
+# Uncomment to use with the combination latest small embed model and retrieve_relevant_documents
+from vector.chroma_threads import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue

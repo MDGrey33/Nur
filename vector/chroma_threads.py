@@ -96,7 +96,7 @@ def add_to_vector():
     return page_ids
 
 
-def retrieve_relevant_documents_chroma(question: str) -> List[str]:
+def retrieve_relevant_documents(question: str) -> List[str]:
     """
     Retrieve the most relevant documents for a given question using ChromaDB.
 
@@ -139,7 +139,7 @@ def retrieve_relevant_documents_chroma(question: str) -> List[str]:
     return document_ids
 
 
-def retrieve_relevant_documents(question):
+def retrieve_relevant_documents_langchain(question):
     """
     Retrieve the most relevant documents for a given question.
     :param question:
