@@ -47,8 +47,12 @@ def get_child_ids(item_id, content_type):
     Returns:
     list: A list of IDs for child items.
     """
-    child_items = confluence.get_page_child_by_type(item_id, type=content_type)
-    return [child['id'] for child in child_items]
+    try:
+        child_items = confluence.get_page_child_by_type(item_id, type=content_type)
+        return [child['id'] for child in child_items]
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"Error retrieving child items for item ID {item_id}: {e}")
+        return []
 
 
 def get_all_page_ids_recursive(space_key):
@@ -156,7 +160,11 @@ def check_date_filter(update_date, all_page_ids):
     """
     updated_pages = []
     for page_id in all_page_ids:
-        page_history = confluence.history(page_id)  # directly use page_id
+        try:
+            page_history = confluence.history(page_id)  # directly use page_id
+        except Exception as e:
+            logging.error(f"Error retrieving history for page ID {page_id}: {e}")
+            continue
         last_updated = datetime.strptime(page_history['lastUpdated']['when'], '%Y-%m-%dT%H:%M:%S.%fZ')
         if last_updated >= update_date:
             updated_pages.append(page_id)  # append the page_id to the list
@@ -213,42 +221,51 @@ def process_page(page_id, space_key, file_manager, page_content_map):
     :return: page_data
     """
     current_time = datetime.now()
-    page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
-    page_title = strip_html_tags(page['title'])
-    page_author = page['history']['createdBy']['displayName']
-    created_date = page['history']['createdDate']
-    last_updated = page['version']['when']
-    page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
-    page_comments_content = ""
-    page_comment_ids = get_all_comment_ids_recursive(page_id)
+    try:
+        page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
+    except Exception as e:
+        logging.error(f"Error retrieving page with ID {page_id}: {e}")
+        return None
+    if page:
+        print(f"Processing page with ID {page_id}...")
+        page_title = strip_html_tags(page['title'])
+        page_author = page['history']['createdBy']['displayName']
+        created_date = page['history']['createdDate']
+        last_updated = page['version']['when']
+        page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
+        page_comments_content = ""
+        page_comment_ids = get_all_comment_ids_recursive(page_id)
 
-    for comment_id in page_comment_ids:
-        page_comments_content += get_comment_content(comment_id)
+        for comment_id in page_comment_ids:
+            page_comments_content += get_comment_content(comment_id)
 
-    page_data = {
-        'spaceKey': space_key,
-        'pageId': page_id,
-        'title': page_title,
-        'author': page_author,
-        'createdDate': created_date,
-        'lastUpdated': last_updated,
-        'content': page_content,
-        'comments': page_comments_content,
-        'datePulledFromConfluence': current_time
-    }
+        page_data = {
+            'spaceKey': space_key,
+            'pageId': page_id,
+            'title': page_title,
+            'author': page_author,
+            'createdDate': created_date,
+            'lastUpdated': last_updated,
+            'content': page_content,
+            'comments': page_comments_content,
+            'datePulledFromConfluence': current_time
+        }
 
-    # Store data for files
-    formatted_content = format_page_content_for_llm(page_data)
-    file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
-    print(f"Page with ID {page_id} processed and written to file.")
+        # Store data for files
+        formatted_content = format_page_content_for_llm(page_data)
+        file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
+        print(f"Page with ID {page_id} processed and written to file.")
 
-    # Store data for database
-    page_content_map[page_id] = page_data
-    print(f"Page with ID {page_id} processed and written database.")
+        # Store data for database
+        page_content_map[page_id] = page_data
+        print(f"Page with ID {page_id} processed and written database.")
 
-    # Mark the page as processed
-    mark_page_as_processed(page_id)
-    return page_data
+        # Mark the page as processed
+        mark_page_as_processed(page_id)
+        return page_data
+    else:
+        logging.error(f"Error processing page with ID {page_id}: Page not found.")
+        return None
 
 
 def get_space_content(space_key, update_date=None):
