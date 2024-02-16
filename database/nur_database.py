@@ -190,6 +190,7 @@ def get_page_ids_missing_embeds():
     session.close()
     return page_ids
 
+
 def get_all_page_data_from_db():
     """
     Retrieve all page data and embeddings from the database without any filters.
@@ -209,7 +210,6 @@ def get_all_page_data_from_db():
 
     session.close()
     return page_ids, all_documents, embeddings
-
 
 
 def get_page_data_from_db():
