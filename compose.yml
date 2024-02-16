@@ -21,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    tty: true
     volumes:
       - shared_content:/app/content
   

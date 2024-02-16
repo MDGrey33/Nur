@@ -15,8 +15,8 @@ RUN poetry install
 
 FROM main as runtime
 
+ENV PYTHONPATH=$PYTHONPATH:/app
 COPY --from=main /app /app
 
 COPY --from=main $POETRY_HOME $POETRY_HOME
-
-CMD bash
+RUN ./bin/bootstrap

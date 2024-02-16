@@ -75,11 +75,15 @@ docker composer up
 
 Upon successful completion, you have three containers running, all of them sharing a common volume mounted at `/content` within the containers.
 
-`nur-web` and `nur-slack` should be fully operational already. If you wish to run commands in Nur's cli interfact, you will need start the `nur-manager` container in interactive mode, and enter the management environment:
+`nur-web` and `nur-slack` should be fully operational already. If you wish to run commands in Nur's cli interface, you will need to attach a shell to the `nur-manager` container in interactive mode, and enter the management environment:
 
 ```
-./bin/run
-``` 
+./bin/manage
+```
+
+If the above works, you should see Nur's manager command prompt - the same thing you should see when running `./main.py` locally.
+
+Bear in mind that the Dockerized version uses a shared volume named `nur_shared_content`. This is bootstrapped during the first installation, but will persist until it is manually removed.
 
 ## Network traffic
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nur"
-version = "0.1.0"
+version = "0.2.0"
 description = "self healing documentation"
 authors = ["Roland Abou Younes <roland@abouyounes.com>"]
 license = "Apache"

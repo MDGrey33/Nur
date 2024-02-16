@@ -1,1 +1,0 @@
-docker run -it -v nur_shared_content:/app/content nur-manager poetry run python main.py
