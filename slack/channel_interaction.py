@@ -9,8 +9,6 @@ from slack_sdk.socket_mode.response import SocketModeResponse
 from slack_sdk.socket_mode.request import SocketModeRequest
 from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
-from slack.event_publisher import EventPublisher
-from slack.event_consumer_assistants import consume_events
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from database.nur_database import Session, QAInteractionManager
@@ -194,10 +192,7 @@ class SlackBot:
         try:
             while True:
                 logging.debug("Bot is running...")
-                # Consume events from the persist queue
-                consume_events()
-                # Sleep for 10 seconds should be moved to 50 if we are facing errors
-                time.sleep(10)
+                time.sleep(1000)
         # Stop the bot if the user interrupts
         except KeyboardInterrupt:
             logging.info("Bot stopped by the user")
@@ -217,8 +212,6 @@ def load_slack_bot():
 
 bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
 
-# Initialize EventPublisher instance
-event_publisher = EventPublisher()
 
 if __name__ == "__main__":
     try:

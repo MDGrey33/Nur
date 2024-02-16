@@ -9,7 +9,7 @@ from slack_sdk.socket_mode.request import SocketModeRequest
 from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
 from slack.event_publisher import EventPublisher
-from slack.event_consumer_assistants import consume_events
+from slack.old.event_consumer_assistants import consume_events
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from database.nur_database import Session, QAInteractionManager

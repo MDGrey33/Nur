@@ -7,7 +7,6 @@ from confluence_integration.extract_page_content_and_store_processor import get_
 from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
 from slack.channel_interaction import load_slack_bot
-from slack.channel_interaction_assistants import load_slack_bot as load_slack_bot_assistant
 from datetime import datetime
 from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
@@ -47,15 +46,13 @@ def main_menu():
         print("2. Ask a Question to GPT-4T Assistant")
         print("3. Ask a question to GPT-4T")
         print("4. Sync up QA articles to Confluence")
-        print("5. Start Slack Bot Using Assistants API")
-        print("6. Start Slack Bot Using Assistant")
+        print("5. Start Slack Bot")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
         if choice == "1":
             print("Loading new documentation space...")
             load_new_documentation_space()
-
 
         elif choice == "2":
             question = ask_question()
@@ -74,16 +71,11 @@ def main_menu():
             sync_up_interactions_to_confluence()
 
         elif choice == "5":
-            print("Starting Slack Bot Using Assistants API...")
+            print("Starting Slack Bot Using Assistants and fast API...")
             # Run the FastAPI server
-            input("Have you started the FastAPI server './api/endpoint'? Press Enter to continue.")
+            input("Started the FastAPI server located at './api/endpoint' and Press Enter to continue.")
             # Start the Slack bot in the main thread
             load_slack_bot()
-            print("Slack Bot is running in parallel processing mode.")
-
-        elif choice == "6":
-            print("Starting Slack Bot...")
-            load_slack_bot_assistant()
             print("Slack Bot is running in parallel processing mode.")
 
         elif choice == "0":
