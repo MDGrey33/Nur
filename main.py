@@ -1,13 +1,10 @@
+# ./main.py
 from confluence_integration.retrieve_space import get_space_content, choose_space
-# Uncomment to use with the combination ada embed model and retrieve_relevant_documents
-# from vector.chroma_threads import retrieve_relevant_documents_langchain as retrieve_relevant_documents
-# Uncomment to use with the combination latest small embed model and retrieve_relevant_documents
 from vector.chroma_threads import retrieve_relevant_documents
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
-from vector.vectorize_and_persist_processor import process_vectorization_queue
 from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
 from slack.channel_interaction import load_slack_bot
 from slack.channel_interaction_assistants import load_slack_bot as load_slack_bot_assistant
@@ -16,34 +13,19 @@ from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
 
 
-def add_space():
-    '''
-    Add a new space to the system, process its content, and store its information.
-    :return: space_key
-    '''
-    space_key = None
-    try:
-
-        space_key = choose_space()  # Let the user choose a space.
-        if space_key:
-            print("Retrieving space content...")
-            # Additional logic to retrieve space name and last import date as needed
-            space_name = "Example Space Name"  # This should be dynamically retrieved
-            last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Example timestamp, adjust as necessary
-
-            get_space_content(space_key)  # Retrieve content for the chosen space.
-            print("Processing content...")
-            space_key = get_page_content_using_queue(space_key)  # Process the retrieved content.
-            print("Vectorizing content...")
-            process_vectorization_queue(space_key)  # Vectorize the processed content for search.
-
-            # Store space information in the database
-            space_manager = SpaceManager()
-            space_manager.add_space_info(space_key, space_name, last_import_date)
-            print(f"\nSpace '{space_name}' retrieval and indexing complete.")
-    except Exception as e:
-        print(f"An error occurred while adding the space: {e}")
-    return space_key
+def load_new_documentation_space():
+    space_key, space_name = choose_space()
+    if space_key and space_name:
+        print("Retrieving space content...")
+        get_space_content(space_key)
+        get_page_content_using_queue(space_key)
+        embed_pages_missing_embeds()
+        space_manager = SpaceManager()
+        last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        space_manager.upsert_space_info(space_key, space_name, last_import_date)
+        add_embeds_to_vector_db()
+        print(f"\nSpace '{space_name}' retrieval and indexing complete.")
+    print("\nSpace retrieval and indexing complete.")
 
 
 def answer_question_with_assistant(question):
@@ -71,18 +53,9 @@ def main_menu():
         choice = input("Enter your choice (0-6): ")
 
         if choice == "1":
-            space_key, space_name = choose_space()
-            if space_key and space_name:
-                print("Retrieving space content...")
-                get_space_content(space_key)
-                get_page_content_using_queue(space_key)
-                embed_pages_missing_embeds()
-                space_manager = SpaceManager()
-                last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                space_manager.upsert_space_info(space_key, space_name, last_import_date)
-                add_embeds_to_vector_db()
-                print(f"\nSpace '{space_name}' retrieval and indexing complete.")
-            print("\nSpace retrieval and indexing complete.")
+            print("Loading new documentation space...")
+            load_new_documentation_space()
+
 
         elif choice == "2":
             question = ask_question()
