@@ -3,25 +3,18 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 [Custom GPT to discuss the code base](https://chat.openai.com/g/g-zKBLXtfrD-shams-nur)
 ## Feature list
 ### announcements:
-current setup breaks slack integration due to a new and enhanced implementation of the vector db.
-we will be back on track by 18th of February 2024
+- 2024-02-16: Migrated successfully to python 3.12 and poetry to simplify onboarding contributors
 ### Done:
 #### Capabilities
 - add a confluence space to the bots knowledge
-- have a conversation with the bot based on the knowledge
+- have a conversation with the bot based on the knowledge in any slack channel
 #### features
 - Up to 15 documents in context with every question
 - Up to 15 documents added to context with follow-up questions
 
-
-
 ### Todo:
-- Dockerize the Solution
-- adding a new space doesn't update the last updated date
-- Control vector record duplication and updating records
 - Enable function calling for context retrieval
 - Space management
-  - setup last update date and schedule to update confluence space with log in db 
   - create new vector database nightly and on trigger from sql database
 - Refactor
   - store embeds in database
@@ -29,27 +22,30 @@ we will be back on track by 18th of February 2024
     - is_message_processed_in_db, 
     - record_message_as_processed_in_db 
     - add_question_and_response_to_database
-- add api for faster space learning
 - integrate GPT-3 for fast summarization in generate_extended_context_query in event consumer assistants module
 - add questions, answers and reactions (- enable confluence edit or new page recommendation)
 - add credibility rating to database 
-- trivia question collector 
+- trivia question collector to generate new knowledge
 
 
 
 ## Setup
-Still in forming phase
-For now clone the repo
-Familiarize yourself with the modules
+### prerequisites:
+- python 3.12
+- poetry
+- pycharm
+### Launching the app
+clone the repo
+
 ````
 git clone https://github.com/MDGrey33/Nur.git
+cd Nur
+poetry install
+poetry run python main.py
 ````
-Run setup script inside setup package.
-
 
 ## Usage
-1. Add openai api key to credentials
+1. Rename credentials_example.py to credentials.py
+2. Add openai api key to ./credentials
 2. Add confluence credentials to ./credentials
 3. To listen to slack create slack app and add the credentials in ./credentials
-4. Run with python the module main.py clone a space and run the slack bot
-5. Go to slack, channel test and ask a question and the bot will reply
