@@ -1,0 +1,43 @@
+name: nur
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - poetry
+      - run
+      - python
+      - api/endpoint.py
+    ports:
+      - "8000:8000"
+    volumes:
+      - shared_content:/app/content
+  
+  manager:
+    depends_on:
+      - web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - shared_content:/app/content
+  
+  slack:
+    depends_on:
+      - web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - poetry
+      - run
+      - python
+      - slack/channel_interaction.py
+    volumes:
+      - shared_content:/app/content
+
+volumes:
+  shared_content:
+  
