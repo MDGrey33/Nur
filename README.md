@@ -35,7 +35,6 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - poetry
 - pycharm
 ### Launching the app
-clone the repo
 
 ````
 git clone https://github.com/MDGrey33/Nur.git
@@ -43,6 +42,10 @@ cd Nur
 poetry install
 poetry run python main.py
 ````
+open the project on pycharm you will be able to run:
+./main.py (for the menu operations)
+./api/endpoint.py (API / uvicorn web server)
+./slack/channel_interaction_assistants.py (slack bot stream listener)
 
 ## Usage
 1. Rename credentials_example.py to credentials.py
