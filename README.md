@@ -56,3 +56,10 @@ open the project on pycharm you will be able to run:
 2. Add confluence credentials to ./credentials
 3. To listen to slack create slack app and add the credentials in ./credentials
 4. All the operational content is in ./content you might want to chnage the path in configuration if running on docker.
+
+## Network traffic
+
+1. Outgoing to Open AI API (for Embeds and completion)
+2. Two-way to slack api and from slack stream (for receiving and sending messages)
+3. Outgoing anonymized telemetry data to Chroma that will be disabled soon
+4. Outgoing to confluence API for (document management)
