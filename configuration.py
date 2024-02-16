@@ -1,6 +1,4 @@
-# /Users/roland/code/Nur/configuration.py
-import os
-# /Users/roland/code/Nur/configuration.py
+# ./configuration.py
 import logging
 from pathlib import Path
 import os
