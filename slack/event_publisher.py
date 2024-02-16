@@ -1,4 +1,6 @@
 # ./slack/event_publisher.py
+# Refactor, module candidate for removal, part of the old queue system.
+# Replaced partially by API.
 import os
 import fcntl
 from persistqueue import Queue

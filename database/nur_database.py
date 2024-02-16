@@ -389,11 +389,11 @@ def get_last_updated_timestamp(page_id):
         return None
 
 
-# Setup the database engine and create tables if they don't exist
+# Set up the database engine and create tables if they don't exist
 engine = create_engine('sqlite:///' + sql_file_path)
 Base.metadata.bind = engine
 Base.metadata.create_all(engine)
 
-# Create a sessionmaker object to manage database sessions
+# Create a session maker object to manage database sessions
 Session = sessionmaker(bind=engine)
 session = Session()

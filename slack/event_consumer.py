@@ -1,3 +1,8 @@
+# ./slack/event_consumer.py
+
+# was a built as a publisher before we migrated to using API calls. It was used to publish events to the persist queue.
+# some of its code is still used in the current implementation and should be extracted and the publisher part discarded.
+
 import logging
 from datetime import datetime
 from pydantic import BaseModel

@@ -15,21 +15,6 @@ processor = FastAPI()
 client = OpenAI(api_key=oai_api_key)
 
 
-def vectorize_document_and_store_in_db(page_id):
-    """
-    Vectorize a document and store it in the database.
-    :param page_id: The ID of the page to vectorize.
-    :return: None
-    """
-    embedding, error_message = generate_embedding(page_id)
-    if embedding:
-        # Store the embedding in the database
-        add_or_update_embed_vector(page_id, embedding)
-        logging.info(f"Embedding for page ID {page_id} stored in the database.")
-    else:
-        logging.error(f"Embedding for page ID {page_id} could not be generated. {error_message}")
-
-
 class QuestionEvent(BaseModel):
     text: str
     ts: str
@@ -48,6 +33,21 @@ class FeedbackEvent(BaseModel):
 
 class EmbedRequest(BaseModel):
     page_id: str
+
+# refactor: probably should not be in the endpoint module.
+def vectorize_document_and_store_in_db(page_id):
+    """
+    Vectorize a document and store it in the database.
+    :param page_id: The ID of the page to vectorize.
+    :return: None
+    """
+    embedding, error_message = generate_embedding(page_id)
+    if embedding:
+        # Store the embedding in the database
+        add_or_update_embed_vector(page_id, embedding)
+        logging.info(f"Embedding for page ID {page_id} stored in the database.")
+    else:
+        logging.error(f"Embedding for page ID {page_id} could not be generated. {error_message}")
 
 
 @processor.post("/api/v1/questions")
