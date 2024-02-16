@@ -43,6 +43,7 @@ poetry install
 poetry run python main.py
 ````
 open the project on pycharm you will be able to run:
+
 ./main.py (for the menu operations)
 ./api/endpoint.py (API / uvicorn web server)
 ./slack/channel_interaction_assistants.py (slack bot stream listener)
