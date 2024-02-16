@@ -4,8 +4,6 @@ from credentials import oai_api_key
 from configuration import file_system_path
 from configuration import model_id
 
-
-
 client = OpenAI(api_key=oai_api_key)
 
 
@@ -20,31 +18,38 @@ def get_response_from_gpt_4t(question, context):
     Returns:
     str: The response from the GPT-4T model.
     """
-    response = client.chat.completions.create(
-        model=model_id,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are the Q&A based on knowledge base assistant.\n"
-                           "You will always review and refer to the pages included as context. \n"
-                           "You will always answer from the pages.\n"
-                           "You will never improvise or create content from outside the files.\n"
-                           "If you do not have the answer based on the files you will clearly state that and abstain from answering.\n"
-                           "If you use your knowledge to explain some information from outside the file, you will clearly state that.\n"
-            },
-            {
-                "role": "user",
-                "content": f"You will answer the following question with a summary, then provide a comprehensive answer, then provide the references aliasing them as Technical trace:  \nquestion: {question}\npages:{context}"
-            }
-        ],
-        temperature=0,
-        max_tokens=4095,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
-    answer = response.choices[0].message.content
-    return answer
+    try:
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are the Q&A based on knowledge base assistant.\n"
+                               "You will always review and refer to the pages included as context. \n"
+                               "You will always answer from the pages.\n"
+                               "You will never improvise or create content from outside the files.\n"
+                               "If you do not have the answer based on the files you will clearly state that and abstain from answering.\n"
+                               "If you use your knowledge to explain some information from outside the file, you will clearly state that.\n"
+                },
+                {
+                    "role": "user",
+                    "content": f"You will answer the following question with a summary, then provide a comprehensive answer, then provide the references aliasing them as Technical trace:  \nquestion: {question}\npages:{context}"
+                }
+            ],
+            temperature=0,
+            max_tokens=4095,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
+    except Exception as e:
+        print(f"Error querying GPT-4T: {e}")
+        return None
+    if response:
+        answer = response.choices[0].message.content
+        return answer
+    else:
+        return None
 
 
 def format_pages_as_context(file_ids):
@@ -58,22 +63,29 @@ def format_pages_as_context(file_ids):
     Returns:
     str: The formatted context.
     """
-    context = ""
+    context = None
     for file_id in file_ids:
-        # replace the path till file_system with the variable file_system_path
+        if not context:
+            context = ""
         chosen_file_path = file_system_path + f"/{file_id}.txt"
         # Open file and extract title and space key
-        with open(chosen_file_path, 'r') as file:
-            file_content = file.read()
-            title = file_content.split('title: ')[1].split('\n')[0].strip()
-            space_key = file_content.split('spaceKey: ')[1].split('\n')[0].strip()
+        try:
+            with open(chosen_file_path, 'r') as file:
+                file_content = file.read()
+                title = file_content.split('title: ')[1].split('\n')[0].strip()
+                space_key = file_content.split('spaceKey: ')[1].split('\n')[0].strip()
 
-            context += f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n"
-            context += file_content
+                context += f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n"
+                context += file_content
 
-        print(f"File {file_id} (Title: {title}, Space Key: {space_key}) appended to context successfully")
+            print(f"File {file_id} (Title: {title}, Space Key: {space_key}) appended to context successfully")
 
-    return context
+        except Exception as e:
+            print(f"Error appending file {file_id} to context: {e}")
+    if context:
+        return context
+    else:
+        return None
 
 
 def query_gpt_4t_with_context(question, page_ids):
@@ -98,7 +110,6 @@ def query_gpt_4t_with_context(question, page_ids):
 
 
 if __name__ == "__main__":
-    response = query_gpt_4t_with_context("Do we support payment matching in our solution? and if the payment is not matched "
-                                 "do we already have a way to notify the client that they have a delayed payment?",
-                                 ["458841", "491570"])
+    response = query_gpt_4t_with_context("What do those documents talk about?",
+                                 ["13795383", "24576050"])
     print(response)
