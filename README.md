@@ -45,7 +45,9 @@ poetry run python main.py
 open the project on pycharm you will be able to run:
 
 ./main.py (for the menu operations)
+
 ./api/endpoint.py (API / uvicorn web server)
+
 ./slack/channel_interaction_assistants.py (slack bot stream listener)
 
 ## Usage
@@ -53,3 +55,4 @@ open the project on pycharm you will be able to run:
 2. Add openai api key to ./credentials
 2. Add confluence credentials to ./credentials
 3. To listen to slack create slack app and add the credentials in ./credentials
+4. All the operational content is in ./content you might want to chnage the path in configuration if running on docker.
