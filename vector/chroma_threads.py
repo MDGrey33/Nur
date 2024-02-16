@@ -1,6 +1,6 @@
 # ./vector/chroma_threads.py
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from configuration import vector_folder_path, file_system_path, embedding_model_id
 from database.nur_database import get_page_data_from_db
 from database.nur_database import update_embed_date
@@ -11,6 +11,8 @@ import chromadb
 import logging
 from typing import List
 from configuration import document_count
+
+
 client = openai.OpenAI(api_key=oai_api_key)
 
 
