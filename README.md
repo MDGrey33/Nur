@@ -34,10 +34,19 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 
 ## Setup
 ### prerequisites:
+- sqlite3
 - python 3.12
 - poetry
 - pycharm
-### Launching the app
+
+## Configuration
+1. Rename credentials_example.py to credentials.py
+2. Add openai api key to ./credentials
+2. Add confluence credentials to ./credentials
+3. To listen to slack create slack app and add the credentials in ./credentials
+4. All operational content lives in `./content` in shell mode. In Docker mode, this links to a shared volume named `nur_shared_content`
+
+### Run Nur via shell
 
 ````
 git clone https://github.com/MDGrey33/Nur.git
@@ -47,18 +56,37 @@ poetry run python main.py
 ````
 open the project on pycharm you will be able to run:
 
-./main.py (for the menu operations)
+`./main.py` (for the menu operations)
 
-./api/endpoint.py (API / uvicorn web server)
+`./api/endpoint.py` (API / uvicorn web server)
 
-./slack/channel_interaction_assistants.py (slack bot stream listener)
+`./slack/channel_interaction.py` (slack bot stream listener)
 
-## Usage
-1. Rename credentials_example.py to credentials.py
-2. Add openai api key to ./credentials
-3. Add confluence credentials to ./credentials
-4. To listen to slack create slack app and add the credentials in ./credentials
-5. All the operational content is in ./content you might want to chnage the path in configuration if running on docker.
+### Run Nur via Docker
+
+We will use docker compose to build 3 containers of Nur. Each one is used to run a separate part of the app:
+* `nur-manager` will create a container allowing us to use `main.py` functionality. It is meant to be interactive (read further for details).
+* `nur-web` starts the web application.
+* `nur-slack` starts the slack integration script.
+
+First off, run the composer script:
+```
+git clone https://github.com/MDGrey33/Nur.git
+cd Nur
+docker composer up
+```
+
+Upon successful completion, you have three containers running, all of them sharing a common volume mounted at `/content` within the containers.
+
+`nur-web` and `nur-slack` should be fully operational already. If you wish to run commands in Nur's cli interface, you will need to attach a shell to the `nur-manager` container in interactive mode, and enter the management environment:
+
+```
+./bin/manage
+```
+
+If the above works, you should see Nur's manager command prompt - the same thing you should see when running `./main.py` locally.
+
+Bear in mind that the Dockerized version uses a shared volume named `nur_shared_content`. This is bootstrapped during the first installation, but will persist until it is manually removed.
 
 ## Network traffic
 

@@ -1,0 +1,6 @@
+if [ ! -d "content" ]; then
+  mkdir content
+  mkdir content/database
+  mkdir content/database/confluence_page_vectors
+  mkdir content/file_system
+fi
