@@ -10,6 +10,9 @@ from database.nur_database import get_page_ids_missing_embeds
 import time
 import logging
 
+host = os.environ.get("NUR_API_HOST", "localhost")
+port = os.environ.get("NUR_API_PORT", 8000)
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -88,8 +91,8 @@ class PageProcessor:
             process_page(page_id, self.space_key, self.file_manager, page_content_map)
 
 
-def sumit_embedding_creation_request(page_id):
-    endpoint_url = "http://localhost:8000/api/v1/embeds"
+def submit_embedding_creation_request(page_id):
+    endpoint_url = f'http://{host}:{port}/api/v1/embeds'
     headers = {"Content-Type": "application/json"}
     payload = {"page_id": page_id}
 
@@ -121,7 +124,7 @@ def get_page_content_using_queue(space_key):
     # iterate through the page_content_map and call the embed api the IDs list
     page_ids = [page_id for page_id in page_content_map.keys()]
     for page_id in page_ids:
-        sumit_embedding_creation_request(page_id)
+        submit_embedding_creation_request(page_id)
     logging.info(f"Page content for space key {space_key} processing complete.")
     store_pages_data(space_key, page_content_map)
 
@@ -139,7 +142,7 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 30) -> Non
         print(f"Attempt {attempt + 1} of {retry_limit}: Processing {len(page_ids)} pages missing embeddings.")
         for page_id in page_ids:
             # Submit a request to generate an embedding for each page ID.
-            sumit_embedding_creation_request(page_id)
+            submit_embedding_creation_request(page_id)
             # A brief delay between requests to manage load and potentially avoid rate limiting.
             time.sleep(0.5)
 

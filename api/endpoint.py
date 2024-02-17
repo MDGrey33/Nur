@@ -1,4 +1,5 @@
 # ./api/endpoint.py
+import os
 import logging
 from fastapi import FastAPI
 import uvicorn
@@ -9,6 +10,9 @@ from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
 from vector.chroma_threads import generate_embedding
 from database.nur_database import add_or_update_embed_vector
+
+host = os.environ.get("NUR_API_HOST", "localhost")
+port = os.environ.get("NUR_API_PORT", 8000)
 
 processor = FastAPI()
 
@@ -80,7 +84,7 @@ def create_embeds(EmbedRequest: EmbedRequest):
 
 def main():
     """Entry point for starting the FastAPI application."""
-    uvicorn.run("api.endpoint:processor", host="localhost", port=8000, reload=True)
+    uvicorn.run("api.endpoint:processor", host=host, port=int(port), reload=True)
 
 
 if __name__ == "__main__":

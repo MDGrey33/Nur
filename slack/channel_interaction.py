@@ -1,4 +1,5 @@
 # ./slack/channel_interaction_assistants.py
+import os
 import logging
 import time
 import requests
@@ -13,6 +14,8 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from database.nur_database import Session, QAInteractionManager
 
+host = os.environ.get("NUR_API_HOST", "localhost")
+port = os.environ.get("NUR_API_PORT", 8000)
 
 # get slack bot user id
 def get_bot_user_id(bot_oauth_token):
@@ -109,7 +112,7 @@ class ChannelMessageHandler(SlackEventHandler):
             # publish question event to the persist queue
             try:
                 # Make an API call to publish the question
-                response = requests.post("http://localhost:8000/api/v1/questions/", json=question_event)
+                response = requests.post(f'http://{host}:{port}/api/v1/questions/', json=question_event)
                 response.raise_for_status()
                 logging.info(f"Question event published: {question_event}")
 
@@ -131,7 +134,7 @@ class ChannelMessageHandler(SlackEventHandler):
             # publish feedback event to the persist queue
             try:
                 # Make an API call to publish the feedback
-                response = requests.post("http://localhost:8000/api/v1/feedback/", json=feedback_event)
+                response = requests.post(f'http://{host}:{port}/api/v1/feedback/', json=feedback_event)
                 response.raise_for_status()
                 logging.info(f"Feedback published: {feedback_event}")
             except Exception as e:
