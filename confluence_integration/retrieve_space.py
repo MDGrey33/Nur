@@ -210,7 +210,6 @@ def get_comment_content(comment_id):
         return ""  # Return empty string if an error occurs
 
 
-
 def process_page(page_id, space_key, file_manager, page_content_map):
     """
     Process a page and store its data in files and a database.
