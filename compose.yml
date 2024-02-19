@@ -18,19 +18,6 @@ services:
       - NUR_API_HOST=web
       - NUR_API_PORT=8000
   
-  manager:
-    depends_on:
-      - web
-    build:
-      context: .
-      dockerfile: Dockerfile
-    tty: true
-    volumes:
-      - shared_content:/app/content
-    environment:
-      - NUR_API_HOST=web
-      - NUR_API_PORT=8000
-  
   slack:
     depends_on:
       - web
