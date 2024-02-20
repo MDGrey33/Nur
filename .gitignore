@@ -1,7 +1,6 @@
 /.idea/
 .DS_Store
 *.pyc
-/credentials.py
 /configuration.py
 /content/*
 /content.toptal.backup/*

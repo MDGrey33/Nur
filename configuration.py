@@ -38,12 +38,8 @@ persist_page_vector_queue_path = os.path.join(project_path, "content", "transact
 
 
 # Assistant IDs
-qa_assistant_id_prod_shams = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
-qa_assistant_id_with_rag_shams = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
-quizz_assistant_id_amar = "asst_nMlrzxoYSepkH0AigAtRDMdl"
-qa_assistant_id_on_free_credit_account = "asst_RjPJlkVCfaHTLgalw9BXAuBi"
-qa_assistant_id = qa_assistant_id_prod_shams
-quizz_assistant_id = quizz_assistant_id_amar
+qa_assistant_id = os.environ.get("OPENAI_ASSISTANT_ID_QA")
+quizz_assistant_id = os.environ.get("OPENAI_ASSISTANT_ID_KNOWLEDGE_GAP")
 
 # Model IDs
 # Doesn't apply for assistants

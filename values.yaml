@@ -1,0 +1,44 @@
+toptal-apps:
+  app:
+    replicaCount: 1
+    ports:
+    - name: http
+      number: &port 3000
+      args: ['poetry', 'run', 'python', 'api/endpoint.py']
+
+settings:
+  environments:
+    common:
+
+
+ingressRoute:
+  enabled: false
+
+ingress-route:
+  enabled: true
+  entryPoints: ["websecure"]
+  class: traefik2
+  routes:
+  - host: &host top-assist.toptal.rocks
+
+DNSEndpoint:
+  enabled: true
+  dnsName: *host
+
+affinity: &affinity
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: "cloud.google.com/gke-nodepool"
+          operator: In
+          values:
+          - "preemptible"
+#postgresql:
+#  primary:
+#    affinity: *affinity
+#redis:
+#  master:
+#    affinity: *affinity
+#  slave:
+#    affinity: *affinity

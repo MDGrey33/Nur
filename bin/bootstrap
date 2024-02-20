@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Check if the "content" directory structure needs to be created
-if [ ! -d "content" ]; then
-    echo "Creating the 'content' directory structure..."
-    mkdir content
-    mkdir content/database
-    mkdir content/database/confluence_page_vectors
-    mkdir content/file_system
-fi
-
 # Check if Poetry is installed by checking the command's existence
 if ! command -v poetry &> /dev/null; then
     echo "Poetry could not be found. Please install Poetry and then rerun this script."
