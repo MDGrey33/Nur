@@ -15,3 +15,5 @@ FROM base as main
 ENV PYTHONPATH "/app"
 COPY --from=base /app /app
 COPY --from=base $POETRY_HOME $POETRY_HOME
+
+EXPOSE 3020

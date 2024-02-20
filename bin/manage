@@ -1,1 +1,1 @@
-docker exec -it nur-slack-1 poetry run python main.py
+docker exec -it top-assist-app-1 poetry run python main.py

@@ -2,28 +2,32 @@ toptal-apps:
   app:
     replicaCount: 1
     ports:
-    - name: http
-      number: &port 3000
+    - name: api
+      number: &port 3020
       args: ['poetry', 'run', 'python', 'api/endpoint.py']
+    
+    - name: slack
+      number: &port 3021
+      args: ['poetry', 'run', 'python', 'slack/channel_interaction.py']
+
+service:
+  healthCheck: false
+  type: ClusterIP
+  port: *port
 
 settings:
   environments:
     common:
-
+      NUR_API_HOST: http://top-assist.toptal.rocks"
+      NUR_API_PORT: *port
 
 ingressRoute:
-  enabled: false
+  host: top-assist.toptal.rocks
+  oauth: false
 
-ingress-route:
-  enabled: true
-  entryPoints: ["websecure"]
-  class: traefik2
-  routes:
-  - host: &host top-assist.toptal.rocks
-
-DNSEndpoint:
-  enabled: true
-  dnsName: *host
+tolerations: &tolerations
+  - key: cloud.google.com_gke-preemptible
+    operator: Exists
 
 affinity: &affinity
   nodeAffinity:
@@ -34,11 +38,3 @@ affinity: &affinity
           operator: In
           values:
           - "preemptible"
-#postgresql:
-#  primary:
-#    affinity: *affinity
-#redis:
-#  master:
-#    affinity: *affinity
-#  slave:
-#    affinity: *affinity
