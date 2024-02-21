@@ -10,6 +10,7 @@ from slack.channel_interaction import load_slack_bot
 from datetime import datetime
 from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
+from oai_assistants.openai_assistant import load_manage_assistants
 
 
 def load_new_documentation_space():
@@ -47,6 +48,7 @@ def main_menu():
         print("3. Ask a question to GPT-4T")
         print("4. Sync up QA articles to Confluence")
         print("5. Start Slack Bot")
+        print("6. Manage assistants")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
@@ -77,6 +79,9 @@ def main_menu():
             # Start the Slack bot in the main thread
             load_slack_bot()
             print("Slack Bot is running in parallel processing mode.")
+
+        elif choice == "6":
+            load_manage_assistants()
 
         elif choice == "0":
             print("Exiting program.")
