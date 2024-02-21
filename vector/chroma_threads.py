@@ -116,13 +116,14 @@ def retrieve_relevant_documents(question: str) -> List[str]:
     client = chromadb.PersistentClient(path=vector_folder_path)
 
     collections = client.list_collections()
+    print(f"Available collections: {collections}")
 
     # Assuming you have a collection named 'documents' in your ChromaDB
     collection = client.get_collection('TopAssist')
 
     count_result = collection.count()
 
-    print()
+    print(f"\n{count_result} results\n")
 
     # Perform a similarity search in the collection
     similar_items = collection.query(
