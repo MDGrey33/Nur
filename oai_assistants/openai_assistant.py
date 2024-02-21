@@ -357,6 +357,10 @@ def user_interaction(client):
             print("Invalid choice. Please select a valid option.")
 
 
-if __name__ == "__main__":
+def load_manage_assistants():
     client = initiate_client()
     user_interaction(client)
+
+
+if __name__ == "__main__":
+    load_manage_assistants()
