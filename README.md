@@ -40,11 +40,9 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - pycharm
 
 ## Configuration
-1. Rename credentials_example.py to credentials.py
-2. Add openai api key to ./credentials
-2. Add confluence credentials to ./credentials
-3. To listen to slack create slack app and add the credentials in ./credentials
-4. All operational content lives in `./content` in shell mode. In Docker mode, this links to a shared volume named `nur_shared_content`
+1. Rename credentials_example.py to credentials.py & .env.example to .env
+2. Follow the instructions in the files to fill in the values
+
 
 ### Run Nur via shell
 
