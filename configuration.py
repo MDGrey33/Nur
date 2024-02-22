@@ -64,5 +64,6 @@ embedding_model_id = embedding_model_id_latest_small
 document_count = 10
 
 # Configuration for the Nur Services API
-api_host = "localhost"
-api_port = 8001
+# get the values from the environment variables if available or use the default values
+api_host = os.environ.get("NUR_API_HOST", "localhost")
+api_port = os.environ.get("NUR_API_PORT, 8000")
