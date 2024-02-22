@@ -174,24 +174,6 @@ def retrieve_relevant_documents_langchain(question):
 
 
 if __name__ == '__main__':
-    '''
-    # Example usage
-    text = "This is an example text to generate an embedding."
-    embedding = generate_embedding(text)
-    print(embedding)
-    '''
-    '''
-    # vectorized_page_ids = add_to_vector()
-    question = "what is the functionality of this solution?"
-    relevant_document_ids = retrieve_relevant_documents(question)
-    for result in relevant_document_ids:
-        print(result)
-        print("---------------------------------------------------")
-    '''
-    '''
-    document_ids = retrieve_relevant_documents_chroma("what is the scope of the billing team?")
-    print(document_ids)
-    '''
     # Call the function with a test page ID and print the outcome
     page_id = 420577502  # Example page ID for debugging
     embedding, error = generate_embedding(page_id)

@@ -67,3 +67,6 @@ document_count = 10
 # get the values from the environment variables if available or use the default values
 api_host = os.environ.get("NUR_API_HOST", "localhost")
 api_port = os.environ.get("NUR_API_PORT, 8000")
+
+# Name of the vector collection
+vector_collection_name = "TopAssist"
