@@ -62,3 +62,7 @@ embedding_model_id = embedding_model_id_latest_small
 
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
 document_count = 10
+
+# Configuration for the Nur Services API
+api_host = "localhost"
+api_port = 8001

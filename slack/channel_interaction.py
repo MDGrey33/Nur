@@ -13,9 +13,10 @@ from credentials import slack_bot_user_oauth_token, slack_app_level_token
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from database.nur_database import Session, QAInteractionManager
+from configuration import api_host, api_port
 
-host = os.environ.get("NUR_API_HOST", "localhost")
-port = os.environ.get("NUR_API_PORT", 8000)
+host = os.environ.get("NUR_API_HOST", api_host)
+port = os.environ.get("NUR_API_PORT", api_port)
 
 # get slack bot user id
 def get_bot_user_id(bot_oauth_token):

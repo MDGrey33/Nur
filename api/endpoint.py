@@ -10,9 +10,10 @@ from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
 from vector.chroma_threads import generate_embedding
 from database.nur_database import add_or_update_embed_vector
+from configuration import api_host, api_port
 
-host = os.environ.get("NUR_API_HOST", "localhost")
-port = os.environ.get("NUR_API_PORT", 8000)
+host = os.environ.get("NUR_API_HOST", api_host)
+port = os.environ.get("NUR_API_PORT", api_port)
 
 processor = FastAPI()
 

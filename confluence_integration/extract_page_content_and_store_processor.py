@@ -9,9 +9,10 @@ from configuration import persist_page_processing_queue_path, persist_page_vecto
 from database.nur_database import get_page_ids_missing_embeds
 import time
 import logging
+from configuration import api_host, api_port
 
-host = os.environ.get("NUR_API_HOST", "localhost")
-port = os.environ.get("NUR_API_PORT", 8000)
+host = os.environ.get("NUR_API_HOST", api_host)
+port = os.environ.get("NUR_API_PORT", api_port)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
