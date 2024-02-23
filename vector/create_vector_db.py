@@ -49,7 +49,7 @@ def add_to_vector(collection_name):
 
     # Add embeddings to the collection
     try:
-        collection.add(
+        collection.upsert(
             ids=valid_page_ids,
             embeddings=valid_embeddings,
             metadatas=[{"page_id": pid} for pid in valid_page_ids]  # Assuming you want to store page IDs as metadata
