@@ -10,6 +10,9 @@ from database.nur_database import get_page_ids_missing_embeds
 import time
 import logging
 from configuration import api_host, api_port
+from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
+
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
@@ -115,14 +118,20 @@ def get_page_content_using_queue(space_key):
     page_content_map = {}
     page_processor = PageProcessor(file_manager, space_key)
 
-    while (page_id := process_page_queue.dequeue_page()) is not None:
+    def process_page_wrapper(page_id):
         logging.info(f"Processing page with ID {page_id}...")
         page_processor.process_page(page_id, page_content_map)
         vectorization_queue.enqueue_page(page_id)
-
         process_page_queue.task_done()
         logging.info(f"Page with ID {page_id} processing complete, added for vectorization.")
-    # iterate through the page_content_map and call the embed api the IDs list
+
+    # Create a ThreadPoolExecutor to manage concurrency
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        # Submit tasks to the executor as pages are dequeued
+        while (page_id := process_page_queue.dequeue_page()) is not None:
+            executor.submit(process_page_wrapper, page_id)
+
+    # After all threads are done, continue with the single-threaded part
     page_ids = [page_id for page_id in page_content_map.keys()]
     for page_id in page_ids:
         submit_embedding_creation_request(page_id)
@@ -130,7 +139,7 @@ def get_page_content_using_queue(space_key):
     store_pages_data(space_key, page_content_map)
 
 
-def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 30) -> None:
+def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None:
     for attempt in range(retry_limit):
         # Retrieve the IDs of pages that are still missing embeddings.
         page_ids = get_page_ids_missing_embeds()
@@ -145,7 +154,7 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 30) -> Non
             # Submit a request to generate an embedding for each page ID.
             submit_embedding_creation_request(page_id)
             # A brief delay between requests to manage load and potentially avoid rate limiting.
-            time.sleep(0.5)
+            # time.sleep(0.2)
 
         print(f"Waiting for {wait_time} seconds for embeddings to be processed...")
         time.sleep(wait_time)

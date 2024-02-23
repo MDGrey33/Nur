@@ -10,15 +10,16 @@ from configuration import vector_collection_name
 client = chromadb.PersistentClient(path=vector_folder_path)
 
 
-def add_to_vector(collection_name):
+def add_to_vector(collection_name, space_key=None):
     """
     Retrieves all page data from the database, uses the stored embeddings, and adds them to the vector store.
 
     Args:
         collection_name (str): The name of the collection to store embeddings.
+        space_key (str): The key of the space to retrieve page data from. If None, retrieves data from all spaces.
     """
     # Retrieve all documents, their corresponding IDs, and embeddings
-    page_ids, _, embeddings = get_all_page_data_from_db()
+    page_ids, _, embeddings = get_all_page_data_from_db(space_key=space_key)
 
     # Deserialize the embeddings and filter out None values
     valid_embeddings = []
@@ -45,9 +46,11 @@ def add_to_vector(collection_name):
     print("Completed deserializing all embeddings.")
 
     # Ensure the collection exists
+    print(f"Ensuring collection '{collection_name}' exists...")
     collection = client.get_or_create_collection(collection_name)
 
     # Add embeddings to the collection
+    print(f"Adding {len(valid_embeddings)} embeddings to the collection '{collection_name}'...")
     try:
         collection.upsert(
             ids=valid_page_ids,
@@ -59,12 +62,12 @@ def add_to_vector(collection_name):
         print(f"Error adding embeddings to the collection: {e}")
 
 
-def add_embeds_to_vector_db():
+def add_embeds_to_vector_db(space_key=None):
     """
     Adds the embeddings to the vector database.
     """
     collection_name = vector_collection_name
-    add_to_vector(collection_name)
+    add_to_vector(collection_name, space_key=space_key)
     print(f"Embeddings added to {collection_name} collection.")
 
 

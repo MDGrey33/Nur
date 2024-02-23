@@ -10,6 +10,7 @@ from configuration import persist_page_processing_queue_path
 from confluence_integration.confluence_client import ConfluenceClient
 import requests
 import logging
+from threading import Thread
 
 
 # Initialize Confluence API
@@ -57,7 +58,8 @@ def get_child_ids(item_id, content_type):
 
 def get_all_page_ids_recursive(space_key):
     """
-    Recursively retrieves all page IDs in a given space, including child pages.
+    Recursively retrieves all page IDs in a given space, including child pages, with minimal threading
+    for initial child page fetching.
 
     Args:
     space_key (str): The key of the Confluence space.
@@ -65,24 +67,50 @@ def get_all_page_ids_recursive(space_key):
     Returns:
     list: A list of all page IDs in the space.
     """
-
-    def get_child_pages_recursively(page_id):
-        # Inner function to recursively get child page IDs
-        child_pages = []
-        child_page_ids = get_child_ids(page_id, content_type='page')
-        for child_id in child_page_ids:
-            child_pages.append(child_id)
-            child_pages.extend(get_child_pages_recursively(child_id))
-        return child_pages
-
     all_pages = []
     top_level_ids = get_top_level_ids(space_key)
+    threads = []
+
+    def get_child_pages_recursively(page_id):
+        """
+        Inner function to recursively get child page IDs
+        """
+        child_pages = []
+        child_page_ids = get_child_ids(page_id, content_type='page')
+
+        # Error handling added within the recursive fetching process
+        for child_id in child_page_ids:
+            try:
+                child_pages.append(child_id)
+                child_pages.extend(get_child_pages_recursively(child_id))
+            except Exception as e:
+                logging.error(f"Error fetching child pages for {child_id}: {e}")
+
+        return child_pages
+
+    def fetch_and_store_child_pages(top_level_id):
+        """
+        Fetches child pages for a given top-level page and stores them in all_pages.
+        Designed to be run in a separate thread.
+        """
+        nonlocal all_pages
+        try:
+            all_pages.append(top_level_id)
+            all_pages.extend(get_child_pages_recursively(top_level_id))
+        except Exception as e:
+            logging.error(f"Error processing top-level page {top_level_id}: {e}")
+
+    # Start a thread for each top-level page to fetch its child pages
     for top_level_id in top_level_ids:
-        all_pages.append(top_level_id)
-        all_pages.extend(get_child_pages_recursively(top_level_id))
+        thread = Thread(target=fetch_and_store_child_pages, args=(top_level_id,))
+        threads.append(thread)
+        thread.start()
+
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
 
     return all_pages
-
 
 def get_all_comment_ids_recursive(page_id):
     """

@@ -191,13 +191,19 @@ def get_page_ids_missing_embeds():
     return page_ids
 
 
-def get_all_page_data_from_db():
+def get_all_page_data_from_db(space_key=None):
     """
-    Retrieve all page data and embeddings from the database without any filters.
+    Retrieve all page data and embeddings from the database. If a space_key is provided,
+    filter the records to only include pages from that specific space.
+    :param space_key: Optional; the specific space key to filter pages by.
     :return: Tuple of page_ids (list of page IDs), all_documents (list of document strings), and embeddings (list of embeddings as strings)
     """
     session = Session()
-    records = session.query(PageData).all()
+
+    if space_key:
+        records = session.query(PageData).filter(PageData.space_key == space_key).all()
+    else:
+        records = session.query(PageData).all()
 
     page_ids = [record.page_id for record in records]
     embeddings = [record.embed for record in records]  # Assuming embed is directly stored as a string
@@ -210,7 +216,6 @@ def get_all_page_data_from_db():
 
     session.close()
     return page_ids, all_documents, embeddings
-
 
 def get_page_data_from_db():
     """

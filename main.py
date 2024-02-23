@@ -23,7 +23,7 @@ def load_new_documentation_space():
         space_manager = SpaceManager()
         last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         space_manager.upsert_space_info(space_key, space_name, last_import_date)
-        add_embeds_to_vector_db()
+        add_embeds_to_vector_db(space_key)
         print(f"\nSpace '{space_name}' retrieval and indexing complete.")
     print("\nSpace retrieval and indexing complete.")
 
