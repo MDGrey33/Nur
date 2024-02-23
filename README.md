@@ -1,12 +1,12 @@
 # Nur
-The self actualizing documentation framework that heals its knowledge gaps as naturally as a ray of light
+The self-actualizing documentation framework that heals its knowledge gaps as naturally as a ray of light
 [Custom GPT to discuss the code base](https://chat.openai.com/g/g-zKBLXtfrD-shams-nur)
 ## Feature list
 ### announcements:
-- 2024-02-16: Migrated successfully to python 3.12 and poetry to simplify onboarding contributors
+- 2024-02-16: Migrated successfully to Python 3.12 and poetry to simplify onboarding contributors
 ### Done:
 #### Capabilities
-- add a confluence space to the bots knowledge
+- add a confluence space to the Nurs' knowledge
 - have a conversation with the bot based on the knowledge in any slack channel
 #### features
 - Up to 15 documents in context with every question
@@ -28,14 +28,22 @@ The self actualizing documentation framework that heals its knowledge gaps as na
 - Add interaction to confluence space 
 - Enable confluence edit or new page recommendation
 - Add credibility rating to database 
-- Trivia question collector to recover knowledge gaps
+- Knowledge gap recovery gamification
+  - Collects the top unanswered questions by theme
+  - Identify the people who asked them
+  - We invite to the Trivia channel the users who asked the. questions and the domain experts
+  - The bot asks the questions, people answer and discuss till satisfaction
+  - People thumbs up the good contributions
+  - The bot collects the conversation data and based on it:
+  - Proposes new documents
+  - Upgrades the leaderboard with the top contributors
 
 
 
 ## Setup
 ### prerequisites:
 - sqlite3
-- python 3.12
+- Python 3.12
 - poetry
 - pycharm
 
