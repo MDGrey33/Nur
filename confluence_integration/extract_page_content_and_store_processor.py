@@ -154,7 +154,7 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None
             # Submit a request to generate an embedding for each page ID.
             submit_embedding_creation_request(page_id)
             # A brief delay between requests to manage load and potentially avoid rate limiting.
-            # time.sleep(0.2)
+            time.sleep(0.5)
 
         print(f"Waiting for {wait_time} seconds for embeddings to be processed...")
         time.sleep(wait_time)

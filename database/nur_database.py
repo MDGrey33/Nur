@@ -3,8 +3,43 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, B
 from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import
 import sqlite3
 from configuration import sql_file_path
-from datetime import datetime
+from datetime import datetime, timezone
 import json
+from functools import wraps
+import time
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+
+
+def retry_on_lock(exception, max_attempts=5, initial_wait=0.5, backoff_factor=2):
+    """
+    A decorator to retry a database operation in case of a lock.
+
+    Args:
+        exception: The exception to catch and retry on.
+        max_attempts (int): Maximum number of retry attempts.
+        initial_wait (float): Initial wait time between attempts in seconds.
+        backoff_factor (int): Factor by which to multiply wait time for each retry.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            attempts = 0
+            wait_time = initial_wait
+            while attempts < max_attempts:
+                try:
+                    return func(*args, **kwargs)
+                except exception as e:
+                    if "database is locked" in str(e):
+                        print(f"Database is locked, retrying in {wait_time} seconds...")
+                        time.sleep(wait_time)
+                        attempts += 1
+                        wait_time *= backoff_factor
+                    else:
+                        raise
+            raise OperationalError("Maximum retry attempts reached, database still locked.")
+        return wrapper
+    return decorator
+
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
@@ -80,6 +115,7 @@ class QAInteractionManager:
     def __init__(self, session):
         self.session = session
 
+    @retry_on_lock(OperationalError)
     def add_question_and_answer(self, question, answer, thread_id, assistant_thread_id, channel_id, question_ts, answer_ts):
         serialized_answer = json.dumps(answer.__dict__) if not isinstance(answer, str) else answer
 
@@ -102,6 +138,7 @@ class QAInteractionManager:
         self.session.add(interaction)
         self.session.commit()
 
+    @retry_on_lock(OperationalError)
     def add_comment_to_interaction(self, thread_id, comment):
         """
         Add a comment to an existing Q&A interaction.
@@ -147,6 +184,7 @@ def parse_datetime(date_string):
     return datetime.fromisoformat(date_string.replace('Z', '+00:00'))
 
 
+@retry_on_lock(OperationalError)
 def store_pages_data(space_key, pages_data):
     """
     Store Confluence page data into the database.
@@ -155,25 +193,25 @@ def store_pages_data(space_key, pages_data):
     space_key (str): The key of the Confluence space.
     pages_data (dict): A dictionary of page data, keyed by page ID.
     """
-    for page_id, page_info in pages_data.items():
-        created_date = parse_datetime(page_info['createdDate'])
-        last_updated = parse_datetime(page_info['lastUpdated'])
-        date_pulled_from_confluence = page_info['datePulledFromConfluence']
+    with Session() as session:
+        for page_id, page_info in pages_data.items():
+            created_date = parse_datetime(page_info['createdDate'])
+            last_updated = parse_datetime(page_info['lastUpdated'])
+            date_pulled_from_confluence = page_info['datePulledFromConfluence']
 
-        new_page = PageData(page_id=page_id,
-                            space_key=space_key,
-                            title=page_info['title'],
-                            author=page_info['author'],
-                            createdDate=created_date,
-                            lastUpdated=last_updated,
-                            content=page_info['content'],
-                            comments=page_info['comments'],
-                            date_pulled_from_confluence=date_pulled_from_confluence
-                            )
-        session.add(new_page)
-        print(f"Page with ID {page_id} written to database")
-    session.commit()
-    session.close()
+            new_page = PageData(page_id=page_id,
+                                space_key=space_key,
+                                title=page_info['title'],
+                                author=page_info['author'],
+                                createdDate=created_date,
+                                lastUpdated=last_updated,
+                                content=page_info['content'],
+                                comments=page_info['comments'],
+                                date_pulled_from_confluence=date_pulled_from_confluence
+                                )
+            session.add(new_page)
+            print(f"Page with ID {page_id} written to database")
+        session.commit()
 
 
 def get_page_ids_missing_embeds():
@@ -246,6 +284,7 @@ def get_page_data_from_db():
     return page_ids, all_documents, embeddings
 
 
+@retry_on_lock(OperationalError)
 def add_or_update_embed_vector(page_id, embed_vector):
     """
     Add or update the embed vector data for a specific page in the database, and update the last_embedded timestamp.
@@ -257,24 +296,25 @@ def add_or_update_embed_vector(page_id, embed_vector):
     # Serialize the embed_vector to a JSON string
     embed_vector_json = json.dumps(embed_vector)
 
-    # Start a session
-    session = Session()
+    # Initialize the session using a context manager to ensure proper resource management
+    with Session() as session:
+        try:
+            # Find the page by page_id
+            page = session.query(PageData).filter_by(page_id=page_id).first()
 
-    # Find the page by page_id
-    page = session.query(PageData).filter_by(page_id=page_id).first()
+            if page:
+                # Page found, update the embed field and last_embedded timestamp
+                page.embed = embed_vector_json
+                page.last_embedded = datetime.now(timezone.utc)
+                print(f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated.")
+            else:
+                # Page not found, handle accordingly, possibly by creating a new record or raising an error
+                print(f"No page found with ID {page_id}. Consider handling this case as needed.")
 
-    if page:
-        # Page found, update the embed field and last_embedded timestamp
-        page.embed = embed_vector_json
-        page.last_embedded = datetime.now()  # Update the last_embedded to the current datetime
-        session.commit()
-        print(f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated.")
-    else:
-        # Page not found, handle the case where the page does not exist
-        print(f"No page found with ID {page_id}")
-
-    # Close the session
-    session.close()
+            session.commit()  # Commit the changes if all operations above are successful
+        except SQLAlchemyError as e:
+            session.rollback()  # Rollback the transaction on error
+            raise e  # Optionally re-raise the exception to signal failure to the caller
 
 
 def get_page_data_by_ids(page_ids):
@@ -315,6 +355,7 @@ def get_page_data_by_ids(page_ids):
     return all_documents, retrieved_page_ids
 
 
+@retry_on_lock(OperationalError)
 def update_embed_date(page_ids):
     """
     Update the last_embedded timestamp in the database for the given page IDs.
@@ -331,6 +372,7 @@ def update_embed_date(page_ids):
     return True
 
 
+@retry_on_lock(OperationalError)
 def mark_page_as_processed(page_id):
     """
     Mark a page as processed in the database.
@@ -366,6 +408,7 @@ def is_page_processed(page_id, last_updated):
     return False
 
 
+@retry_on_lock(OperationalError)
 def reset_processed_status():
     """
     Reset the processed status of all pages.

@@ -58,10 +58,10 @@ model_id = gpt_4t
 embedding_model_id_latest_large = "text-embedding-3-large"
 embedding_model_id_latest_small = "text-embedding-3-small"
 embedding_model_id_ada = "text-embedding-ada-002"
-embedding_model_id = embedding_model_id_latest_small
+embedding_model_id = embedding_model_id_latest_large
 
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
-document_count = 10
+document_count = 15
 
 # Configuration for the Nur Services API
 # get the values from the environment variables if available or use the default values
