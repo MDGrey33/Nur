@@ -47,6 +47,7 @@ The self-actualizing documentation framework that heals its knowledge gaps as na
 - poetry
 - pycharm
 
+
 ## Configuration
 1. Rename credentials_example.py to credentials.py & .env.example to .env
 2. Follow the instructions in the files to fill in the values
@@ -100,3 +101,16 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 2. Two-way to slack api and from slack stream (for receiving and sending messages)
 3. Outgoing anonymized telemetry data to Chroma that will be disabled soon
 4. Outgoing to confluence API for (document management)
+
+## Technologies
+- chromadb
+- slack
+- confluence
+- persis-queue
+## Technologies in consideration
+- aws
+- azure
+- pinocone
+- celery
+- rabbitmq
+- postgreaql
