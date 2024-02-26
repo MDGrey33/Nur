@@ -3,14 +3,13 @@ import os
 import requests
 from persistqueue import Queue
 from file_system.file_manager import FileManager
-from database.nur_database import store_pages_data, is_page_processed, get_last_updated_timestamp
+from database.page_manager import store_pages_data, is_page_processed, get_last_updated_timestamp
 from confluence_integration.retrieve_space import process_page
 from configuration import persist_page_processing_queue_path, persist_page_vector_queue_path
-from database.nur_database import get_page_ids_missing_embeds
+from database.page_manager import get_page_ids_missing_embeds
 import time
 import logging
 from configuration import api_host, api_port
-from threading import Thread
 from concurrent.futures import ThreadPoolExecutor
 
 

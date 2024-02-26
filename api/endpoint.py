@@ -9,7 +9,7 @@ from credentials import oai_api_key
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
 from vector.chroma_threads import generate_embedding
-from database.nur_database import add_or_update_embed_vector
+from database.page_manager import add_or_update_embed_vector
 from configuration import api_host, api_port
 
 host = os.environ.get("NUR_API_HOST", api_host)

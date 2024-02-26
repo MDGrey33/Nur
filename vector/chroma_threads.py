@@ -2,8 +2,8 @@
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from configuration import vector_folder_path, file_system_path, embedding_model_id
-from database.nur_database import get_page_data_from_db
-from database.nur_database import update_embed_date
+from database.page_manager import get_page_data_from_db
+from database.page_manager import update_embed_date
 import openai
 from credentials import oai_api_key
 from file_system.file_manager import FileManager

@@ -1,7 +1,6 @@
-# ./database/nur_database.py
+# ./database/interaction_manager.py
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean
 from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import
-import sqlite3
 from configuration import sql_file_path
 from datetime import datetime, timezone
 import json
@@ -60,6 +59,8 @@ class QAInteractions(Base):
     question_timestamp = Column(DateTime)
     answer_timestamp = Column(DateTime)
     comments = Column(Text, default=json.dumps([]))  # Set default to an empty JSON array
+    last_embedded = Column(DateTime)
+    embed = Column(Text)
 
 
 class QAInteractionManager:
@@ -123,6 +124,29 @@ class QAInteractionManager:
 
     def get_all_interactions(self):
         return self.session.query(QAInteractions).all()
+
+    @retry_on_lock(OperationalError)
+    def add_embed_to_interaction(self, thread_id, embed):
+        """
+        Add or update the embed data for a specific interaction identified by thread_id.
+        :param thread_id: The thread ID of the interaction to update.
+        :param embed: The embed data to add or update.
+        """
+        interaction = self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
+        if interaction:
+            interaction.embed = embed  # Assuming 'embed' is stored as a JSON or string
+            interaction.last_embedded = datetime.now(timezone.utc)  # Update the timestamp
+            self.session.commit()
+        else:
+            print(f"No interaction found with thread ID {thread_id}")
+
+    def get_interactions_without_embeds(self):
+        """
+        Retrieve all interactions that do not have embed data.
+        Returns:
+            list: A list of QAInteractions objects without embed data.
+        """
+        return self.session.query(QAInteractions).filter(QAInteractions.embed.is_(None)).all()
 
 
 # Set up the database engine and create tables if they don't exist

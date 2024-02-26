@@ -1,7 +1,7 @@
 # chroma_module.py
 from configuration import vector_folder_path
 import chromadb
-from database.nur_database import get_all_page_data_from_db
+from database.page_manager import get_all_page_data_from_db
 import json
 from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
 from configuration import vector_collection_name
