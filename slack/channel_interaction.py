@@ -12,7 +12,7 @@ from typing import List
 from credentials import slack_bot_user_oauth_token, slack_app_level_token
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from database.nur_database import Session, QAInteractionManager
+from database.interaction_manager import Session, QAInteractionManager
 from configuration import api_host, api_port
 
 host = os.environ.get("NUR_API_HOST", api_host)
