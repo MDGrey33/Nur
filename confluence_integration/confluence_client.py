@@ -9,7 +9,6 @@ import re
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-
 class ConfluenceClient:
     """
     A class to handle interactions with the Confluence API.
@@ -25,7 +24,6 @@ class ConfluenceClient:
         api_token (str): The API token for authentication.
         """
         self.initialize_confluence_client()
-
 
     def initialize_confluence_client(self):
         """
@@ -161,6 +159,7 @@ class ConfluenceClient:
             if self.space_exists_by_name(space_name):
                 # If the space exists, return its key
                 for space in self.retrieve_space_list():
+                    print(f"{space['name']}found")
                     if space['name'] == space_name:
                         return space['key']
             else:
@@ -195,7 +194,6 @@ class ConfluenceClient:
             parent_id=parent_id,
             type='page'
         )
-
 
     @staticmethod
     def generate_space_key(space_name):
