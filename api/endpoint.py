@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from vector.chroma_threads import generate_embedding
 from database.page_manager import add_or_update_embed_vector
 from configuration import api_host, api_port
+from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
@@ -38,6 +39,11 @@ class FeedbackEvent(BaseModel):
 
 class EmbedRequest(BaseModel):
     page_id: str
+
+
+class InteractionEmbedRequest(BaseModel):
+    interaction_id: str
+
 
 # refactor: probably should not be in the endpoint module.
 def vectorize_document_and_store_in_db(page_id):
@@ -81,6 +87,18 @@ def create_embeds(EmbedRequest: EmbedRequest):
     thread = threading.Thread(target=vectorize_document_and_store_in_db, args=(page_id,))
     thread.start()
     return {"message": "Embedding generation initiated, processing in background", "page_id": page_id}
+
+
+@processor.post("/api/v1/interaction_embeds")
+def create_interaction_embeds(InteractionEmbedRequest: InteractionEmbedRequest):
+    """
+    Endpoint to initiate the embedding generation and storage process in the background.
+    """
+    # Using threading to process the embedding generation and storage without blocking the endpoint response
+    interaction_id = InteractionEmbedRequest.interaction_id
+    thread = threading.Thread(target=vectorize_interaction_and_store_in_db, args=(interaction_id,))
+    thread.start()
+    return {"message": "Interaction embedding generation initiated, processing in background", "page_id": interaction_id}
 
 
 def main():
