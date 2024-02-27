@@ -50,6 +50,8 @@ assistant_id_on_free_credit_account = "asst_RjPJlkVCfaHTLgalw9BXAuBi"
 assistant_id = assistant_id_on_free_credit_account
 
 # Model IDs
+# Doesn't apply for assistants
+# Assistants have as part of the assistant the model id
 gpt_3t = ""
 gpt_4t = "gpt-4-1106-preview"
 model_id = gpt_4t
