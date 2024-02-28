@@ -1,3 +1,10 @@
+import logging
+# some methods that could need change for this use case or be duplicated
+from vector.chroma_threads import generate_embedding
+from database.page_manager import add_or_update_embed_vector
+from database.interaction_manager import QAInteractions
+
+
 def format_interaction(interaction_id):
     """
     Format an interaction for vectorization.
@@ -31,4 +38,9 @@ def vectorize_interaction_and_store_in_db(interaction_id):
     :param interaction_id: The ID of the interaction to vectorize.
     :return: None
     """
-    pass
+    format_interaction(interaction_id)
+    vectorize_interaction(interaction_id)
+    store_interaction_in_db(interaction_id)
+    # logging.info(f"Interaction with ID {interaction_id} vectorized and stored in the database.")
+    return None
+

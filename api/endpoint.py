@@ -12,6 +12,7 @@ from vector.chroma_threads import generate_embedding
 from database.page_manager import add_or_update_embed_vector
 from configuration import api_host, api_port
 from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
+from trivia.trivia_manager import TriviaQuizz
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
@@ -43,6 +44,13 @@ class EmbedRequest(BaseModel):
 
 class InteractionEmbedRequest(BaseModel):
     interaction_id: str
+
+
+class TriviaRequestEvent(BaseModel):
+    domain: str
+    thread_ts: str
+    channel: str
+    user: str
 
 
 # refactor: probably should not be in the endpoint module.
@@ -98,7 +106,24 @@ def create_interaction_embeds(InteractionEmbedRequest: InteractionEmbedRequest):
     interaction_id = InteractionEmbedRequest.interaction_id
     thread = threading.Thread(target=vectorize_interaction_and_store_in_db, args=(interaction_id,))
     thread.start()
-    return {"message": "Interaction embedding generation initiated, processing in background", "page_id": interaction_id}
+    return {"STUB TEXT - STILL IN DEVELOPMENT \nmessage": "Interaction embedding generation initiated, processing in background", "page_id": interaction_id}
+
+
+@processor.post("/api/v1/create_trivia")
+def create_trivia(TriviaRequestEvent: TriviaRequestEvent):
+    """
+    Endpoint to initiate a trivia quizz based on a sepecific domain and share it in specified channel.
+    args: domain, thread_ts, channel, user
+    """
+    # Using retrieve context retrieve interactions where the model failed to find relevant context that are closest to the domain mentioned.
+    # Share the questions on the channel in question and tag the user.
+    # The bot then posts the first question and allows the conversation to go on untill it detects a :check mark: emoji on each question.
+    # The bot will also count the thumbs up provided on each message and keep track of each users thumbs up count.
+    # The bot then creates a confluence page under "Q&A KB" confluence space tagging the top 3 contributors
+
+    thread = threading.Thread(target=TriviaQuizz, args=(TriviaRequestEvent))
+    thread.start()
+    return "STUB TEXT - STILL IN DEVELOPMENT \nmessage: Trivia creation request initiated, processing in background"
 
 
 def main():
