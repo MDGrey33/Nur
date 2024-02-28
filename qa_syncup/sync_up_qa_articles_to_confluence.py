@@ -1,6 +1,23 @@
+# ./qa_syncup/sync_up_qa_articles_to_confluence.py
 from confluence_integration.confluence_client import ConfluenceClient
 from database.interaction_manager import QAInteractionManager, Session
 import json
+
+
+def get_qna_interactions_from_database():
+    """
+    Fetch all Q&A interactions from the database.
+
+    Returns:
+    list: A list of QAInteraction objects.
+    """
+
+    # Initialize QAInteractionManager with the session
+    qa_manager = QAInteractionManager()
+
+    # Fetch all Q&A interactions from the database
+    all_interactions = qa_manager.get_qa_interactions()
+    return all_interactions
 
 
 def format_comment(raw_comment):
@@ -22,24 +39,6 @@ def format_comment(raw_comment):
         timestamp = comment["timestamp"]
         formatted_comments.append(f"{text} (Comment by {user} on {timestamp})")
     return ' '.join(formatted_comments)
-
-
-def get_qna_interactions_from_database():
-    """
-    Fetch all Q&A interactions from the database.
-
-    Returns:
-    list: A list of QAInteraction objects.
-    """
-    # Create a session instance
-    session = Session()
-
-    # Initialize QAInteractionManager with the session
-    qa_manager = QAInteractionManager(session)
-
-    # Fetch all Q&A interactions from the database
-    all_interactions = qa_manager.get_qa_interactions()
-    return all_interactions
 
 
 def create_page_title_and_content(interaction):

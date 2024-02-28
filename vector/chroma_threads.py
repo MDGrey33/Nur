@@ -4,22 +4,13 @@ from langchain_community.vectorstores import Chroma
 from configuration import vector_folder_path, file_system_path, embedding_model_id
 from database.page_manager import get_page_data_from_db
 from database.page_manager import update_embed_date
-import openai
 from credentials import oai_api_key
 from file_system.file_manager import FileManager
 import chromadb
 import logging
 from typing import List
 from configuration import document_count
-
-
-client = openai.OpenAI(api_key=oai_api_key)
-
-
-def embed_text(text, model):
-    response = client.embeddings.create(input=text, model=model)
-    embedding = response.data[0].embedding
-    return embedding
+from open_ai.embedding.embed_manager import embed_text
 
 
 def generate_embedding(page_id, model=embedding_model_id):
@@ -37,7 +28,7 @@ def generate_embedding(page_id, model=embedding_model_id):
         return None, f"Error reading page content: {e}"
 
     try:
-        response = client.embeddings.create(input=page_content, model=model)
+        response = embed_text(text=page_content, model=model)
         # Extract the embedding correctly from the response object
         if response.data and len(response.data) > 0:
             embedding = response.data[0].embedding
@@ -48,54 +39,6 @@ def generate_embedding(page_id, model=embedding_model_id):
         error_message = f"Error generating embedding for page ID {page_id}: {e}"
         logging.error(error_message)
         return None, error_message
-
-
-def vectorize_documents(all_documents, page_ids):
-    """
-    Vectorize a list of documents and add them to the vectorstore.
-    :param all_documents:
-    :param page_ids:
-    :return: page ids of the vectorized documents
-    """
-
-    # Initialize OpenAI embeddings with the API key
-    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key, model=embedding_model_id)
-
-    # Create the Chroma vectorstore with the embedding function
-    vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
-
-    # Prepare page_ids to be added as metadata
-    metadatas = [{"page_id": page_id} for page_id in page_ids]
-
-    # Add texts to the vectorstore
-    vectordb.add_texts(texts=all_documents, metadatas=metadatas)
-
-    # Persist the database
-    vectordb.persist()
-
-    # Update the last_embedded timestamp in the database
-    update_embed_date(page_ids)
-
-    # Return the page ids of the vectorized documents
-    return page_ids
-
-
-def add_to_vector():
-    """
-    Vectorize all new or updated documents and add them to the vectorstore.
-    :return: page ids
-    """
-    all_documents, page_ids = get_page_data_from_db()
-
-    # Check if the lists are empty
-    if not all_documents or not page_ids:
-        print("No new or updated documents to vectorize.")
-        return []
-
-    vectorize_documents(all_documents, page_ids)
-    print(f'Vectorized {len(all_documents)} documents.')
-    print(f'Vectorized page ids: {page_ids}')
-    return page_ids
 
 
 def retrieve_relevant_documents(question: str) -> List[str]:
@@ -142,6 +85,59 @@ def retrieve_relevant_documents(question: str) -> List[str]:
     return document_ids
 
 
+# might be unused candidate for removal
+def vectorize_documents(all_documents, page_ids):
+    """
+    Vectorize a list of documents and add them to the vectorstore.
+    :param all_documents:
+    :param page_ids:
+    :return: page ids of the vectorized documents
+    """
+
+    # Initialize OpenAI embeddings with the API key
+    embedding = OpenAIEmbeddings(openai_api_key=oai_api_key, model=embedding_model_id)
+
+    # Create the Chroma vectorstore with the embedding function
+    vectordb = Chroma(embedding_function=embedding, persist_directory=vector_folder_path)
+
+    # Prepare page_ids to be added as metadata
+    metadatas = [{"page_id": page_id} for page_id in page_ids]
+
+    # Add texts to the vectorstore
+    vectordb.add_texts(texts=all_documents, metadatas=metadatas)
+
+    # Persist the database
+    vectordb.persist()
+
+    # Update the last_embedded timestamp in the database
+    update_embed_date(page_ids)
+
+    # Return the page ids of the vectorized documents
+    return page_ids
+
+
+# might be unused candidate for removal
+def add_to_vector():
+    """
+    Vectorize all new or updated documents and add them to the vectorstore.
+    :return: page ids
+    """
+    all_documents, page_ids = get_page_data_from_db()
+
+    # Check if the lists are empty
+    if not all_documents or not page_ids:
+        print("No new or updated documents to vectorize.")
+        return []
+
+    vectorize_documents(all_documents, page_ids)
+    print(f'Vectorized {len(all_documents)} documents.')
+    print(f'Vectorized page ids: {page_ids}')
+    return page_ids
+
+
+
+
+# might be unused candidate for removal
 def retrieve_relevant_documents_langchain(question):
     """
     Retrieve the most relevant documents for a given question.

@@ -11,6 +11,7 @@ from datetime import datetime
 from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
 from oai_assistants.openai_assistant import load_manage_assistants
+from interactions.vectorize_and_store import vectorize_interactions_and_store_in_db
 
 
 def load_new_documentation_space():
@@ -46,7 +47,7 @@ def main_menu():
         print("1. Load New Documentation Space")
         print("2. Ask a Question to GPT-4T Assistant")
         print("3. Ask a question to GPT-4T")
-        print("4. Sync up QA articles to Confluence")
+        print("4. Create a vector db for interactions")
         print("5. Start Slack Bot")
         print("6. Manage assistants")
         print("0. Cancel/Quit")
@@ -69,8 +70,8 @@ def main_menu():
                 print("\nAnswer:", answer)
 
         elif choice == "4":
-            print("Syncing up QA articles to Confluence...")
-            sync_up_interactions_to_confluence()
+            print("Creating vector db for interactions")
+            vectorize_interactions_and_store_in_db()
 
         elif choice == "5":
             print("Starting Slack Bot Using Assistants and fast API...")

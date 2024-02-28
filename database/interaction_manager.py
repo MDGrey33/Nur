@@ -1,55 +1,16 @@
 # ./database/interaction_manager.py
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean
-from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from sqlalchemy.orm import sessionmaker, declarative_base
 from configuration import sql_file_path
 from datetime import datetime, timezone
 import json
-from functools import wraps
-import time
-from sqlalchemy.exc import OperationalError, SQLAlchemyError
-
-
-def retry_on_lock(exception, max_attempts=5, initial_wait=0.5, backoff_factor=2):
-    """
-    A decorator to retry a database operation in case of a lock.
-
-    Args:
-        exception: The exception to catch and retry on.
-        max_attempts (int): Maximum number of retry attempts.
-        initial_wait (float): Initial wait time between attempts in seconds.
-        backoff_factor (int): Factor by which to multiply wait time for each retry.
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            attempts = 0
-            wait_time = initial_wait
-            while attempts < max_attempts:
-                try:
-                    return func(*args, **kwargs)
-                except exception as e:
-                    if "database is locked" in str(e):
-                        print(f"Database is locked, retrying in {wait_time} seconds...")
-                        time.sleep(wait_time)
-                        attempts += 1
-                        wait_time *= backoff_factor
-                    else:
-                        raise
-            raise OperationalError("Maximum retry attempts reached, database still locked.")
-        return wrapper
-    return decorator
-
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
 
 
 class QAInteractions(Base):
-    """
-    SQLAlchemy model for storing Q&A interactions from Slack.
-    """
     __tablename__ = 'qa_interactions'
-
     interaction_id = Column(Integer, primary_key=True)
     question_text = Column(Text)
     thread_id = Column(String)
@@ -58,95 +19,104 @@ class QAInteractions(Base):
     channel_id = Column(String)
     question_timestamp = Column(DateTime)
     answer_timestamp = Column(DateTime)
-    comments = Column(Text, default=json.dumps([]))  # Set default to an empty JSON array
+    comments = Column(Text, default=json.dumps([]))
     last_embedded = Column(DateTime)
-    embed = Column(Text)
+    embed = Column(Text, default=json.dumps([]))
 
 
 class QAInteractionManager:
-    """
-    Manages the storage and retrieval of Q&A interactions from Slack.
-    """
-    def __init__(self, session):
-        self.session = session
+    def __init__(self):
+        self.engine = create_engine('sqlite:///' + sql_file_path)
+        self.Session = sessionmaker(bind=self.engine)
 
-    @retry_on_lock(OperationalError)
-    def add_question_and_answer(self, question, answer, thread_id, assistant_thread_id, channel_id, question_ts, answer_ts):
-        serialized_answer = json.dumps(answer.__dict__) if not isinstance(answer, str) else answer
+    def add_question_and_answer(self, question, answer, thread_id, assistant_thread_id, channel_id, question_ts,
+                                answer_ts):
+        session = self.Session()
+        try:
+            serialized_answer = json.dumps(answer.__dict__) if not isinstance(answer, str) else answer
+            interaction = QAInteractions(
+                question_text=question,
+                thread_id=thread_id,
+                assistant_thread_id=assistant_thread_id,
+                answer_text=serialized_answer,
+                channel_id=channel_id,
+                question_timestamp=question_ts,
+                answer_timestamp=answer_ts,
+                comments=json.dumps([])  # Initialize an empty list of comments
+            )
+            session.add(interaction)
+            session.commit()
+        except Exception as e:  # It's better to catch more specific exceptions.
+            session.rollback()
+            raise e
+        finally:
+            session.close()
 
-        # Log the types and values of the parameters
-        print(
-            f"Inserting into database: question={question}, answer={answer}, thread_id={thread_id}, assistant_thread_id={assistant_thread_id}, channel_id={channel_id}, question_ts={question_ts}, answer_ts={answer_ts}")
-        print(
-            f"Data types: question={type(question)}, answer={type(answer)}, thread_id={type(thread_id)}, assistant_thread_id={type(assistant_thread_id)}, channel_id={type(channel_id)}, question_ts={type(question_ts)}, answer_ts={type(answer_ts)}")
-
-        interaction = QAInteractions(
-            question_text=question,
-            thread_id=thread_id,
-            assistant_thread_id=assistant_thread_id,
-            answer_text=serialized_answer,
-            channel_id=channel_id,
-            question_timestamp=question_ts,
-            answer_timestamp=answer_ts,
-            comments=json.dumps([])  # Initialize an empty list of comments
-        )
-        self.session.add(interaction)
-        self.session.commit()
-
-    @retry_on_lock(OperationalError)
     def add_comment_to_interaction(self, thread_id, comment):
-        """
-        Add a comment to an existing Q&A interaction.
-        :param thread_id:
-        :param comment:
-        :return:
-        """
-        interaction = self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
-        if interaction:
-            if interaction.comments is None:
-                interaction.comments = json.dumps([])
-            comments = json.loads(interaction.comments)
-            comments.append(comment)
-            interaction.comments = json.dumps(comments)
-            self.session.commit()
+        session = self.Session()
+        try:
+            interaction = session.query(QAInteractions).filter_by(thread_id=thread_id).first()
+            if interaction:
+                if interaction.comments is None:
+                    interaction.comments = json.dumps([])
+                comments = json.loads(interaction.comments)
+                comments.append(comment)
+                interaction.comments = json.dumps(comments)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
 
     def get_interaction_by_thread_id(self, thread_id):
-        return self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
+        session = self.Session()
+        try:
+            return session.query(QAInteractions).filter_by(thread_id=thread_id).first()
+        finally:
+            session.close()
+
+    def get_interaction_by_interaction_id(self, interaction_id):
+        session = self.Session()
+        try:
+            return session.query(QAInteractions).filter_by(interaction_id=interaction_id).first()
+        finally:
+            session.close()
 
     def get_qa_interactions(self):
-        """
-        Retrieve all Q&A interactions.
-
-        Returns:
-            list: A list of QAInteractions objects.
-        """
-        return self.session.query(QAInteractions).all()
+        session = self.Session()
+        try:
+            return session.query(QAInteractions).all()
+        finally:
+            session.close()
 
     def get_all_interactions(self):
-        return self.session.query(QAInteractions).all()
+        session = self.Session()
+        try:
+            return session.query(QAInteractions).all()
+        finally:
+            session.close()
 
-    @retry_on_lock(OperationalError)
-    def add_embed_to_interaction(self, thread_id, embed):
-        """
-        Add or update the embed data for a specific interaction identified by thread_id.
-        :param thread_id: The thread ID of the interaction to update.
-        :param embed: The embed data to add or update.
-        """
-        interaction = self.session.query(QAInteractions).filter_by(thread_id=thread_id).first()
-        if interaction:
-            interaction.embed = embed  # Assuming 'embed' is stored as a JSON or string
-            interaction.last_embedded = datetime.now(timezone.utc)  # Update the timestamp
-            self.session.commit()
-        else:
-            print(f"No interaction found with thread ID {thread_id}")
+    def add_embed_to_interaction(self, interaction_id, embed):
+        session = self.Session()
+        try:
+            interaction = session.query(QAInteractions).filter_by(interaction_id=interaction_id).first()
+            if interaction:
+                interaction.embed = json.dumps(embed)
+                interaction.last_embedded = datetime.now(timezone.utc)
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
 
     def get_interactions_without_embeds(self):
-        """
-        Retrieve all interactions that do not have embed data.
-        Returns:
-            list: A list of QAInteractions objects without embed data.
-        """
-        return self.session.query(QAInteractions).filter(QAInteractions.embed.is_(None)).all()
+        session = self.Session()
+        try:
+            return session.query(QAInteractions).filter(QAInteractions.embed.is_(None)).all()
+        finally:
+            session.close()
 
 
 # Set up the database engine and create tables if they don't exist

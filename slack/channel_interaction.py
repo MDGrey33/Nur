@@ -44,8 +44,7 @@ class ChannelMessageHandler(SlackEventHandler):
     """Handles incoming messages from the channel and publishes questions and feedback to the persist queue"""
 
     def __init__(self):
-        self.db_session = Session()
-        self.interaction_manager = QAInteractionManager(self.db_session)
+        self.interaction_manager = QAInteractionManager()
         self.processed_messages = set()
         self.questions = {}
         self.load_processed_data()

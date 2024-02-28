@@ -65,6 +65,7 @@ embedding_model_id = embedding_model_id_latest_large
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
 document_count = 15
 
+# Refactor: Might want to store only string values here cause the modules are all pulling the environment variable
 # Configuration for the Nur Services API
 # get the values from the environment variables if available or use the default values
 api_host = os.environ.get("NUR_API_HOST", "localhost")

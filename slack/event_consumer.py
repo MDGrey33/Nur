@@ -34,8 +34,7 @@ class FeedbackEvent(BaseModel):
 class EventConsumer:
     def __init__(self):
         self.web_client = WebClient(token=slack_bot_user_oauth_token)
-        self.db_session = Session()
-        self.interaction_manager = QAInteractionManager(self.db_session)
+        self.interaction_manager = QAInteractionManager()
         self.executor = DynamicExecutor()
         logging.log(logging.DEBUG, f"Slack Event Consumer initiated successfully")
 
