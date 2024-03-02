@@ -137,6 +137,19 @@ class QAInteractionManager:
         finally:
             session.close()
 
+    def get_interactions_with_embeds(self):
+        session = self.Session()
+        try:
+            # Filter interactions where embed is either None, the JSON representation of an empty list, or an empty string
+            return session.query(QAInteractions).filter(
+                (QAInteractions.embed.is_not(None)) |
+                (QAInteractions.embed != json.dumps([])) |
+                (QAInteractions.embed != '')
+            ).all()
+        finally:
+            session.close()
+
+
     def is_message_processed(self, channel_id, message_ts):
         session = self.Session()
         try:

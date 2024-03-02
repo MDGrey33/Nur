@@ -12,6 +12,7 @@ from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
 from oai_assistants.openai_assistant import load_manage_assistants
 from interactions.vectorize_and_store import vectorize_interactions_and_store_in_db
+from vector.create_interaction_db import VectorInteractionManager
 
 
 def load_new_documentation_space():
@@ -72,6 +73,8 @@ def main_menu():
         elif choice == "4":
             print("Creating vector db for interactions")
             vectorize_interactions_and_store_in_db()
+            vector_interaction_manager = VectorInteractionManager()
+            vector_interaction_manager.add_to_vector()
 
         elif choice == "5":
             print("Starting Slack Bot Using Assistants and fast API...")

@@ -24,6 +24,7 @@ logging.log(logging.DEBUG, f"Project path: {project_path}")
 file_system_path = project_path + "/content/file_system"
 database_path = project_path + "/content/database"
 vector_folder_path = database_path + "/confluence_page_vectors"
+interactions_folder_path = database_path + "/confluence_interaction_vectors"
 vector_chunk_folder_path = database_path + "/confluence_page_vectors"
 sql_file_path = database_path + "/confluence_pages_sql.db"
 
@@ -73,3 +74,4 @@ api_port = os.environ.get("NUR_API_PORT, 8000")
 
 # Name of the vector collection
 vector_collection_name = "TopAssist"
+interactions_collection_name = "interactions"
