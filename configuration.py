@@ -47,7 +47,7 @@ persist_qna_document_queue_path = os.path.join(project_path, "content", "transac
 assistant_id_prod = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
 assistant_id_with_rag = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
 assistant_id_on_free_credit_account = "asst_RjPJlkVCfaHTLgalw9BXAuBi"
-assistant_id = assistant_id_on_free_credit_account
+assistant_id = assistant_id_prod
 
 # Model IDs
 # Doesn't apply for assistants
@@ -63,7 +63,7 @@ embedding_model_id_ada = "text-embedding-ada-002"
 embedding_model_id = embedding_model_id_latest_large
 
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
-document_count = 15
+document_count = 2
 
 # Refactor: Might want to store only string values here cause the modules are all pulling the environment variable
 # Configuration for the Nur Services API

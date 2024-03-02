@@ -1,4 +1,4 @@
-# ./database/page_manager.py
+# ./database/nur_database.py
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean
 from sqlalchemy.orm import sessionmaker, declarative_base  # Updated import
 import sqlite3
@@ -60,10 +60,10 @@ class PageData(Base):
     createdDate = Column(DateTime)
     lastUpdated = Column(DateTime)
     content = Column(Text)
-    comments = Column(Text)
+    comments = Column(Text, default=json.dumps([]))
     last_embedded = Column(DateTime)
     date_pulled_from_confluence = Column(DateTime)
-    embed = Column(Text)
+    embed = Column(Text, default=json.dumps([]))
 
 
 class PageProgress(Base):
@@ -75,20 +75,6 @@ class PageProgress(Base):
     page_id = Column(String, unique=True)
     processed = Column(Boolean, default=False)
     processed_time = Column(DateTime)
-
-
-class SlackMessageDeduplication(Base):
-    """
-    SQLAlchemy model for storing deduplication data for Slack messages to prevent reprocessing.
-    """
-    __tablename__ = 'slack_message_deduplication'
-
-    id = Column(Integer, primary_key=True)
-    channel_id = Column(String, nullable=False)  # Identifier for the Slack channel.
-    message_ts = Column(String, nullable=False, unique=True)  # Timestamp of the message, unique within a channel.
-
-    def __repr__(self):
-        return f"<SlackMessageDeduplication(channel_id='{self.channel_id}', message_ts='{self.message_ts}')>"
 
 
 def parse_datetime(date_string):
@@ -211,30 +197,26 @@ def add_or_update_embed_vector(page_id, embed_vector):
 
     Args:
         page_id (str): The ID of the page to update.
-        embed_vector: The embed vector data to be added or updated, expected to be a serializable object.
+        embed_vector: The embed vector data to be added or updated, expected to be a list of floats.
     """
-    # Serialize the embed_vector to a JSON string
+    # Serialize the embed_vector to a JSON string here
     embed_vector_json = json.dumps(embed_vector)
 
-    # Initialize the session using a context manager to ensure proper resource management
     with Session() as session:
         try:
-            # Find the page by page_id
             page = session.query(PageData).filter_by(page_id=page_id).first()
 
             if page:
-                # Page found, update the embed field and last_embedded timestamp
-                page.embed = embed_vector_json
+                page.embed = embed_vector_json  # Store the serialized list
                 page.last_embedded = datetime.now(timezone.utc)
                 print(f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated.")
             else:
-                # Page not found, handle accordingly, possibly by creating a new record or raising an error
                 print(f"No page found with ID {page_id}. Consider handling this case as needed.")
 
-            session.commit()  # Commit the changes if all operations above are successful
+            session.commit()
         except SQLAlchemyError as e:
-            session.rollback()  # Rollback the transaction on error
-            raise e  # Optionally re-raise the exception to signal failure to the caller
+            session.rollback()
+            raise e
 
 
 def get_page_data_by_ids(page_ids):

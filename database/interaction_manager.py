@@ -24,6 +24,20 @@ class QAInteractions(Base):
     embed = Column(Text, default=json.dumps([]))
 
 
+class SlackMessageDeduplication(Base):
+    """
+    SQLAlchemy model for storing deduplication data for Slack messages to prevent reprocessing.
+    """
+    __tablename__ = 'slack_message_deduplication'
+
+    id = Column(Integer, primary_key=True)
+    channel_id = Column(String, nullable=False)  # Identifier for the Slack channel.
+    message_ts = Column(String, nullable=False, unique=True)  # Timestamp of the message, unique within a channel.
+
+    def __repr__(self):
+        return f"<SlackMessageDeduplication(channel_id='{self.channel_id}', message_ts='{self.message_ts}')>"
+
+
 class QAInteractionManager:
     def __init__(self):
         self.engine = create_engine('sqlite:///' + sql_file_path)
@@ -114,7 +128,32 @@ class QAInteractionManager:
     def get_interactions_without_embeds(self):
         session = self.Session()
         try:
-            return session.query(QAInteractions).filter(QAInteractions.embed.is_(None)).all()
+            # Filter interactions where embed is either None, the JSON representation of an empty list, or an empty string
+            return session.query(QAInteractions).filter(
+                (QAInteractions.embed.is_(None)) |
+                (QAInteractions.embed == json.dumps([])) |
+                (QAInteractions.embed == '')
+            ).all()
+        finally:
+            session.close()
+
+    def is_message_processed(self, channel_id, message_ts):
+        session = self.Session()
+        try:
+            return session.query(SlackMessageDeduplication).filter_by(channel_id=channel_id,
+                                                                      message_ts=message_ts).first() is not None
+        finally:
+            session.close()
+
+    def record_message_as_processed(self, channel_id, message_ts):
+        session = self.Session()
+        try:
+            dedup_record = SlackMessageDeduplication(channel_id=channel_id, message_ts=message_ts)
+            session.add(dedup_record)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            raise e
         finally:
             session.close()
 

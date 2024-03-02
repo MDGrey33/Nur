@@ -9,10 +9,9 @@ from pydantic import BaseModel
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
 from vector.chroma_threads import retrieve_relevant_documents
-from database.interaction_manager import QAInteractionManager, Session
-from database.page_manager import SlackMessageDeduplication
 from threads.dynamic_executor_assistants import DynamicExecutor
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
+from database.interaction_manager import QAInteractionManager
 
 
 class QuestionEvent(BaseModel):
@@ -39,12 +38,10 @@ class EventConsumer:
         logging.log(logging.DEBUG, f"Slack Event Consumer initiated successfully")
 
     def is_message_processed_in_db(self, channel_id, message_ts):
-        return self.db_session.query(SlackMessageDeduplication).filter_by(channel_id=channel_id, message_ts=message_ts).first() is not None
+        return self.interaction_manager.is_message_processed(channel_id, message_ts)
 
     def record_message_as_processed_in_db(self, channel_id, message_ts):
-        dedup_record = SlackMessageDeduplication(channel_id=channel_id, message_ts=message_ts)
-        self.db_session.add(dedup_record)
-        self.db_session.commit()
+        self.interaction_manager.record_message_as_processed(channel_id, message_ts)
 
     def add_question_and_response_to_database(self, question_event, response_text, assistant_thread_id):
         self.interaction_manager.add_question_and_answer(question=question_event.text, answer=response_text, thread_id=question_event.ts, assistant_thread_id=assistant_thread_id, channel_id=question_event.channel, question_ts=datetime.fromtimestamp(float(question_event.ts)), answer_ts=datetime.now())

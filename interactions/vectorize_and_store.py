@@ -98,15 +98,16 @@ def vectorize_interaction(formatted_interaction, embedding_model_id):
     return embed
 
 
-def store_interaction_embed_in_db(interaction_id, embed):
+def store_interaction_embed_in_db(interaction_id, embed_response_json):
     """
-    Store an interaction in the database.
+    Store an interaction's embedding in the database.
     :param interaction_id: The ID of the interaction to store.
+    :param embed_response_json: The JSON string response containing the embedding.
     :return: None
     """
     interaction_manager = QAInteractionManager()
-    interaction_manager.add_embed_to_interaction(interaction_id, embed)
-    return None
+    # Directly use the JSON string of the embedding vector as received from embed_text
+    interaction_manager.add_embed_to_interaction(interaction_id, embed_response_json)
 
 
 def vectorize_interaction_and_store_in_db(interaction_id):

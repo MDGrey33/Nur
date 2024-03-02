@@ -8,7 +8,7 @@ import threading
 from credentials import oai_api_key
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
-from vector.chroma_threads import generate_embedding
+from vector.chroma_threads import generate_document_embedding
 from database.page_manager import add_or_update_embed_vector
 from configuration import api_host, api_port
 from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
@@ -60,7 +60,7 @@ def vectorize_document_and_store_in_db(page_id):
     :param page_id: The ID of the page to vectorize.
     :return: None
     """
-    embedding, error_message = generate_embedding(page_id)
+    embedding, error_message = generate_document_embedding(page_id)
     if embedding:
         # Store the embedding in the database
         add_or_update_embed_vector(page_id, embedding)
