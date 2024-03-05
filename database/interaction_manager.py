@@ -97,6 +97,17 @@ class QAInteractionManager:
         finally:
             session.close()
 
+    def get_interactions_by_interaction_ids(self, interaction_ids):
+        session = self.Session()
+        try:
+            # The query filters QAInteractions by checking if the interaction_id is in the list of interaction_ids
+            return session.query(QAInteractions).filter(QAInteractions.interaction_id.in_(interaction_ids)).all()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
     def get_qa_interactions(self):
         session = self.Session()
         try:

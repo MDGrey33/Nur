@@ -5,7 +5,6 @@ from oai_assistants.query_assistant_from_documents import query_assistant_with_c
 from gpt_4t.query_from_documents_threads import query_gpt_4t_with_context
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
-from qa_syncup.sync_up_qa_articles_to_confluence import sync_up_interactions_to_confluence
 from slack.channel_interaction import load_slack_bot
 from datetime import datetime
 from database.space_manager import SpaceManager
@@ -13,6 +12,7 @@ from vector.create_vector_db import add_embeds_to_vector_db
 from oai_assistants.openai_assistant import load_manage_assistants
 from interactions.vectorize_and_store import vectorize_interactions_and_store_in_db
 from vector.create_interaction_db import VectorInteractionManager
+from interactions.identify_knowledge_gap import identify_knowledge_gaps
 
 
 def load_new_documentation_space():
@@ -51,6 +51,7 @@ def main_menu():
         print("4. Create a vector db for interactions")
         print("5. Start Slack Bot")
         print("6. Manage assistants")
+        print("7. Identify knowledge gaps")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
@@ -87,11 +88,14 @@ def main_menu():
         elif choice == "6":
             load_manage_assistants()
 
+        elif choice == "7":
+            context = input("Enter the context you want to identifying knowledge gaps in\nex:(billing reminders): ")
+            identify_knowledge_gaps(context)
         elif choice == "0":
             print("Exiting program.")
             break
         else:
-            print("Invalid choice. Please enter 0, 1, 2, 3, 4, 5 or 6.")
+            print("Invalid choice. Please enter 0, 1, 2, 3, 4, 5, 6 or 7.")
 
 
 def ask_question():

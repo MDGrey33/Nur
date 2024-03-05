@@ -1,11 +1,11 @@
 # Import necessary modules and functions
 from configuration import vector_folder_path, file_system_path, embedding_model_id, document_count
+from configuration import pages_collection_name
 from file_system.file_manager import FileManager
 import chromadb
 import logging
 from typing import List
 from open_ai.embedding.embed_manager import embed_text
-import json
 
 
 def generate_document_embedding(page_id, model=embedding_model_id):
@@ -56,8 +56,7 @@ def retrieve_relevant_documents(question: str) -> List[str]:
     collections = client.list_collections()
     logging.info(f"Available collections: {collections}")
 
-    # Assuming you have a collection named 'TopAssist' in your ChromaDB
-    collection = client.get_collection('TopAssist')
+    collection = client.get_collection(pages_collection_name)
 
     # Perform a similarity search in the collection
     similar_items = collection.query(

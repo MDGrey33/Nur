@@ -3,7 +3,7 @@ from oai_assistants.utility import initiate_client
 from oai_assistants.file_manager import FileManager
 from oai_assistants.thread_manager import ThreadManager
 from oai_assistants.assistant_manager import AssistantManager
-from configuration import assistant_id, file_system_path
+from configuration import qa_assistant_id, file_system_path
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -88,7 +88,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     print(f"Assistant manager initiated: {assistant_manager}\n")
 
     # Retrieve the assistant instance
-    assistant = assistant_manager.load_assistant(assistant_id=assistant_id)
+    assistant = assistant_manager.load_assistant(assistant_id=qa_assistant_id)
     print(f"Assistant loaded: {assistant}\n")
 
     # Ensure page_ids is a list
