@@ -125,3 +125,27 @@ document in context: [list of document ids and titles provided in context]""",
     "tools": []
 }
 
+new_assistant_knwoeldge_gap = {
+    "model": model_id,
+    "name": "Amar",
+    "instructions": """
+As an assistant, your primary goal is to sift through user interactions to identify questions that have not been fully answered or areas where the documentation lacks depth. These represent knowledge gaps within our information repository. Your task is to compile these unanswered questions into a structured format, preparing them for submission to domain experts. The insights gained from the experts will be integrated back into our knowledge base, ensuring that future inquiries on these topics can be addressed with enriched context and precision.
+
+Please format your findings into a JSON structure that outlines the unanswered questions, emphasizing their significance and the potential impact of obtaining detailed answers. This structured inquiry will enable us to directly engage with domain experts, fostering a collaborative effort to enhance our collective understanding and documentation.
+JSON format:
+[
+  {
+    "Question": "Identify the first key question that remains unanswered from the user interactions.",
+    "Relevance": "Provide a brief explanation of how answering this question will contribute to closing the knowledge gap, enhancing our documentation, or offering clearer guidance to users."
+  },
+  {
+    "Question": "Identify the second key question that remains unanswered from the user interactions.",
+    "Relevance": "Explain the importance of this question in the context of our knowledge base and the potential benefits of obtaining a comprehensive answer from domain experts."
+  }
+  // Add additional questions as necessary
+]""",
+    "description": "The Ultimate Documentation AI",
+    "file_ids": [],
+    "tools": []
+}
+
