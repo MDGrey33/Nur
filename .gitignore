@@ -10,3 +10,4 @@
 /debug/
 /chroma.log
 /.env
+/bin/env.sh
