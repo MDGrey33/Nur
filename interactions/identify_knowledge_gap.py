@@ -124,12 +124,12 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
     # Format the question with context and query the assistant
 
     formatted_question = ("After analyzing the provided context and interactions, identify the crucial questions that "
-                          "remain unanswered or partially answered. These questions should reflect gaps in our current "
-                          "knowledge or documentation. Compile these questions into a JSON array, following the specified "
-                          "structure. Each entry should include the question itself and a brief explanation of why "
-                          "it was included."
-                          "identified knowledge gap."
-                          f"Only include questions relevant to this context: {context} "
+                          "remain unanswered or partially answered within the domain. These questions should reflect"
+                          "gaps in our current knowledge or documentation and align with the provided domain. "
+                          "Compile these questions into a JSON array, following the specified structure."
+                          "Each entry should include the question itself and a brief explanation of why it was "
+                          "included, how it relates to the domain, and what part of the question wasn't covered."
+                          f"Only include questions relevant to this domain: {context} "
                           f"Context:{formatted_interactions}\n")
 
     print(f"Formatted question: {formatted_question}\n")
