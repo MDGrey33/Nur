@@ -87,7 +87,7 @@ def format_interactions(interactions: List[QAInteractions]) -> str:
     return all_interactions
 
 
-def query_assistant_with_context(query, formatted_interactions, thread_id=None):
+def query_assistant_with_context(context, formatted_interactions, thread_id=None):
     """
     Queries the assistant with a specific question, after setting up the necessary context by adding relevant interactions.
 
@@ -126,10 +126,10 @@ def query_assistant_with_context(query, formatted_interactions, thread_id=None):
     formatted_question = ("After analyzing the provided context and interactions, identify the crucial questions that "
                           "remain unanswered or partially answered. These questions should reflect gaps in our current "
                           "knowledge or documentation. Compile these questions into a JSON array, following the specified "
-                          "structure. Each entry should include the question itself and a brief explanation of its "
-                          "relevance, aiming to elucidate why addressing this question is vital for filling the "
+                          "structure. Each entry should include the question itself and a brief explanation of why "
+                          "it was included."
                           "identified knowledge gap."
-                          f"Relevant domain: {query} "
+                          f"Only include questions relevant to this context: {context} "
                           f"Context:{formatted_interactions}\n")
 
     print(f"Formatted question: {formatted_question}\n")
@@ -147,14 +147,13 @@ def query_assistant_with_context(query, formatted_interactions, thread_id=None):
     return assistant_response, thread_id
 
 
-
 def identify_knowledge_gaps(context):
     query = f"no information in context: {context}"
     interaction_ids = retrieve_relevant_interaction_ids(query)
     qa_interaction_manager = QAInteractionManager()
     relevant_qa_interactions = qa_interaction_manager.get_interactions_by_interaction_ids(interaction_ids)
     formatted_interactions = format_interactions(relevant_qa_interactions)
-    questions_json = query_assistant_with_context(query, formatted_interactions)
+    questions_json = query_assistant_with_context(context, formatted_interactions)
     # identify the authors of the most similar documents as domain experts
     # identify the users who asked the questions as the users who need the information
     # post questions to slack while tagging the domain experts and the users who need the information
