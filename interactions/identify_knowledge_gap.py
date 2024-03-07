@@ -80,7 +80,8 @@ def format_interactions(interactions: List[QAInteractions]) -> str:
             comments_formatted = "Comments: No comments"
 
         # Combine question, answer, and comments for this interaction
-        formatted_interaction = f"{question}\n{answer}\n{comments_formatted}\n---\n"
+        # formatted_interaction = f"{question}\n{answer}\n{comments_formatted}\n---\n"
+        formatted_interaction = f"{question}\n{answer}\n---\n"
         formatted_interactions.append(formatted_interaction)
 
     all_interactions = "\n".join(formatted_interactions)
@@ -123,16 +124,19 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
 
     # Format the question with context and query the assistant
 
-    formatted_question = ("After analyzing the provided context and interactions, identify the crucial questions that "
-                          "remain unanswered or partially answered within the domain. These questions should reflect"
-                          "gaps in our current knowledge or documentation and align with the provided domain. "
-                          "Compile these questions into a JSON array, following the specified structure."
-                          "Each entry should include the question itself and a brief explanation of why it was "
-                          "included, how it relates to the domain, and what part of the question wasn't covered."
-                          f"Only include questions relevant to this domain: {context} "
-                          f"Context:{formatted_interactions}\n")
+    formatted_question = (f"""After analyzing the provided questions_text, 
+    Keep only the questions that are related to {context}
+    From these identify those that were not provided a satisfactory answer in the answer_text
+    These questions should reflect gaps in our current knowledge or documentation.
+    Compile these questions so we can ask them to the domain experts and recover that knowledge.
+    Provide them strictly in a JSON array, following the specified structure.
+    Each entry should include the question and a brief explanation of why it was 
+    included, how it relates to the {context} domain, and what part of the question wasn't covered.
+    Only include questions relevant to this domain:{context}\n 
+    f"Context:{formatted_interactions}\n
+    """)
 
-    print(f"Formatted question: {formatted_question}\n")
+    print(f"Formatted question:\n{formatted_question}\n")
 
     # Query the assistant
     messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
