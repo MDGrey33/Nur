@@ -13,13 +13,10 @@ The self-actualizing documentation framework that heals its knowledge gaps as na
 - Up to 15 documents added to context with follow-up questions
 
 ### Todo:
-- Refactor 
-  - Move everything database to the database package
-    - organize database functions into objects
+- Refactor
   - Move everything network to a network package
     - organize network functions into objects
-  - Move everything file related to a file package
-    - organize file functions into objects
+
 - Space management
   - Retrieve documentation updates nightly
   - Delete documentation scope (Space) from vector
