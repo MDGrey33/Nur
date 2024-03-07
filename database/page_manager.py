@@ -5,40 +5,7 @@ import sqlite3
 from configuration import sql_file_path
 from datetime import datetime, timezone
 import json
-from functools import wraps
-import time
-from sqlalchemy.exc import OperationalError, SQLAlchemyError
-
-
-def retry_on_lock(exception, max_attempts=5, initial_wait=0.5, backoff_factor=2):
-    """
-    A decorator to retry a database operation in case of a lock.
-
-    Args:
-        exception: The exception to catch and retry on.
-        max_attempts (int): Maximum number of retry attempts.
-        initial_wait (float): Initial wait time between attempts in seconds.
-        backoff_factor (int): Factor by which to multiply wait time for each retry.
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            attempts = 0
-            wait_time = initial_wait
-            while attempts < max_attempts:
-                try:
-                    return func(*args, **kwargs)
-                except exception as e:
-                    if "database is locked" in str(e):
-                        print(f"Database is locked, retrying in {wait_time} seconds...")
-                        time.sleep(wait_time)
-                        attempts += 1
-                        wait_time *= backoff_factor
-                    else:
-                        raise
-            raise OperationalError("Maximum retry attempts reached, database still locked.")
-        return wrapper
-    return decorator
+from sqlalchemy.exc import SQLAlchemyError
 
 
 # Define the base class for SQLAlchemy models
@@ -90,7 +57,6 @@ def parse_datetime(date_string):
     return datetime.fromisoformat(date_string.replace('Z', '+00:00'))
 
 
-@retry_on_lock(OperationalError)
 def store_pages_data(space_key, pages_data):
     """
     Store Confluence page data into the database.
@@ -190,7 +156,6 @@ def get_page_data_from_db():
     return page_ids, all_documents, embeddings
 
 
-@retry_on_lock(OperationalError)
 def add_or_update_embed_vector(page_id, embed_vector):
     """
     Add or update the embed vector data for a specific page in the database, and update the last_embedded timestamp.
@@ -257,7 +222,6 @@ def get_page_data_by_ids(page_ids):
     return all_documents, retrieved_page_ids
 
 
-@retry_on_lock(OperationalError)
 def update_embed_date(page_ids):
     """
     Update the last_embedded timestamp in the database for the given page IDs.
@@ -274,7 +238,6 @@ def update_embed_date(page_ids):
     return True
 
 
-@retry_on_lock(OperationalError)
 def mark_page_as_processed(page_id):
     """
     Mark a page as processed in the database.
@@ -310,7 +273,6 @@ def is_page_processed(page_id, last_updated):
     return False
 
 
-@retry_on_lock(OperationalError)
 def reset_processed_status():
     """
     Reset the processed status of all pages.

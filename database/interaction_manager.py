@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from configuration import sql_file_path
 from datetime import datetime, timezone
 import json
+from database.slack_message_manager import SlackMessageDeduplication
 
 # Define the base class for SQLAlchemy models
 Base = declarative_base()
@@ -22,20 +23,6 @@ class QAInteractions(Base):
     comments = Column(Text, default=json.dumps([]))
     last_embedded = Column(DateTime)
     embed = Column(Text, default=json.dumps([]))
-
-
-class SlackMessageDeduplication(Base):
-    """
-    SQLAlchemy model for storing deduplication data for Slack messages to prevent reprocessing.
-    """
-    __tablename__ = 'slack_message_deduplication'
-
-    id = Column(Integer, primary_key=True)
-    channel_id = Column(String, nullable=False)  # Identifier for the Slack channel.
-    message_ts = Column(String, nullable=False, unique=True)  # Timestamp of the message, unique within a channel.
-
-    def __repr__(self):
-        return f"<SlackMessageDeduplication(channel_id='{self.channel_id}', message_ts='{self.message_ts}')>"
 
 
 class QAInteractionManager:
