@@ -76,7 +76,7 @@ interaction_retrieval_count = 5
 # Configuration for the Nur Services API
 # get the values from the environment variables if available or use the default values
 api_host = os.environ.get("NUR_API_HOST", "localhost")
-api_port = os.environ.get("NUR_API_PORT, 8000")
+api_port = os.environ.get("NUR_API_PORT", "8000")
 
 # Name of the vector collection
 pages_collection_name = "pages"
