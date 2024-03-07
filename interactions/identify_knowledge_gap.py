@@ -7,9 +7,9 @@ from configuration import interactions_folder_path, embedding_model_id
 from configuration import interaction_retrieval_count, interactions_collection_name
 from configuration import quizz_assistant_id
 from open_ai.embedding.embed_manager import embed_text
-from oai_assistants.utility import initiate_client
-from oai_assistants.thread_manager import ThreadManager
-from oai_assistants.assistant_manager import AssistantManager
+from open_ai.assistants.utility import initiate_client
+from open_ai.assistants.thread_manager import ThreadManager
+from open_ai.assistants.assistant_manager import AssistantManager
 from database.interaction_manager import QAInteractionManager, QAInteractions
 
 logging.basicConfig(level=logging.INFO)

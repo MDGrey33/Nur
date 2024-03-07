@@ -1,10 +1,9 @@
 # ./oai_assistants/query_assistant_from_documents.py
-from oai_assistants.utility import initiate_client
-from oai_assistants.file_manager import FileManager
-from oai_assistants.thread_manager import ThreadManager
-from oai_assistants.assistant_manager import AssistantManager
-from configuration import assistant_id_with_rag
-from configuration import file_system_path
+from open_ai.assistants.utility import initiate_client
+from open_ai.assistants.file_manager import FileManager
+from open_ai.assistants.thread_manager import ThreadManager
+from open_ai.assistants.assistant_manager import AssistantManager
+from configuration import qa_assistant_id, file_system_path
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -87,8 +86,9 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     print(f"Client initiated: {client}\n")
     assistant_manager = AssistantManager(client)
     print(f"Assistant manager initiated: {assistant_manager}\n")
+
     # Retrieve the assistant instance
-    assistant = assistant_manager.load_assistant(assistant_id=assistant_id_with_rag)
+    assistant = assistant_manager.load_assistant(assistant_id=qa_assistant_id)
     print(f"Assistant loaded: {assistant}\n")
 
     # Ensure page_ids is a list
@@ -103,6 +103,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     # Initialize ThreadManager with or without an existing thread_id
     thread_manager = ThreadManager(client, assistant.id, thread_id)
     print(f"Thread manager initiated: {thread_manager}\n")
+
     # If no thread_id was provided, create a new thread
     if thread_id is None:
         thread_manager.create_thread()
@@ -111,7 +112,9 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
         print(f"Thread loaded with the following ID: {thread_id}\n")
 
     # Format the question with context and query the assistant
-    formatted_question = (f"Here is the question and the context\n\n{question}\n\nContext:\n{context}, to request more context, use the get_context tool")
+    formatted_question = (f"Here is the question and the context\n\n"
+                          f"{question}\n\n"
+                          f"Context:\n{context}")
     print(f"Formatted question: {formatted_question}\n")
 
     # Query the assistant
@@ -129,9 +132,14 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
 
 if __name__ == "__main__":
     # First query - introduce a piece of information
-    initial_question = "Tell me about Billing cycles"
+    initial_question = "My name is Roland, what do you know about my name?"
     initial_response, thread_id = query_assistant_with_context(initial_question, [])
 
     print("Initial Response:", initial_response)
     print("Thread ID from Initial Query:", thread_id)
 
+    # Second query - follow-up question using the thread ID from the first query
+    follow_up_question = "What was my name?"
+    follow_up_response, _ = query_assistant_with_context(follow_up_question, [], thread_id=thread_id)
+
+    print("Follow-up Response:", follow_up_response)

@@ -1,7 +1,7 @@
 # ./oai_assistants/assistant_manager.py
 import json
-from oai_assistants.file_manager import FileManager
-from oai_assistants.utility import initiate_client
+from open_ai.assistants.file_manager import FileManager
+from open_ai.assistants.utility import initiate_client
 
 
 class AssistantManager:

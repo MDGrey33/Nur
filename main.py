@@ -1,7 +1,7 @@
 # ./main.py
 from confluence_integration.retrieve_space import get_space_content, choose_space
 from vector.chroma_threads import retrieve_relevant_documents
-from oai_assistants.query_assistant_from_documents import query_assistant_with_context
+from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from open_ai.chat.query_from_documents import query_gpt_4t_with_context
 from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
 from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
@@ -9,7 +9,7 @@ from slack.channel_interaction import load_slack_bot
 from datetime import datetime
 from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
-from oai_assistants.openai_assistant import load_manage_assistants
+from open_ai.assistants.openai_assistant import load_manage_assistants
 from interactions.vectorize_and_store import vectorize_interactions_and_store_in_db
 from vector.create_interaction_db import VectorInteractionManager
 from interactions.identify_knowledge_gap import identify_knowledge_gaps
