@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
 from vector.chroma_threads import retrieve_relevant_documents
-from threads.dynamic_executor_assistants import DynamicExecutor
 from oai_assistants.query_assistant_from_documents import query_assistant_with_context
 from database.interaction_manager import QAInteractionManager
 
@@ -34,7 +33,6 @@ class EventConsumer:
     def __init__(self):
         self.web_client = WebClient(token=slack_bot_user_oauth_token)
         self.interaction_manager = QAInteractionManager()
-        self.executor = DynamicExecutor()
         logging.log(logging.DEBUG, f"Slack Event Consumer initiated successfully")
 
     def is_message_processed_in_db(self, channel_id, message_ts):
