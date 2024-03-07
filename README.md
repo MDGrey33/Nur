@@ -1,31 +1,45 @@
 # Nur
-The self-actualizing documentation framework that heals its knowledge gaps as naturally as a ray of light
+The self-actualizing documentation Chat Bot that 
+heals its knowledge gaps as naturally as a ray of light
 [Custom GPT to discuss the code base](https://chat.openai.com/g/g-zKBLXtfrD-shams-nur)
+
+## What problem does Nur solve?
+- The knowledge in the company is scattered across many documents and people's heads
+  - Discovery:
+    - Information is hard to find, understand and trust.
+    - Neuro-divergence makes it hard to understand standard documentation
+  - Actualization:
+    - Documentation is missing
+    - Documentation is hard to write and keep up to date
+
+## Team
+- [Roland Younes](https://www.linkedin.com/in/rolanday/) 
+24 years in tech, 10 years in tech management 
+and software development, 
+2 years of healthy obsession in Gen AI and python
+- You...? 
+text me if you would like a walkthrough,
+request a feature,
+create an issue or make a pull request.
+
 ## Feature list
-### announcements:
-- 2024-02-16: Migrated successfully to Python 3.12 and poetry to simplify onboarding contributors
+
 ### Done:
 #### Capabilities
 - add a confluence space to the Nurs' knowledge
 - have a conversation with the bot based on the knowledge in any slack channel
-#### features
-- Up to 15 documents in context with every question
-- Up to 15 documents added to context with follow-up questions
 
 ### Todo:
-- Refactor
-  - Move everything network to a network package
-    - organize network functions into objects
+- Identify knowledge gaps and recover them
+  - Identify unanswered questions
+  - Ask them to domain experts
+  - Add the answers to confluence
 
 - Space management
   - Retrieve documentation updates nightly
   - Delete documentation scope (Space) from vector
-- Enable function calling for context retrieval
-- Build an algorythm that uses AI to manage retrieval cleanup and volume optimization locally
-- Add interaction to confluence space 
-- Enable confluence edit or new page recommendation
-- Add credibility rating to database 
-- Knowledge gap recovery gamification
+
+- Advanced Knowledge gap recovery gamification
   - Collects the top unanswered questions by theme
   - Identify the people who asked them
   - We invite to the Trivia channel the users who asked the. questions and the domain experts
@@ -34,6 +48,16 @@ The self-actualizing documentation framework that heals its knowledge gaps as na
   - The bot collects the conversation data and based on it:
   - Proposes new documents
   - Upgrades the leaderboard with the top contributors
+
+- Refactor
+  - Move everything network to a network package
+    - organize network functions into objects
+
+- Enable function calling for context retrieval
+
+- Build an algorythm that uses AI to manage retrieval cleanup and volume optimization locally
+
+- Add credibility rating to database
 
 
 
