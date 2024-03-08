@@ -11,6 +11,9 @@ from open_ai.assistants.utility import initiate_client
 from open_ai.assistants.thread_manager import ThreadManager
 from open_ai.assistants.assistant_manager import AssistantManager
 from database.interaction_manager import QAInteractionManager, QAInteractions
+from database.quiz_question_manager import QuizQuestionManager    # Adjust this import as necessary
+from slack.message_manager import post_messages_to_slack
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -151,14 +154,80 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
     return assistant_response, thread_id
 
 
+def process_and_store_questions(assistant_response_json):
+    """
+    Processes the JSON response from the assistant, extracts questions, stores them in the database,
+    and collects their IDs.
+
+    Args:
+        assistant_response_json (str): JSON string containing the assistant's response.
+
+    Returns:
+        List[int]: A list of IDs of the questions added to the database.
+    """
+    # Parse the JSON response
+    try:
+        questions_data = json.loads(assistant_response_json)
+    except json.JSONDecodeError as e:
+        logging.error(f"Error decoding JSON: {e}")
+        return []
+
+    # Initialize the QuizQuestionManager
+    quiz_question_manager = QuizQuestionManager()
+
+    question_ids = []
+    question_texts = []
+    for item in questions_data:
+        question_text = item.get("Question")
+        if question_text:
+            # Add the question to the database and collect its ID
+            question_id = quiz_question_manager.add_quiz_question(question_text=question_text)
+            question_ids.append(question_id)
+            question_texts.append(question_text)
+    return question_ids, question_texts
+
+
+def strip_json(assistant_response):
+    """
+    Receives the response and extracts only the JSON from it, then returns the JSON.
+    This function assumes the JSON content is wrapped in triple backticks with 'json' as a language identifier.
+
+    Args:
+        assistant_response (str): The full response from the assistant, potentially including the JSON content.
+
+    Returns:
+        str: The extracted JSON content as a string. Returns an empty JSON array '[]' if extraction fails.
+    """
+    try:
+        # Attempt to find the start of the JSON content
+        start_index = assistant_response.index("```json") + len("```json")
+        end_index = assistant_response.index("```", start_index)
+        json_content = assistant_response[start_index:end_index].strip()
+        # Basic validation to check if it's likely to be JSON
+        if json_content.startswith("[") and json_content.endswith("]"):
+            return json_content
+        else:
+            logging.error("Extracted content does not appear to be valid JSON.")
+            return "[]"
+    except ValueError as e:
+        logging.error(f"Error extracting JSON from response: {e}")
+        return "[]"
+
+
+channel_id = "C06EGCDNA4A"
+
 def identify_knowledge_gaps(context):
     query = f"no information in context: {context}"
     interaction_ids = retrieve_relevant_interaction_ids(query)
     qa_interaction_manager = QAInteractionManager()
     relevant_qa_interactions = qa_interaction_manager.get_interactions_by_interaction_ids(interaction_ids)
     formatted_interactions = format_interactions(relevant_qa_interactions)
-    questions_json = query_assistant_with_context(context, formatted_interactions)
-    # identify the authors of the most similar documents as domain experts
-    # identify the users who asked the questions as the users who need the information
-    # post questions to slack while tagging the domain experts and the users who need the information
-    print(questions_json)
+    assistant_response, thread_id = query_assistant_with_context(context, formatted_interactions)
+    questions_json = strip_json(assistant_response)
+    question_ids, question_texts = process_and_store_questions(questions_json)
+    print(f"Stored questions with IDs: {question_ids}")
+
+    post_messages_to_slack(question_texts, channel_id)
+
+
+identify_knowledge_gaps("billing")
