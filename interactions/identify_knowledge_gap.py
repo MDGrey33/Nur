@@ -227,7 +227,7 @@ def identify_knowledge_gaps(context):
     question_ids, question_texts = process_and_store_questions(questions_json)
     print(f"Stored questions with IDs: {question_ids}")
 
-    post_messages_to_slack(question_texts, channel_id)
+    post_messages_to_slack(channel_id=channel_id, message_texts=question_texts)
 
 
 identify_knowledge_gaps("billing")

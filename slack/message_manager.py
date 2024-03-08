@@ -18,15 +18,19 @@ def post_messages_to_slack(channel_id, message_texts):
     """
     # Initialize the Slack client with the bot user OAuth token
     client = WebClient(token=slack_bot_user_oauth_token)
+
     responses = []
 
     for message_text in message_texts:
         try:
+
             # Post each message to the specified channel
             response = client.chat_postMessage(
                 channel=channel_id,
-                text=message_text
+                text=message_text,
             )
+
+
             # Check if the response indicates a successful post
             if response["ok"]:
                 print(f"Message successfully posted to channel {channel_id}")

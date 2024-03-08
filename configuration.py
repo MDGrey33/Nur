@@ -81,3 +81,10 @@ api_port = os.environ.get("NUR_API_PORT", "8000")
 # Name of the vector collection
 pages_collection_name = "pages"
 interactions_collection_name = "interactions"
+
+# slack channel ids
+slack_channel_priv_kb = "C06EGCDNA4A"
+slack_channel_tt_ta_debug = "C06EA5WFGUF"
+slack_channel_tt_ta = "C052GJ7GLVC"
+
+channel_id = slack_channel_priv_kb
