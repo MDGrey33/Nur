@@ -1,6 +1,6 @@
 # ./main.py
 from confluence_integration.retrieve_space import choose_space
-from vector.chroma_threads import retrieve_relevant_documents
+from vector.chroma import retrieve_relevant_documents
 from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from open_ai.chat.query_from_documents import query_gpt_4t_with_context
 from slack.channel_interaction import load_slack_bot

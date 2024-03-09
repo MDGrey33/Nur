@@ -8,7 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from slack_sdk import WebClient
 from credentials import slack_bot_user_oauth_token
-from vector.chroma_threads import retrieve_relevant_documents
+from vector.chroma import retrieve_relevant_documents
 from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from database.interaction_manager import QAInteractionManager
 

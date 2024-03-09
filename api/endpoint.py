@@ -7,7 +7,7 @@ import threading
 from credentials import oai_api_key
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
-from vector.chroma_threads import vectorize_document_and_store_in_db
+from vector.chroma import vectorize_document_and_store_in_db
 from configuration import api_host, api_port
 from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
 from trivia.trivia_manager import TriviaQuizz

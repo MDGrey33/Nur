@@ -1,6 +1,6 @@
 import json
 from configuration import file_system_path
-from vector.chroma_threads import retrieve_relevant_documents
+from vector.chroma import retrieve_relevant_documents
 
 
 def format_pages_as_context(file_ids, max_length=30000):
