@@ -26,14 +26,14 @@ create an issue or make a pull request.
 
 ### Done:
 #### Capabilities
-- add a confluence space to the Nurs' knowledge
-- have a conversation with the bot based on the knowledge in any slack channel
+- Learns from your confluence
+- Chats with you in slack based on the knowledge in confluence
+- Identifies knowledge gaps
+- Asks questions on slack to collect knowledge
 
 ### Todo:
-- Identify knowledge gaps and recover them
-  - Identify unanswered questions
-  - Ask them to domain experts
-  - Add the answers to confluence
+- Capture :checkmark: reaction
+- Summarise the conversation and add document to confluence
 
 - Space management
   - Retrieve documentation updates nightly
