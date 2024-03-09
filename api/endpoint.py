@@ -1,6 +1,5 @@
 # ./api/endpoint.py
 import os
-import logging
 from fastapi import FastAPI
 import uvicorn
 from openai import OpenAI
