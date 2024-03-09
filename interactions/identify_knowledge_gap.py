@@ -234,4 +234,5 @@ def identify_knowledge_gaps(context):
     quiz_questions = post_questions_to_slack(channel_id=channel_id, quiz_question_dtos=quiz_question_dtos)
 
 
-identify_knowledge_gaps("infrastructure")
+if __name__ == "__main__":
+    identify_knowledge_gaps("infrastructure")

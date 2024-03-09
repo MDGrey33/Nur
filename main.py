@@ -1,33 +1,21 @@
 # ./main.py
-from confluence_integration.retrieve_space import get_space_content, choose_space
+from confluence_integration.retrieve_space import choose_space
 from vector.chroma_threads import retrieve_relevant_documents
 from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from open_ai.chat.query_from_documents import query_gpt_4t_with_context
-from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
-from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
 from slack.channel_interaction import load_slack_bot
-from datetime import datetime
-from database.space_manager import SpaceManager
-from vector.create_vector_db import add_embeds_to_vector_db
 from open_ai.assistants.openai_assistant import load_manage_assistants
 from interactions.vectorize_and_store import vectorize_interactions_and_store_in_db
 from vector.create_interaction_db import VectorInteractionManager
 from interactions.identify_knowledge_gap import identify_knowledge_gaps
+from space.manager import Space
 
 
 def load_new_documentation_space():
     space_key, space_name = choose_space()
     if space_key and space_name:
-        print("Retrieving space content...")
-        get_space_content(space_key)
-        get_page_content_using_queue(space_key)
-        embed_pages_missing_embeds()
-        space_manager = SpaceManager()
-        last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        space_manager.upsert_space_info(space_key, space_name, last_import_date)
-        add_embeds_to_vector_db(space_key)
-        print(f"\nSpace '{space_name}' retrieval and indexing complete.")
-    print("\nSpace retrieval and indexing complete.")
+        space = Space()
+        space.load_new(space_key, space_name)
 
 
 def answer_question_with_assistant(question):

@@ -50,21 +50,21 @@ class SpaceManager:
         else:
             print(f"Space with key {space_key} not found.")
 
-    def upsert_space_info(self, space_key, space_name, last_import_date):
+    def upsert_space_info(self, space):
         """Insert or update space information based on the existence of the space key."""
-        space = self.session.query(SpaceInfo).filter_by(space_key=space_key).first()
-        if space:
+        existing_space = self.session.query(SpaceInfo).filter_by(space_key=space.space_key).first()
+        if existing_space:
             # The space exists, update the last import date.
-            space.last_import_date = datetime.strptime(last_import_date, '%Y-%m-%d %H:%M:%S')
+            existing_space.last_import_date = datetime.strptime(space.last_import_date, '%Y-%m-%d %H:%M:%S')
             operation = 'Updated'
         else:
             # The space does not exist, create a new record.
-            space = SpaceInfo(
-                space_key=space_key,
-                space_name=space_name,
-                last_import_date=datetime.strptime(last_import_date, '%Y-%m-%d %H:%M:%S')
+            new_space = SpaceInfo(
+                space_key=space.space_key,
+                space_name=space.space_name,
+                last_import_date=datetime.strptime(space.last_import_date, '%Y-%m-%d %H:%M:%S')
             )
-            self.session.add(space)
+            self.session.add(new_space)
             operation = 'Added'
         self.session.commit()
         return operation
