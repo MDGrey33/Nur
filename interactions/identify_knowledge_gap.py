@@ -3,7 +3,7 @@ from typing import List
 import chromadb
 import logging
 import json
-from configuration import interactions_folder_path, embedding_model_id
+from configuration import interactions_folder_path, embedding_model_id, channel_id
 from configuration import interaction_retrieval_count, interactions_collection_name
 from configuration import quizz_assistant_id
 from open_ai.embedding.embed_manager import embed_text
@@ -11,8 +11,8 @@ from open_ai.assistants.utility import initiate_client
 from open_ai.assistants.thread_manager import ThreadManager
 from open_ai.assistants.assistant_manager import AssistantManager
 from database.interaction_manager import QAInteractionManager, QAInteractions
-from database.quiz_question_manager import QuizQuestionManager    # Adjust this import as necessary
-from slack.message_manager import post_messages_to_slack
+from database.quiz_question_manager import QuizQuestionManager, QuizQuestion
+from slack.message_manager import post_questions_to_slack
 
 
 logging.basicConfig(level=logging.INFO)
@@ -157,13 +157,13 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
 def process_and_store_questions(assistant_response_json):
     """
     Processes the JSON response from the assistant, extracts questions, stores them in the database,
-    and collects their IDs.
+    and collects the QuizQuestionDTO objects.
 
     Args:
         assistant_response_json (str): JSON string containing the assistant's response.
 
     Returns:
-        List[int]: A list of IDs of the questions added to the database.
+        list[QuizQuestionDTO]: A list of QuizQuestionDTO objects added to the database.
     """
     # Parse the JSON response
     try:
@@ -175,16 +175,16 @@ def process_and_store_questions(assistant_response_json):
     # Initialize the QuizQuestionManager
     quiz_question_manager = QuizQuestionManager()
 
-    question_ids = []
-    question_texts = []
+    quiz_question_dtos = []
     for item in questions_data:
         question_text = item.get("Question")
         if question_text:
-            # Add the question to the database and collect its ID
-            question_id = quiz_question_manager.add_quiz_question(question_text=question_text)
-            question_ids.append(question_id)
-            question_texts.append(question_text)
-    return question_ids, question_texts
+            # Add the question to the database and directly collect the QuizQuestion object
+            quiz_question_dto = quiz_question_manager.add_quiz_question(question_text=question_text)
+            if quiz_question_dto:
+                quiz_question_dtos.append(quiz_question_dto)
+
+    return quiz_question_dtos
 
 
 def strip_json(assistant_response):
@@ -214,7 +214,8 @@ def strip_json(assistant_response):
         return "[]"
 
 
-channel_id = "C06EGCDNA4A"
+
+
 
 def identify_knowledge_gaps(context):
     query = f"no information in context: {context}"
@@ -224,10 +225,13 @@ def identify_knowledge_gaps(context):
     formatted_interactions = format_interactions(relevant_qa_interactions)
     assistant_response, thread_id = query_assistant_with_context(context, formatted_interactions)
     questions_json = strip_json(assistant_response)
-    question_ids, question_texts = process_and_store_questions(questions_json)
-    print(f"Stored questions with IDs: {question_ids}")
+    quiz_question_dtos = process_and_store_questions(questions_json)
 
-    post_messages_to_slack(channel_id=channel_id, message_texts=question_texts)
+    # Updated to print IDs of stored questions
+    print(f"Stored questions with IDs: {[q.id for q in quiz_question_dtos]}")
+
+    # Updated function call to match the expected input
+    quiz_questions = post_questions_to_slack(channel_id=channel_id, quiz_question_dtos=quiz_question_dtos)
 
 
-identify_knowledge_gaps("billing")
+identify_knowledge_gaps("infrastructure")

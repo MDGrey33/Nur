@@ -88,6 +88,13 @@ class ChannelMessageHandler(SlackEventHandler):
             logging.info(f"Message {ts} already processed. Skipping.\n")
             return
 
+        # identify if the bot is trying to gather knowledge
+        if user_id == bot_user_id and not thread_ts and "?" in text and "Question:" in text:
+            # print the message text to the console
+            print(text)
+            print(f"Bot gathering knowledge\ntext:{text}\n")
+            return
+
         # Determine the reason for skipping before the checks
         skip_reason = self.determine_skip_reason(event, ts, text, thread_ts, user_id, bot_user_id)
 

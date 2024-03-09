@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from configuration import sql_file_path
 from datetime import datetime, timezone
 from sqlalchemy.exc import SQLAlchemyError
+from interactions.quiz_question_dto import QuizQuestionDTO
 
 Base = declarative_base()
 
@@ -31,11 +32,18 @@ class QuizQuestionManager:
                 new_question = QuizQuestion(question_text=question_text, posted_on_slack=datetime.now(timezone.utc))
                 session.add(new_question)
                 session.commit()
-                return new_question.id
+                # Convert and return a QuizQuestionDTO object
+                return QuizQuestionDTO(
+                    id=new_question.id,
+                    question_text=new_question.question_text,
+                    thread_id=new_question.thread_id,
+                    summary=new_question.summary,
+                    posted_on_slack=new_question.posted_on_slack,
+                    posted_on_confluence=new_question.posted_on_confluence
+                )
         except SQLAlchemyError as e:
             print(f"Error adding quiz question: {e}")
-            # Optionally, re-raise the exception if you want to handle it further up the call stack
-
+            return None
     def update_with_summary(self, question_id, summary):
         try:
             with self.Session() as session:
@@ -52,7 +60,7 @@ class QuizQuestionManager:
                 question = session.query(QuizQuestion).filter_by(id=question_id).first()
                 if question:
                     question.thread_id = thread_id
-                    question.posted_on_slack = datetime.now(timezone.utc)
+                    # question.posted_on_slack = datetime.now(timezone.utc)
                     session.commit()
         except SQLAlchemyError as e:
             print(f"Error updating quiz question with thread ID: {e}")
