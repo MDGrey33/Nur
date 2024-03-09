@@ -6,6 +6,7 @@ import chromadb
 import logging
 from typing import List
 from open_ai.embedding.embed_manager import embed_text
+from database.page_manager import add_or_update_embed_vector
 
 
 def generate_document_embedding(page_id, model=embedding_model_id):
@@ -72,6 +73,21 @@ def retrieve_relevant_documents(question: str) -> List[str]:
         document_ids = []
 
     return document_ids
+
+
+def vectorize_document_and_store_in_db(page_id):
+    """
+    Vectorize a document and store it in the database.
+    :param page_id: The ID of the page to vectorize.
+    :return: None
+    """
+    embedding, error_message = generate_document_embedding(page_id)
+    if embedding:
+        # Store the embedding in the database
+        add_or_update_embed_vector(page_id, embedding)
+        logging.info(f"Embedding for page ID {page_id} stored in the database.")
+    else:
+        logging.error(f"Embedding for page ID {page_id} could not be generated. {error_message}")
 
 
 if __name__ == '__main__':

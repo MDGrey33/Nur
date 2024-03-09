@@ -8,8 +8,7 @@ import threading
 from credentials import oai_api_key
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
-from vector.chroma_threads import generate_document_embedding
-from database.page_manager import add_or_update_embed_vector
+from vector.chroma_threads import vectorize_document_and_store_in_db
 from configuration import api_host, api_port
 from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
 from trivia.trivia_manager import TriviaQuizz
@@ -51,22 +50,6 @@ class TriviaRequestEvent(BaseModel):
     thread_ts: str
     channel: str
     user: str
-
-
-# refactor: probably should not be in the endpoint module.
-def vectorize_document_and_store_in_db(page_id):
-    """
-    Vectorize a document and store it in the database.
-    :param page_id: The ID of the page to vectorize.
-    :return: None
-    """
-    embedding, error_message = generate_document_embedding(page_id)
-    if embedding:
-        # Store the embedding in the database
-        add_or_update_embed_vector(page_id, embedding)
-        logging.info(f"Embedding for page ID {page_id} stored in the database.")
-    else:
-        logging.error(f"Embedding for page ID {page_id} could not be generated. {error_message}")
 
 
 @processor.post("/api/v1/questions")
