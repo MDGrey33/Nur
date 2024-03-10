@@ -3,7 +3,7 @@ from confluence_integration.retrieve_space import choose_space
 from vector.chroma import retrieve_relevant_documents
 from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from open_ai.chat.query_from_documents import query_gpt_4t_with_context
-from slack.channel_interaction import load_slack_bot
+from slack.bot import load_slack_bot
 from open_ai.assistants.openai_assistant import load_manage_assistants
 from interactions.vectorize_and_store import vectorize_interactions_and_store_in_db
 from vector.create_interaction_db import VectorInteractionManager

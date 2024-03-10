@@ -1,43 +1,16 @@
-# ./slack/channel_interaction_assistants.py
-import os
 import logging
-import time
-import requests
-from functools import partial
-from abc import ABC, abstractmethod
-from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk.socket_mode.response import SocketModeResponse
-from slack_sdk.socket_mode.request import SocketModeRequest
-from typing import List
-from credentials import slack_bot_user_oauth_token, slack_app_level_token
+from database.interaction_manager import QAInteractionManager
+from slack.event_handler import SlackEventHandler
 from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
-from database.interaction_manager import Session, QAInteractionManager
+from slack_sdk.socket_mode.request import SocketModeRequest
+from slack_sdk.socket_mode import SocketModeClient
 from configuration import api_host, api_port
+import requests
+import os
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
-
-# get slack bot user id
-def get_bot_user_id(bot_oauth_token):
-    """Get the bot user id from the slack api"""
-    # Initialize WebClient with your bot's token
-    slack_client = WebClient(token=bot_oauth_token)
-    bot_id = "unassigned"
-    try:
-        # Call the auth.test method using the Slack client
-        response = slack_client.auth_test()
-        bot_id = response["user_id"]
-        logging.info(f"\n\nBot User ID: {bot_id}\n\n")
-    except SlackApiError as e:
-        logging.info(f"\n\nError fetching bot user ID: {e.response['error']}\n\n")
-    return bot_id
-
-
-class SlackEventHandler(ABC):
-    @abstractmethod
-    def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
-        pass
 
 
 class ChannelMessageHandler(SlackEventHandler):
@@ -90,6 +63,7 @@ class ChannelMessageHandler(SlackEventHandler):
 
         # identify if the bot is trying to gather knowledge
         if user_id == bot_user_id and not thread_ts and "?" in text and "Question:" in text:
+            # check if the
             # print the message text to the console
             print(text)
             print(f"Bot gathering knowledge\ntext:{text}\n")
@@ -175,56 +149,3 @@ class ChannelMessageHandler(SlackEventHandler):
         if not "?" in text:
             return "Message on main channel and does not contain a '?' it is not identified as a question"
         return "Unknown reason"
-
-
-class SlackBot:
-    """A bot that listens to events from slack and processes them using event handlers"""
-    def __init__(self, token: str, app_token: str, bot_user_id: str, event_handlers: List[SlackEventHandler]):
-        """ Initialize the bot with the necessary tokens and event handlers"""
-        self.web_client = WebClient(token=token)
-        self.socket_mode_client = SocketModeClient(app_token=app_token, web_client=self.web_client)
-        self.bot_user_id = bot_user_id
-        self.event_handlers = event_handlers
-
-    def start(self):
-        """Start the bot and listen to events"""
-        # Add event handlers to the socket mode client
-        for event_handler in self.event_handlers:
-            event_handler_func = partial(event_handler.handle, web_client=self.web_client, bot_user_id=self.bot_user_id)
-            self.socket_mode_client.socket_mode_request_listeners.append(event_handler_func)
-
-        # Connect to the slack RTM API
-        try:
-            self.socket_mode_client.connect()
-        except Exception as e:
-            logging.error(f"Error connecting to the slack RTM API: {e}")
-
-        try:
-            while True:
-                logging.debug("Bot is running...")
-                time.sleep(1000)
-        # Stop the bot if the user interrupts
-        except KeyboardInterrupt:
-            logging.info("Bot stopped by the user")
-        # Stop the bot if an exception occurs
-        except Exception as e:
-            logging.critical("Bot stopped due to an exception", exc_info=True)
-
-
-def load_slack_bot():
-    """Load the slack bot"""
-    logging.basicConfig(level=logging.INFO)
-    # Initialize the bot with the necessary tokens and event handlers
-    event_handlers = [ChannelMessageHandler()]
-    bot = SlackBot(slack_bot_user_oauth_token, slack_app_level_token, bot_user_id, event_handlers)
-    bot.start()
-
-
-bot_user_id = get_bot_user_id(slack_bot_user_oauth_token)
-
-
-if __name__ == "__main__":
-    try:
-        load_slack_bot()
-    except Exception as e:
-        logging.critical("Error loading slack bot", exc_info=True)

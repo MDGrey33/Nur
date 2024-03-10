@@ -44,6 +44,7 @@ class QuizQuestionManager:
         except SQLAlchemyError as e:
             print(f"Error adding quiz question: {e}")
             return None
+
     def update_with_summary(self, question_id, summary):
         try:
             with self.Session() as session:
@@ -74,6 +75,16 @@ class QuizQuestionManager:
                     session.commit()
         except SQLAlchemyError as e:
             print(f"Error updating Confluence timestamp: {e}")
+
+    # get all thread_ids for questions that have not been posted on Confluence
+    def get_unposted_questions(self):
+        try:
+            with self.Session() as session:
+                questions = session.query(QuizQuestion).filter_by(posted_on_confluence=None).all()
+                return [question.thread_id for question in questions]
+        except SQLAlchemyError as e:
+            print(f"Error getting unposted questions: {e}")
+            return None
 
 
 # Example usage
