@@ -28,7 +28,7 @@ services:
       - poetry
       - run
       - python
-      - slack/channel_interaction.py
+      - slack/bot.py
     volumes:
       - shared_content:/app/content
     environment:

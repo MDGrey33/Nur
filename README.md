@@ -82,13 +82,12 @@ cd Nur
 poetry install
 poetry run python main.py
 ````
-open the project on pycharm you will be able to run:
 
-`./main.py` (for the menu operations)
+`poetry run python ./main.py` (for the menu operations)
 
-`./api/endpoint.py` (API / uvicorn web server)
+`poetry run python ./api/endpoint.py` (API / uvicorn web server)
 
-`./slack/channel_interaction.py` (slack bot stream listener)
+`poetry run python ./slack/bot.py` (slack bot stream listener)
 
 ### Run Nur via Docker
 
