@@ -8,9 +8,12 @@ from slack_sdk.socket_mode import SocketModeClient
 from configuration import api_host, api_port
 import requests
 import os
+from slack.reaction_manager import process_checkmark_added_event
+
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
+
 
 
 class ChannelMessageHandler(SlackEventHandler):
@@ -61,49 +64,14 @@ class ChannelMessageHandler(SlackEventHandler):
             logging.info(f"Message {ts} already processed. Skipping.\n")
             return
 
-        # Example list of timestamps you're interested in
-        timestamps = [1710007750.178929, 1710007750.573439, 1710007750.967169, 1710014668.257749, 1710014668.715309,
-                      1710014669.258629]
-
-        # Convert timestamps to strings, as Slack timestamps are string values
-        timestamps_str = [str(ts) for ts in timestamps]
-
         # Assuming 'event' is the dictionary representing the Slack event received,
         # and 'web_client' is an instance of slack_sdk.WebClient initialized with your bot token.
         if event.get("type") == "reaction_added":
-            print(event)
-
-            # Extract the timestamp of the item to which the reaction was added
-            item_ts = event.get("item", {}).get("ts")
-
-            # Check if the reaction is to an item whose timestamp is in the list of timestamps
-            if item_ts in timestamps_str:
-                print(f'###Valid {event}')
-                # Print the valid item timestamp to the console
-                print(f'###Valid {item_ts}')
-
-                '''
-                # The channel ID from the event
-                channel_id = event.get("item", {}).get("channel")
-
-                if channel_id:
-                    try:
-                        # Fetch messages from the channel history
-                        response = web_client.conversations_history(channel=channel_id)
-                        messages = response.get('messages', [])
-
-                        # Filter messages to find those that belong to the specified thread
-                        thread_messages = [message for message in messages if message.get('thread_ts') == item_ts]
-
-                        for message in thread_messages:
-                            # Process each message in the thread as needed
-                            print(message)  # For example, simply print the message data
-                    except Exception as e:
-                        print(f"Error fetching messages from channel history: {e}")
-                '''
+            # check if the reaction': is 'white_check_mark'
+            if event.get("reaction") == "white_check_mark":
+                process_checkmark_added_event(slack_web_client=web_client, event=event)
         # identify if the bot is trying to gather knowledge
         if user_id == bot_user_id and not thread_ts and "?" in text and "Question:" in text:
-            # check if the
             # print the message text to the console
             print(text)
             print(f"Bot gathering knowledge\ntext:{text}\n")

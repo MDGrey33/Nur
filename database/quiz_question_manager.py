@@ -77,7 +77,7 @@ class QuizQuestionManager:
             print(f"Error updating Confluence timestamp: {e}")
 
     # get all thread_ids for questions that have not been posted on Confluence
-    def get_unposted_questions(self):
+    def get_unposted_questions_timestamps(self):
         try:
             with self.Session() as session:
                 questions = session.query(QuizQuestion).filter_by(posted_on_confluence=None).all()
