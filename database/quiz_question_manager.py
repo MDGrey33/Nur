@@ -55,6 +55,18 @@ class QuizQuestionManager:
         except SQLAlchemyError as e:
             print(f"Error updating quiz question with summary: {e}")
 
+    def update_with_summary_by_thread_id(self, thread_id, summary):
+        try:
+            with self.Session() as session:
+                question = session.query(QuizQuestion).filter_by(thread_id=thread_id).first()
+                print(f"question: {question}")
+                if question:
+                    question.summary = summary
+                    session.commit()
+                    print(f"Updated question with thread ID {thread_id} with summary: {summary}")
+        except SQLAlchemyError as e:
+            print(f"Error updating quiz question with summary: {e}")
+
     def update_with_thread_id(self, question_id, thread_id):
         try:
             with self.Session() as session:
