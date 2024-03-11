@@ -88,3 +88,7 @@ slack_channel_tt_ta_debug = "C06EA5WFGUF"
 slack_channel_tt_ta = "C052GJ7GLVC"
 
 channel_id = slack_channel_priv_kb
+
+# System Knowledge on Confluence
+system_knowledge_space_private = "Nur Documentation"
+system_confluence_knowledge_space = system_knowledge_space_private

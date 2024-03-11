@@ -2,6 +2,7 @@ from slack_sdk.errors import SlackApiError
 from database.quiz_question_manager import QuizQuestionManager
 from open_ai.chat.format_knowledge_gathering import query_gpt_4t_with_context
 import json
+from confluence_integration.system_knowledge_manager import create_page_on_confluence
 
 def get_message_replies(client, channel, ts):
     """
@@ -82,3 +83,4 @@ def process_checkmark_added_event(slack_web_client, event):
     }
 
     quiz_question_manager.update_with_summary_by_thread_id(thread_id=item_ts, summary=json_string)
+    create_page_on_confluence(extracted_info["page_title"], extracted_info["page_content"])

@@ -55,12 +55,12 @@ def create_page_title_and_content(interaction):
     title = interaction.question_text[:200]  # Use first 200 chars of the question as title
     comments = format_comment(interaction.comments)
     content = f"""
-        <h2>Question</h2>
-        <p>{interaction.question_text}</p>
-        <h2>Answer</h2>
-        <p>{interaction.answer_text}</p>
-        <h2>Comments</h2>
-        <p>{comments}</p>
+        Question
+        {interaction.question_text}
+        Answer
+        {interaction.answer_text}
+        Comments
+        {comments}
         """
 
     return title, content
