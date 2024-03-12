@@ -56,6 +56,8 @@ create an issue or make a pull request.
 
 - Build an algorythm that uses AI to manage retrieval cleanup and volume optimization locally
 
+- Chunk to embed and context and providing document ids from metadata but keep including full documents in context
+
 - Add credibility rating to database
 
 
