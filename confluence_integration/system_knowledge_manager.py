@@ -1,3 +1,6 @@
+# ./confluence_integration/system_knowledge_manager.py
+# Used as part of knowledge gap recovery to create pages retrieved from quiz
+# after knowledge gap recovery to store them on confluence
 from configuration import system_confluence_knowledge_space
 from confluence_integration.confluence_client import ConfluenceClient
 

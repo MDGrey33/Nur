@@ -1,4 +1,5 @@
 # ./confluence_integration/retrieve_space.py
+# Used as part of loading documentation from confluence
 import os
 from datetime import datetime
 from bs4 import BeautifulSoup

@@ -1,8 +1,8 @@
 # ./interactions/identify_knowledge_gap.py
-from typing import List
 import chromadb
 import logging
 import json
+from typing import List, Tuple
 from configuration import interactions_folder_path, embedding_model_id, channel_id
 from configuration import interaction_retrieval_count, interactions_collection_name
 from configuration import quizz_assistant_id
@@ -60,35 +60,52 @@ def retrieve_relevant_interaction_ids(query: str) -> List[str]:
     return interaction_ids
 
 
-def format_interactions(interactions: List[QAInteractions]) -> str:
+def format_interactions(interactions: List['QAInteractions']) -> Tuple[str, List[str]]:
+    """
+    Format a list of QAInteraction objects into a human-readable string and collect user IDs.
+
+    Each interaction contains a question, an answer, and optional comments.
+    Comments are expected to be in JSON format and will be loaded accordingly.
+    If comments deserialization fails, it defaults to an empty list.
+
+    Parameters:
+    interactions (List[QAInteractions]): A list of QAInteraction objects.
+
+    Returns:
+    Tuple[str, List[str]]: A tuple containing a string of formatted interactions and a list of user IDs.
+    """
     formatted_interactions = []
+    user_ids = []
+
     for interaction in interactions:
         # Extract attributes
         question = f"Question: {interaction.question_text}"
         answer = f"Answer: {interaction.answer_text}"
+        user_id = interaction.slack_user_id
 
         # Determine whether comments is a string (JSON) or already a list
+        comments = []
         if isinstance(interaction.comments, str):
             try:
                 comments = json.loads(interaction.comments)
             except json.JSONDecodeError:
-                comments = []  # Default to an empty list if deserialization fails
-        else:
-            comments = interaction.comments  # Assume it's already a list if not a string
+                pass  # Default to an empty list if deserialization fails
 
         # Format comments, handling both empty lists and lists of dictionaries
+        comments_formatted = "Comments: "
         if comments:
-            comments_formatted = "Comments: " + "; ".join([f"{c.get('text', 'No text')}" for c in comments])
+            comments_formatted += "; ".join([f"{comment.get('text', 'No text')}" for comment in comments])
         else:
-            comments_formatted = "Comments: No comments"
+            comments_formatted += "No comments"
 
         # Combine question, answer, and comments for this interaction
-        # formatted_interaction = f"{question}\n{answer}\n{comments_formatted}\n---\n"
-        formatted_interaction = f"{question}\n{answer}\n---\n"
+        formatted_interaction = f"{question}\n{answer}\n{comments_formatted}\n---\n"
         formatted_interactions.append(formatted_interaction)
+        user_ids.append(user_id)
 
     all_interactions = "\n".join(formatted_interactions)
-    return all_interactions
+    user_ids = list(set(user_ids))
+    return all_interactions, user_ids
 
 
 def query_assistant_with_context(context, formatted_interactions, thread_id=None):
@@ -214,16 +231,13 @@ def strip_json(assistant_response):
         return "[]"
 
 
-
-
-
 def identify_knowledge_gaps(context):
     query = f"no information in context: {context}"
     interaction_ids = retrieve_relevant_interaction_ids(query)
     qa_interaction_manager = QAInteractionManager()
     relevant_qa_interactions = qa_interaction_manager.get_interactions_by_interaction_ids(interaction_ids)
-    formatted_interactions = format_interactions(relevant_qa_interactions)
-    assistant_response, thread_id = query_assistant_with_context(context, formatted_interactions)
+    formatted_interactions, user_ids = format_interactions(relevant_qa_interactions)
+    assistant_response, thread_ids = query_assistant_with_context(context, formatted_interactions)
     questions_json = strip_json(assistant_response)
     quiz_question_dtos = process_and_store_questions(questions_json)
 
@@ -231,7 +245,7 @@ def identify_knowledge_gaps(context):
     print(f"Stored questions with IDs: {[q.id for q in quiz_question_dtos]}")
 
     # Updated function call to match the expected input
-    quiz_questions = post_questions_to_slack(channel_id=channel_id, quiz_question_dtos=quiz_question_dtos)
+    quiz_questions = post_questions_to_slack(channel_id=channel_id, quiz_question_dtos=quiz_question_dtos, user_ids=user_ids)
 
 
 if __name__ == "__main__":

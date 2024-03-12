@@ -1,16 +1,17 @@
 # ./confluence_integration/extract_page_content_and_store_processor.py
+# Part of loading documentation used to extract data from confluence and store it in the database
 import os
 import requests
+import time
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from configuration import api_host, api_port
+from configuration import persist_page_processing_queue_path, persist_page_vector_queue_path
 from persistqueue import Queue
 from file_system.file_manager import FileManager
 from database.page_manager import store_pages_data, is_page_processed, get_last_updated_timestamp
 from confluence_integration.retrieve_space import process_page
-from configuration import persist_page_processing_queue_path, persist_page_vector_queue_path
 from database.page_manager import get_page_ids_missing_embeds
-import time
-import logging
-from configuration import api_host, api_port
-from concurrent.futures import ThreadPoolExecutor
 
 
 host = os.environ.get("NUR_API_HOST", api_host)
@@ -177,9 +178,4 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None
 if __name__ == "__main__":
     embed_pages_missing_embeds()
 
-    '''
-    space_key = choose_space()
-    logging.info(f"Script started for space key: {space_key}")
-    get_page_content_using_queue(space_key)
-    '''
 
