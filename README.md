@@ -29,12 +29,11 @@ create an issue or make a pull request.
 - Learns from your confluence
 - Chats with you in slack based on the knowledge in confluence
 - Identifies knowledge gaps
-- Asks questions on slack to collect knowledge
-
-### Todo:
+- Asks questions on Slack to collect knowledge
 - Capture :checkmark: reaction
 - Summarise the conversation and add document to confluence
 
+### Todo:
 - Space management
   - Retrieve documentation updates nightly
   - Delete documentation scope (Space) from vector

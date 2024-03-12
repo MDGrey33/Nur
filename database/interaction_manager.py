@@ -18,6 +18,7 @@ class QAInteractions(Base):
     assistant_thread_id = Column(String)
     answer_text = Column(Text)
     channel_id = Column(String)
+    slack_user_id = Column(String)
     question_timestamp = Column(DateTime)
     answer_timestamp = Column(DateTime)
     comments = Column(Text, default=json.dumps([]))
@@ -31,7 +32,7 @@ class QAInteractionManager:
         self.Session = sessionmaker(bind=self.engine)
 
     def add_question_and_answer(self, question, answer, thread_id, assistant_thread_id, channel_id, question_ts,
-                                answer_ts):
+                                answer_ts, slack_user_id):
         session = self.Session()
         try:
             serialized_answer = json.dumps(answer.__dict__) if not isinstance(answer, str) else answer
@@ -43,11 +44,12 @@ class QAInteractionManager:
                 channel_id=channel_id,
                 question_timestamp=question_ts,
                 answer_timestamp=answer_ts,
-                comments=json.dumps([])  # Initialize an empty list of comments
+                comments=json.dumps([]),  # Initialize an empty list of comments
+                slack_user_id=slack_user_id  # Store the Slack user ID
             )
             session.add(interaction)
             session.commit()
-        except Exception as e:  # It's better to catch more specific exceptions.
+        except Exception as e:
             session.rollback()
             raise e
         finally:
