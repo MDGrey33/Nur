@@ -1,6 +1,6 @@
-
-# Developer Commands for Nur Project
-
+---
+title: Developer Commands for Nur Project
+---
 ## Setting Up Your Development Environment
 
 First, navigate to your project's root directory. Update the path in the command below to match your project folder path.
