@@ -34,6 +34,10 @@ create an issue or make a pull request.
 - Summarise the conversation and add document to confluence
 
 ### Todo:
+- gamification
+    - light seekers ( people who ask questions)
+    - revealers ( people who ask undocumented questions)
+    - luminaries ( people who contribute to knowledge gathering)
 - Space management
   - Retrieve documentation updates nightly
   - Delete documentation scope (Space) from vector
