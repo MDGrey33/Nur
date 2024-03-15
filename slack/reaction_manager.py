@@ -5,17 +5,21 @@ import json
 import re
 from confluence_integration.system_knowledge_manager import create_page_on_confluence
 from gamification.score_manager import ScoreManager
+from slack.event_consumer import get_user_name_from_id
 
 
-def get_top_users_by_category():
+def get_top_users_by_category(slack_web_client):
     score_manager = ScoreManager()
     categories = ['seeker', 'revealer', 'luminary']
     top_users_by_category = {}
 
     for category in categories:
         top_users = score_manager.get_top_users(category)
-        # Format the user data for posting
-        formatted_users = [{'name': user.slack_user_id, 'score': getattr(user, f"{category}_score")} for user in top_users]
+        # Fetch user names from Slack and format the user data for posting
+        formatted_users = []
+        for user in top_users:
+            user_name = get_user_name_from_id(slack_web_client, user.slack_user_id) or "Unknown User"
+            formatted_users.append({'name': user_name, 'score': getattr(user, f"{category}_score")})
         top_users_by_category[category] = formatted_users
 
     return top_users_by_category
@@ -25,7 +29,7 @@ def post_top_users_in_categories(slack_web_client, channel):
     # Assuming get_top_users_by_category is implemented elsewhere and returns a dictionary
     # where keys are categories and values are lists of top users (name and score).
 
-    top_users_by_category = get_top_users_by_category()
+    top_users_by_category = get_top_users_by_category(slack_web_client)
 
     # Format the message
     message_blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": "*Top 10 Users by Category:*"}}]

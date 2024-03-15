@@ -12,6 +12,7 @@ from vector.chroma import retrieve_relevant_documents
 from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from database.interaction_manager import QAInteractionManager
 from gamification.score_manager import ScoreManager
+from slack_sdk.errors import SlackApiError
 
 
 class QuestionEvent(BaseModel):
@@ -28,6 +29,16 @@ class FeedbackEvent(BaseModel):
     thread_ts: str
     channel: str
     user: str
+
+
+def get_user_name_from_id(slack_web_client, user_id):
+    try:
+        response = slack_web_client.users_info(user=user_id)
+        if response and response['user']['name']:
+            return response['user']['name']
+    except SlackApiError as e:
+        print(f"Error fetching user name: {e.response['error']}")
+    return None
 
 
 class EventConsumer:
