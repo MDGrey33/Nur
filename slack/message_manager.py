@@ -4,12 +4,8 @@ from credentials import slack_bot_user_oauth_token
 from database.quiz_question_manager import QuizQuestionManager
 from interactions.quiz_question_dto import QuizQuestionDTO
 
-# ./slack/message_manager.py
-from slack_sdk import WebClient
-from credentials import slack_bot_user_oauth_token
-from database.quiz_question_manager import QuizQuestionManager
-from interactions.quiz_question_dto import QuizQuestionDTO
-
+# Assuming the ScoreManager class and add_or_update_score method exist
+from gamification.score_manager import ScoreManager
 
 def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
     """
@@ -25,8 +21,10 @@ def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
     Returns:
         list: A list of QuizQuestionDTOs with their respective thread IDs updated based on the Slack API responses.
     """
+
     client = WebClient(token=slack_bot_user_oauth_token)
-    quizz_question_manager = QuizQuestionManager()
+    quiz_question_manager = QuizQuestionManager()
+    score_manager = ScoreManager()  # Initialize the ScoreManager
 
     for quiz_question_dto in quiz_question_dtos:
         try:
@@ -35,7 +33,7 @@ def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
             quiz_question_dto.thread_id = response["ts"]
 
             # Update the thread ID in the database
-            quizz_question_manager.update_with_thread_id(
+            quiz_question_manager.update_with_thread_id(
                 question_id=quiz_question_dto.id,
                 thread_id=quiz_question_dto.thread_id
             )
@@ -50,6 +48,10 @@ def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
 
             # Post the follow-up message in a thread
             client.chat_postMessage(channel=channel_id, text=follow_up_message, thread_ts=quiz_question_dto.thread_id)
+
+            # Award points to each revealer
+            for user_id in user_ids:
+                score_manager.add_or_update_score(user_id, category='revealer', points=1)
 
         except Exception as e:
             print(f"Exception occurred while posting message to Slack: {e}")

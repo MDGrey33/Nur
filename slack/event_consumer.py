@@ -11,6 +11,7 @@ from credentials import slack_bot_user_oauth_token
 from vector.chroma import retrieve_relevant_documents
 from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
 from database.interaction_manager import QAInteractionManager
+from gamification.score_manager import ScoreManager
 
 
 class QuestionEvent(BaseModel):
@@ -33,6 +34,7 @@ class EventConsumer:
     def __init__(self):
         self.web_client = WebClient(token=slack_bot_user_oauth_token)
         self.interaction_manager = QAInteractionManager()
+        self.score_manager = ScoreManager()
         logging.log(logging.DEBUG, f"Slack Event Consumer initiated successfully")
 
     def is_message_processed_in_db(self, channel_id, message_ts):
@@ -68,6 +70,12 @@ class EventConsumer:
             try:
                 self.record_message_as_processed_in_db(channel_id, message_ts)
                 self.add_question_and_response_to_database(question_event, response_text, assistant_thread_id=assistant_thread_id)
+                try:
+                    self.score_manager.add_or_update_score(slack_user_id=question_event.user, category='seeker',
+                                                           points=1)
+                    print(f"Score updated for user {question_event.user}")
+                except Exception as e:
+                    print(f"Error updating score for user {question_event.user}: {e}")
                 self.web_client.chat_postMessage(channel=channel_id, text=response_text, thread_ts=message_ts)
                 print(f"\nResponse posted to Slack thread: {message_ts}\n")
             except Exception as e:

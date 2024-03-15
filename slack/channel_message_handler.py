@@ -15,7 +15,6 @@ host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
 
 
-
 class ChannelMessageHandler(SlackEventHandler):
     """Handles incoming messages from the channel and publishes questions and feedback to the persist queue"""
 

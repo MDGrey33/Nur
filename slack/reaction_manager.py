@@ -4,6 +4,45 @@ from open_ai.chat.format_knowledge_gathering import query_gpt_4t_with_context
 import json
 import re
 from confluence_integration.system_knowledge_manager import create_page_on_confluence
+from gamification.score_manager import ScoreManager
+
+
+def get_top_users_by_category():
+    score_manager = ScoreManager()
+    categories = ['seeker', 'revealer', 'luminary']
+    top_users_by_category = {}
+
+    for category in categories:
+        top_users = score_manager.get_top_users(category)
+        # Format the user data for posting
+        formatted_users = [{'name': user.slack_user_id, 'score': getattr(user, f"{category}_score")} for user in top_users]
+        top_users_by_category[category] = formatted_users
+
+    return top_users_by_category
+
+
+def post_top_users_in_categories(slack_web_client, channel):
+    # Assuming get_top_users_by_category is implemented elsewhere and returns a dictionary
+    # where keys are categories and values are lists of top users (name and score).
+
+    top_users_by_category = get_top_users_by_category()
+
+    # Format the message
+    message_blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": "*Top 10 Users by Category:*"}}]
+    for category, users in top_users_by_category.items():
+        user_lines = [f"{idx + 1}. {user['name']} - {user['score']} points" for idx, user in enumerate(users)]
+        category_section = {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*{category}:*\n" + "\n".join(user_lines)}
+        }
+        message_blocks.append(category_section)
+
+    # Post the message to Slack
+    try:
+        slack_web_client.chat_postMessage(channel=channel, blocks=message_blocks)
+    except SlackApiError as e:
+        print(f"Failed to post top users message: {e.response['error']}")
+
 
 def get_message_replies(client, channel, ts):
     """
@@ -51,6 +90,17 @@ def process_checkmark_added_event(slack_web_client, event):
         # assign the channel to the channel where the reaction was added
         channel = event.get("item", {}).get("channel")
         knowledge_gathering_messages = get_message_replies(slack_web_client, channel, item_ts)
+
+        # Assuming ScoreManager or similar exists for managing scores
+        score_manager = ScoreManager()
+
+        # Extract unique user IDs from the replies
+        replied_user_ids = set(message.get("user") for message in knowledge_gathering_messages if "user" in message)
+
+        # Update luminary score for each user who replied
+        for user_id in replied_user_ids:
+            score_manager.add_or_update_score(user_id, category='luminary', points=1)
+
         for knowledge_gathering_message in knowledge_gathering_messages:
             # generate a string containing all the messages to include as context by appending them all
             context += knowledge_gathering_message.get("text", "")
@@ -88,3 +138,6 @@ def process_checkmark_added_event(slack_web_client, event):
 
     quiz_question_manager.update_with_summary_by_thread_id(thread_id=item_ts, summary=cleaned_json_string)
     create_page_on_confluence(extracted_info["page_title"], extracted_info["page_content"])
+    # After processing the checkmark reaction, post the top users
+    channel = event.get("item", {}).get("channel")  # Assuming this is the channel ID
+    post_top_users_in_categories(slack_web_client, channel)
