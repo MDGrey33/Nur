@@ -188,7 +188,6 @@ def vectorize_interactions_and_store_in_db(retry_limit: int = 3, wait_time: int 
         print("Some interactions still lack embeddings after all attempts.")
     else:
         print("All interactions now have embeddings. Process complete.")
-        print("\n#\n#\n#\nembeds added to DB but creating a chromadb is not done yet\n#\n#\n#")
 
 
 if __name__ == "__main__":
