@@ -132,7 +132,10 @@ def process_checkmark_added_event(slack_web_client, event):
     cleaned_json_string = re.sub(r'[\x00-\x1F]+', '', json_string)
 
     # Parse the JSON string into a Python dictionary
-    response_dict = json.loads(cleaned_json_string)
+    if cleaned_json_string:
+        response_dict = json.loads(cleaned_json_string)
+    else:
+        return
 
     # Extract the page title and content into a new dictionary
     extracted_info = {
@@ -145,3 +148,4 @@ def process_checkmark_added_event(slack_web_client, event):
     # After processing the checkmark reaction, post the top users
     channel = event.get("item", {}).get("channel")  # Assuming this is the channel ID
     post_top_users_in_categories(slack_web_client, channel)
+
