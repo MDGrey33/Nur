@@ -7,9 +7,7 @@ import plotly.graph_objects as go  # Import Plotly Graph Objects for 3D plotting
 from umap import UMAP  # Ensure umap-learn is installed
 
 
-def visualize_page_clusters_3d(n_clusters=10):
-    print("Starting 3D visualization process...")
-
+def import_data():
     # Step 1: Retrieve all page data, including embeddings, titles, and space keys
     page_ids, all_documents, embeddings_json = get_all_page_data_from_db()
     print(f"Retrieved {len(embeddings_json)} embeddings from the database.")
@@ -17,7 +15,10 @@ def visualize_page_clusters_3d(n_clusters=10):
     if not embeddings_json:
         print("No embeddings found. Exiting visualization process.")
         return
+    return page_ids, all_documents, embeddings_json
 
+
+def prepare_data(all_documents, embeddings_json, n_clusters=10):
     embeddings = [json.loads(embed) for embed in embeddings_json if embed]
     print(f"Successfully deserialized {len(embeddings)} embeddings.")
 
@@ -45,7 +46,10 @@ def visualize_page_clusters_3d(n_clusters=10):
 
     # Prepare hover text with titles and space keys
     hover_texts = [f"{title}<br>Space Key: {key}" for title, key in zip(titles, space_keys)]
+    return reduced_embeddings, cluster_labels, hover_texts
 
+
+def visualize_page_clusters_3d(reduced_embeddings, cluster_labels, hover_texts):
     # Step 3: Visualization with cluster colors and hover texts using Plotly 3D scatter plot
     fig = go.Figure(data=[go.Scatter3d(
         x=reduced_embeddings[:, 0],
@@ -68,5 +72,13 @@ def visualize_page_clusters_3d(n_clusters=10):
     print("3D Clustered visualization displayed.")
 
 
+def load_confluence_pages_spacial_distribution():
+    print("Starting 3D visualization process...")
+
+    page_ids, all_documents, embeddings_json = import_data()
+    reduced_embeddings, cluster_labels, hover_texts = prepare_data(all_documents, embeddings_json, n_clusters=10)
+    visualize_page_clusters_3d(reduced_embeddings, cluster_labels, hover_texts)
+
+
 if __name__ == '__main__':
-    visualize_page_clusters_3d()
+    load_confluence_pages_spacial_distribution()
