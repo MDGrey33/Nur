@@ -9,7 +9,7 @@ from interactions.vectorize_and_store import vectorize_interactions_and_store_in
 from vector.create_interaction_db import VectorInteractionManager
 from interactions.identify_knowledge_gap import identify_knowledge_gaps
 from space.manager import Space
-
+from visualize.pages import load_confluence_pages_spacial_distribution
 
 def load_new_documentation_space():
     space_key, space_name = choose_space()
@@ -40,6 +40,7 @@ def main_menu():
         print("5. Start Slack Bot")
         print("6. Manage assistants")
         print("7. Identify knowledge gaps")
+        print("8. Visualize Confluence Pages Spacial Distribution")
         print("0. Cancel/Quit")
         choice = input("Enter your choice (0-6): ")
 
@@ -79,6 +80,11 @@ def main_menu():
         elif choice == "7":
             context = input("Enter the context you want to identifying knowledge gaps in\nex:(billing reminders): ")
             identify_knowledge_gaps(context)
+
+        elif choice == "8":
+            print("Starting 3D visualization process...")
+            load_confluence_pages_spacial_distribution()
+
         elif choice == "0":
             print("Exiting program.")
             break
