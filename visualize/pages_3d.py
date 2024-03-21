@@ -1,6 +1,5 @@
 # Import necessary libraries
 from database.page_manager import get_all_page_data_from_db
-from sklearn.cluster import KMeans
 import numpy as np
 import json
 import plotly.graph_objects as go  # Import Plotly Graph Objects for 3D plotting
@@ -45,13 +44,6 @@ def prepare_data(all_documents, embeddings_json, n_clusters=10):
     reduced_embeddings = umap.fit_transform(embeddings_array)
     print("Dimensionality reduction completed using UMAP.")
 
-    '''
-    # Step 2.5: Apply KMeans clustering
-    kmeans = KMeans(n_clusters=n_clusters)
-    cluster_labels = kmeans.fit_predict(reduced_embeddings)
-    print(f"KMeans clustering completed with {n_clusters} clusters.")
-    '''
-
     # Prepare hover text with titles and space keys
     hover_texts = [f"{title}<br>Space Key: {key}" for title, key in zip(titles, space_keys)]
     return reduced_embeddings, color_indices, hover_texts
@@ -79,7 +71,6 @@ def visualize_page_clusters_3d(reduced_embeddings, color_indices, hover_texts):
 
     # Export to HTML
     fig.write_html(chart_folder_path + '/3d_page_embeddings_visualization.html', auto_open=True)
-
 
     print("3D Clustered visualization displayed.")
 
