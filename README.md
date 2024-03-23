@@ -150,3 +150,6 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 - celery
 - rabbitmq
 - postgreaql
+
+
+Refer to the ./documentation folder for project documentation.
