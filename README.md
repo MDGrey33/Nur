@@ -101,6 +101,8 @@ poetry run python main.py
 
 `poetry run python ./api/endpoint.py` (API / uvicorn web server)
 
+Refer to the ./documentation/slack_app_manifest_installation_guide.md for slack bot setup
+
 `poetry run python ./slack/bot.py` (slack bot stream listener)
 
 ### Run Nur via Docker

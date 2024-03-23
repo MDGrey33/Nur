@@ -1,0 +1,52 @@
+display_information:
+  name: Nur
+  description: It is your light that I reflect, shine on.
+  background_color: "#2d2e30"
+  long_description: "It is the knowledge you have that I share and I count on your help to increase our common knowledge.\r
+
+    I learn from your confluence spaces, answer questions, identify gaps in the available knowledge and gamify recovering the gaps in a fun way that highlights gratitude to contributors."
+features:
+  app_home:
+    home_tab_enabled: true
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+  bot_user:
+    display_name: Nur
+    always_online: true
+oauth_config:
+  scopes:
+    user:
+      - im:history
+      - im:read
+      - im:write
+    bot:
+      - app_mentions:read
+      - channels:history
+      - chat:write
+      - emoji:read
+      - groups:history
+      - im:history
+      - im:read
+      - im:write
+      - incoming-webhook
+      - links:read
+      - reactions:read
+      - reactions:write
+      - users:read
+      - channels:read
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - emoji_changed
+      - link_shared
+      - message.channels
+      - message.groups
+      - message.im
+      - reaction_added
+      - reaction_removed
+  interactivity:
+    is_enabled: true
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false
