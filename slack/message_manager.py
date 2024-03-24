@@ -6,6 +6,8 @@ from interactions.quiz_question_dto import QuizQuestionDTO
 
 # Assuming the ScoreManager class and add_or_update_score method exist
 from gamification.score_manager import ScoreManager
+from slack_sdk.errors import SlackApiError
+
 
 def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
     """
@@ -57,3 +59,31 @@ def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
             print(f"Exception occurred while posting message to Slack: {e}")
 
     return quiz_question_dtos
+
+
+def get_message_replies(client, channel, ts):
+    """
+    Retrieve all replies to a specific message in a Slack channel.
+
+    Parameters:
+    - token (str): Your Slack API token.
+    - channel (str): The ID of the channel containing the original message.
+    - ts (str): The timestamp of the original message.
+
+    Returns:
+    - A list of replies to the message, or an error message if the API call fails.
+    """
+
+    try:
+        # Call the conversations.replies API method
+        response = client.conversations_replies(channel=channel, ts=ts)
+        replies = response.get('messages', [])
+
+        # Filter out the original message, leaving only the replies
+        replies_without_original = [message for message in replies if message['ts'] != ts]
+
+        return replies
+
+    except SlackApiError as e:
+        print(f"Slack API Error: {e.response['error']}")
+        return []

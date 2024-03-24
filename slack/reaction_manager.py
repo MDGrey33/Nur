@@ -1,4 +1,3 @@
-from slack_sdk.errors import SlackApiError
 from database.quiz_question_manager import QuizQuestionManager
 from open_ai.chat.format_knowledge_gathering import query_gpt_4t_with_context
 import json
@@ -6,7 +5,9 @@ import re
 from confluence_integration.system_knowledge_manager import create_page_on_confluence
 from gamification.score_manager import ScoreManager
 from slack.event_consumer import get_user_name_from_id
-
+from slack_sdk.errors import SlackApiError
+from database.bookmarked_conversation_manager import BookmarkedConversationManager
+from slack.message_manager import get_message_replies
 
 def get_top_users_by_category(slack_web_client):
     score_manager = ScoreManager()
@@ -48,34 +49,6 @@ def post_top_users_in_categories(slack_web_client, channel):
         print(f"Failed to post top users message: {e.response['error']}")
 
 
-def get_message_replies(client, channel, ts):
-    """
-    Retrieve all replies to a specific message in a Slack channel.
-
-    Parameters:
-    - token (str): Your Slack API token.
-    - channel (str): The ID of the channel containing the original message.
-    - ts (str): The timestamp of the original message.
-
-    Returns:
-    - A list of replies to the message, or an error message if the API call fails.
-    """
-
-    try:
-        # Call the conversations.replies API method
-        response = client.conversations_replies(channel=channel, ts=ts)
-        replies = response.get('messages', [])
-
-        # Filter out the original message, leaving only the replies
-        replies_without_original = [message for message in replies if message['ts'] != ts]
-
-        return replies
-
-    except SlackApiError as e:
-        print(f"Slack API Error: {e.response['error']}")
-        return []
-
-
 def process_checkmark_added_event(slack_web_client, event):
     print(f"Reaction event identified:\n{event}")
 
@@ -112,13 +85,6 @@ def process_checkmark_added_event(slack_web_client, event):
     _ = ""
     confluence_page_content = query_gpt_4t_with_context(_, context)
     print(f"Confluence page content: {confluence_page_content}")
-    # response is: ```json
-    # {
-    #   "page_title": "Scope of Cloud Native Infrastructure",
-    #   "page_content": "Cloud native infrastructure is responsible for managing all aspects of infrastructure on Google Cloud. This includes advising on architecture for cloud-related projects. It is focused solely on technology and does not deal with weather forecasting."
-    # }
-    # extract the page title and page content from the response into a dictionary
-    # Simulating the response from the function, including the triple backticks, "json", and the JSON content
 
     # Find the position where "json" occurs and add 4 to get the position after "json"
     json_start_pos = confluence_page_content.find('json') + 4
@@ -149,3 +115,36 @@ def process_checkmark_added_event(slack_web_client, event):
     channel = event.get("item", {}).get("channel")  # Assuming this is the channel ID
     post_top_users_in_categories(slack_web_client, channel)
 
+
+def process_bookmark_added_event(slack_web_client, event):
+    print(f"Bookmark reaction event identified:\n{event}")
+
+    # Extract the channel and timestamp (ts) of the message that received the bookmark reaction
+    channel = event.get("item", {}).get("channel")
+    item_ts = event.get("item", {}).get("ts")
+
+    try:
+        # Use the get_message_replies function to fetch the conversation
+        bookmarked_conversation_messages = get_message_replies(slack_web_client, channel, item_ts)
+
+        if bookmarked_conversation_messages:
+            # Assuming the first message is the main message and the rest are replies
+            title = bookmarked_conversation_messages[0].get("text", "No Title")
+            # Join the text of all replies to form the body, skipping the first message which is the title
+            body = "\n".join([message.get("text", "") for message in bookmarked_conversation_messages[1:]])
+
+            # Initialize the BookmarkedConversationManager
+            bookmarked_conversation_manager = BookmarkedConversationManager()
+
+            # Add the bookmarked conversation to the database
+            bookmarked_conversation_manager.add_bookmarked_conversation(title=title, body=body, thread_id=item_ts)
+            print(f"Bookmarked conversation added to the database: {title}")
+
+
+            # Add conversation on confluence
+            create_page_on_confluence(title, body)
+
+        else:
+            print("No messages found for the bookmarked conversation.")
+    except SlackApiError as e:
+        print(f"Failed to fetch conversation replies: {e.response['error']}")

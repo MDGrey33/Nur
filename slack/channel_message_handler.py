@@ -8,7 +8,7 @@ from slack_sdk.socket_mode import SocketModeClient
 from configuration import api_host, api_port
 import requests
 import os
-from slack.reaction_manager import process_checkmark_added_event
+from slack.reaction_manager import process_checkmark_added_event, process_bookmark_added_event
 
 
 host = os.environ.get("NUR_API_HOST", api_host)
@@ -69,6 +69,9 @@ class ChannelMessageHandler(SlackEventHandler):
             # check if the reaction': is 'white_check_mark'
             if event.get("reaction") == "white_check_mark":
                 process_checkmark_added_event(slack_web_client=web_client, event=event)
+            elif event.get("reaction") == "bookmark":
+                process_bookmark_added_event(slack_web_client=web_client, event=event)
+
         # identify if the bot is trying to gather knowledge
         if user_id == bot_user_id and not thread_ts and "?" in text and "Question:" in text:
             # print the message text to the console
