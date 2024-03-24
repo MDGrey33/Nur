@@ -150,3 +150,6 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 
 
 Refer to the ./documentation folder for project documentation.
+In Case you want an message on a slack channel where Nur is listening to be stored in the Knowledge of Nue, you can use use the emoticon :bookmark:
+After the knowledge base space on confluence is imported Nur will be aware fo said conversation.
+```
