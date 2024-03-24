@@ -88,9 +88,6 @@ def create_interaction_embeds(InteractionEmbedRequest: InteractionEmbedRequest):
     interaction_id = InteractionEmbedRequest.interaction_id
     print(f"Received interaction embed request for ID: {interaction_id}")  # Debugging line
 
-    # Verify the interaction_id before proceeding
-    # Add any necessary validation or processing here
-
     # Use threading to process the embedding generation and storage without blocking the endpoint response
     thread = threading.Thread(target=vectorize_interaction_and_store_in_db, args=(interaction_id,))
     thread.start()
