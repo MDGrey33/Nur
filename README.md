@@ -20,14 +20,11 @@ Apache-2 license
 Easy onboarding, reach out if you need support.
 
 ## Team
-- [Roland Younes](https://www.linkedin.com/in/rolanday/) 
-24 years in tech, 10 years in tech management 
-and software development, 
-2 years of healthy obsession in Gen AI and python
-- You...? 
-text me if you would like a walkthrough,
-request a feature,
-create an issue or make a pull request.
+- [Roland Younes](https://www.linkedin.com/in/rolanday/): With 24 years in tech, including 10 years in tech management and software development, Roland brings a wealth of experience alongside a 2-year deep dive into Gen AI and Python.
+
+- [Charbel Abou Younes](https://www.linkedin.com/in/charbelay/): Charbel, a software development virtuoso, brings his AWS expertise and Adobe Commerce proficiency to the fore, ensuring robust and scalable cloud solutions.
+
+- You...? Interested in AI, documentation, and making a difference? Join us! Whether it’s for a chat, a feature request, or to contribute, we're open to your ideas and contributions.
 
 ## Feature list
 
