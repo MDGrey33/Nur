@@ -22,10 +22,10 @@ class BookmarkedConversationManager:
             print(f"Error adding bookmarked conversation: {e}")
             return None
 
-    def update_posted_on_confluence(self, conversation_id):
+    def update_posted_on_confluence(self, thread_id):
         try:
             with self.Session() as session:
-                conversation = session.query(BookmarkedConversation).filter_by(id=conversation_id).first()
+                conversation = session.query(BookmarkedConversation).filter_by(thread_id=thread_id).first()
                 if conversation:
                     conversation.posted_on_confluence = datetime.now(timezone.utc)
                     session.commit()

@@ -143,6 +143,7 @@ def process_bookmark_added_event(slack_web_client, event):
 
             # Add conversation on confluence
             create_page_on_confluence(title, body)
+            bookmarked_conversation_manager.update_posted_on_confluence(item_ts)
 
         else:
             print("No messages found for the bookmarked conversation.")
