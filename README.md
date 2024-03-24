@@ -35,7 +35,9 @@ Easy onboarding, reach out if you need support.
 - Identifies knowledge gaps
 - Asks questions on Slack to collect knowledge
 - Capture :checkmark: reaction
-- Summarise the conversation and add document to confluence
+  - Summarise the conversation and add document to confluence
+- Capture :bookmark: reaction
+  - Add the conversation to confluence
 - gamification (leader board)
     - light seekers ( people who ask questions)
     - revealers ( people who ask undocumented questions)
@@ -148,8 +150,6 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 - rabbitmq
 - postgreaql
 
-
+## Documentation
 Refer to the ./documentation folder for project documentation.
-In Case you want an message on a slack channel where Nur is listening to be stored in the Knowledge of Nue, you can use use the emoticon :bookmark:
-After the knowledge base space on confluence is imported Nur will be aware fo said conversation.
-```
+
