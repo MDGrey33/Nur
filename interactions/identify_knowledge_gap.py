@@ -144,15 +144,15 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
 
     # Format the question with context and query the assistant
 
-    formatted_question = (f"""After analyzing the provided questions_text, 
+    formatted_question = (f"""After analyzing the provided questions_text,
     Keep only the questions that are related to {context}
     From these identify those that were not provided a satisfactory answer in the answer_text
     These questions should reflect gaps in our current knowledge or documentation.
     Compile these questions so we can ask them to the domain experts and recover that knowledge.
     Provide them strictly in a JSON array, following the specified structure.
-    Each entry should include the question and a brief explanation of why it was 
+    Each entry should include the question and a brief explanation of why it was
     included, how it relates to the {context} domain, and what part of the question wasn't covered.
-    Only include questions relevant to this domain:{context}\n 
+    Only include questions relevant to this domain:{context}\n
     f"Context:{formatted_interactions}\n
     """)
 

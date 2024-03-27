@@ -33,4 +33,3 @@ def create_page_on_confluence(title, content):
         # Create the page if it doesn't exist
         confluence_client.create_page(space_key, clean_title, clean_content)
         return f"Page created"
-

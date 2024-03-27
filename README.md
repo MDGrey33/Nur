@@ -1,20 +1,20 @@
 # Nur AI
-The self-actualizing documentation Chat Bot that heals its knowledge gaps 
+The self-actualizing documentation Chat Bot that heals its knowledge gaps
 as naturally as a ray of light - with AI
 [Custom GPT to discuss the code base](https://chat.openai.com/g/g-zKBLXtfrD-shams-nur)
 
 ## Problem
 Organizational knowledge is hard to find and keep updated.
  Accessing information is challenging for busy individuals or those with neuro-divergent brains.
- Current solutions lead to outdated documentation and inaccessible information. 
+ Current solutions lead to outdated documentation and inaccessible information.
 
 ## Solution
-Nur AI utilizes generative AI to identify and fill knowledge gaps. 
+Nur AI utilizes generative AI to identify and fill knowledge gaps.
 Offers both text and in the future audio access to documentation.
-Currently in extensive MVP testing. 
+Currently in extensive MVP testing.
 
 ## Business model
-Open Source free to use - 
+Open Source free to use -
 Apache-2 license
 
 Easy onboarding, reach out if you need support.
@@ -152,4 +152,3 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 
 ## Documentation
 Refer to the ./documentation folder for project documentation.
-

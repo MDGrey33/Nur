@@ -40,10 +40,12 @@ persist_page_vector_queue_path = os.path.join(project_path, "content", "transact
 # Assistant IDs
 qa_assistant_id_prod_shams = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
 qa_assistant_id_with_rag_shams = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
+qa_assistant_personal = "asst_XGN0sfllK35yGC1TUb5n9BEZ"
 quizz_assistant_id_amar = "asst_nMlrzxoYSepkH0AigAtRDMdl"
 qa_assistant_id_on_free_credit_account = "asst_RjPJlkVCfaHTLgalw9BXAuBi"
-qa_assistant_id = qa_assistant_id_prod_shams
-quizz_assistant_id = quizz_assistant_id_amar
+quizz_assistant_id_personal = "asst_DQv5SrdFO1atzNB5PA5sd1nH"
+qa_assistant_id = qa_assistant_personal
+quizz_assistant_id = quizz_assistant_id_personal
 
 # Model IDs
 # Doesn't apply for assistants
@@ -84,4 +86,5 @@ system_confluence_knowledge_space = system_knowledge_space_private
 slack_channel_priv_kb = "C06EGCDNA4A"
 slack_channel_tt_ta_debug = "C06EA5WFGUF"
 slack_channel_tt_ta = "C052GJ7GLVC"
-channel_id = slack_channel_priv_kb
+slack_channel_debug = "C06RLR5S049"
+channel_id = slack_channel_debug

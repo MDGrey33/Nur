@@ -17,7 +17,7 @@ services:
     environment:
       - NUR_API_HOST=web
       - NUR_API_PORT=8000
-  
+
   slack:
     depends_on:
       - web
@@ -37,4 +37,3 @@ services:
 
 volumes:
   shared_content:
-  
