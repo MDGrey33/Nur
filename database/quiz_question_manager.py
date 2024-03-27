@@ -10,26 +10,31 @@ Base = declarative_base()
 
 
 class QuizQuestion(Base):
-    __tablename__ = 'quiz_questions'
+    __tablename__ = "quiz_questions"
     id = Column(Integer, primary_key=True)
     question_text = Column(Text)
     thread_id = Column(String)  # Slack thread ID for tracking conversations
     summary = Column(Text)  # Summary of the conversation
     posted_on_slack = Column(DateTime)  # Timestamp when posted on Slack
-    posted_on_confluence = Column(DateTime, nullable=True)  # Timestamp when posted on Confluence
+    posted_on_confluence = Column(
+        DateTime, nullable=True
+    )  # Timestamp when posted on Confluence
 
 
 class QuizQuestionManager:
     def __init__(self):
         # Initialize the database engine
-        self.engine = create_engine('sqlite:///' + sql_file_path)
+        self.engine = create_engine("sqlite:///" + sql_file_path)
         Base.metadata.create_all(self.engine)  # Create tables if they don't exist
         self.Session = sessionmaker(bind=self.engine)
 
     def add_quiz_question(self, question_text):
         try:
             with self.Session() as session:
-                new_question = QuizQuestion(question_text=question_text, posted_on_slack=datetime.now(timezone.utc))
+                new_question = QuizQuestion(
+                    question_text=question_text,
+                    posted_on_slack=datetime.now(timezone.utc),
+                )
                 session.add(new_question)
                 session.commit()
                 # Convert and return a QuizQuestionDTO object
@@ -39,7 +44,7 @@ class QuizQuestionManager:
                     thread_id=new_question.thread_id,
                     summary=new_question.summary,
                     posted_on_slack=new_question.posted_on_slack,
-                    posted_on_confluence=new_question.posted_on_confluence
+                    posted_on_confluence=new_question.posted_on_confluence,
                 )
         except SQLAlchemyError as e:
             print(f"Error adding quiz question: {e}")
@@ -58,12 +63,16 @@ class QuizQuestionManager:
     def update_with_summary_by_thread_id(self, thread_id, summary):
         try:
             with self.Session() as session:
-                question = session.query(QuizQuestion).filter_by(thread_id=thread_id).first()
+                question = (
+                    session.query(QuizQuestion).filter_by(thread_id=thread_id).first()
+                )
                 print(f"question: {question}")
                 if question:
                     question.summary = summary
                     session.commit()
-                    print(f"Updated question with thread ID {thread_id} with summary: {summary}")
+                    print(
+                        f"Updated question with thread ID {thread_id} with summary: {summary}"
+                    )
         except SQLAlchemyError as e:
             print(f"Error updating quiz question with summary: {e}")
 
@@ -92,7 +101,11 @@ class QuizQuestionManager:
     def get_unposted_questions_timestamps(self):
         try:
             with self.Session() as session:
-                questions = session.query(QuizQuestion).filter_by(posted_on_confluence=None).all()
+                questions = (
+                    session.query(QuizQuestion)
+                    .filter_by(posted_on_confluence=None)
+                    .all()
+                )
                 return [question.thread_id for question in questions]
         except SQLAlchemyError as e:
             print(f"Error getting unposted questions: {e}")
@@ -102,5 +115,7 @@ class QuizQuestionManager:
 # Example usage
 if __name__ == "__main__":
     qzm = QuizQuestionManager()
-    question_id = qzm.add_quiz_question("What is the airspeed velocity of an unladen swallow?")
+    question_id = qzm.add_quiz_question(
+        "What is the airspeed velocity of an unladen swallow?"
+    )
     print(f"Added question with ID: {question_id}")

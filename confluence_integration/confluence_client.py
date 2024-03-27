@@ -6,7 +6,9 @@ from bs4 import BeautifulSoup
 import re
 
 # Set up basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class ConfluenceClient:
@@ -30,9 +32,9 @@ class ConfluenceClient:
         Initialize the Confluence client.
         """
         self.confluence = Confluence(
-            url=confluence_credentials['base_url'],
-            username=confluence_credentials['username'],
-            password=confluence_credentials['api_token']
+            url=confluence_credentials["base_url"],
+            username=confluence_credentials["username"],
+            password=confluence_credentials["api_token"],
         )
 
     def page_exists(self, space_key, title):
@@ -60,7 +62,7 @@ class ConfluenceClient:
         """
         try:
             # Parse content using BeautifulSoup
-            soup = BeautifulSoup(content, 'html.parser')
+            soup = BeautifulSoup(content, "html.parser")
 
             # Convert Slack user mentions (<@U024UF2F68H>) to a readable format
             for user_mention in soup.find_all(text=re.compile("<@[A-Z0-9]+>")):
@@ -82,14 +84,20 @@ class ConfluenceClient:
 
             return clean_content
         except Exception as e:
-            logging.error("Error validating/coercing content to XHTML: %s", e, exc_info=True)
+            logging.error(
+                "Error validating/coercing content to XHTML: %s", e, exc_info=True
+            )
             # Handle the error as per your policy, e.g., re-raise, return None, or provide default content
             raise
 
     def update_page(self, page_id, title, content):
         """Update an existing page with new content."""
-        clean_content = self.validate_and_coerce_xhtml(content)  # Validate and clean the content
-        return self.confluence.update_page(page_id=page_id, title=title, body=clean_content)
+        clean_content = self.validate_and_coerce_xhtml(
+            content
+        )  # Validate and clean the content
+        return self.confluence.update_page(
+            page_id=page_id, title=title, body=clean_content
+        )
 
     def retrieve_confluence_pages(self, space_key, limit=50):
         """
@@ -130,9 +138,10 @@ class ConfluenceClient:
         limit = 50  # Set a reasonable default limit for each API request
 
         while True:
-            response = self.confluence.get_all_spaces(start=start, limit=limit,
-                                                      expand='description.plain,body.view,value')
-            spaces = response.get('results', [])
+            response = self.confluence.get_all_spaces(
+                start=start, limit=limit, expand="description.plain,body.view,value"
+            )
+            spaces = response.get("results", [])
             if not spaces:
                 break  # Exit loop if no more spaces are returned
 
@@ -143,7 +152,7 @@ class ConfluenceClient:
 
     def space_exists_by_name(self, space_name):
         all_spaces = self.retrieve_space_list()
-        return any(space['name'] == space_name for space in all_spaces)
+        return any(space["name"] == space_name for space in all_spaces)
 
     def create_space_if_not_found(self, space_name, space_key=None):
         """
@@ -160,8 +169,8 @@ class ConfluenceClient:
                 # If the space exists, return its key
                 for space in self.retrieve_space_list():
                     print(f"{space['name']}found")
-                    if space['name'] == space_name:
-                        return space['key']
+                    if space["name"] == space_name:
+                        return space["key"]
             else:
                 # If the space doesn't exist, create a new one
                 if space_key is None:
@@ -185,20 +194,22 @@ class ConfluenceClient:
         Returns:
             dict: Response from the Confluence API.
         """
-        clean_content = self.validate_and_coerce_xhtml(content)  # Validate and clean the content
+        clean_content = self.validate_and_coerce_xhtml(
+            content
+        )  # Validate and clean the content
         clean_title = self.validate_and_coerce_xhtml(title)
         return self.confluence.create_page(
             space=space_key,
             title=clean_title,
             body=clean_content,
             parent_id=parent_id,
-            type='page'
+            type="page",
         )
 
     @staticmethod
     def generate_space_key(space_name):
         # Create a base space key by taking the first two letters of each word
-        base_key = ''.join(word[:2].upper() for word in space_name.split())
+        base_key = "".join(word[:2].upper() for word in space_name.split())
         # Append a timestamp to the base key
         timestamp = int(time.time())
         return f"{base_key}{timestamp}"

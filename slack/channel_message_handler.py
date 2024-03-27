@@ -8,7 +8,10 @@ from slack_sdk.socket_mode import SocketModeClient
 from configuration import api_host, api_port
 import requests
 import os
-from slack.reaction_manager import process_checkmark_added_event, process_bookmark_added_event
+from slack.reaction_manager import (
+    process_checkmark_added_event,
+    process_bookmark_added_event,
+)
 
 
 host = os.environ.get("NUR_API_HOST", api_host)
@@ -25,7 +28,7 @@ class ChannelMessageHandler(SlackEventHandler):
         self.load_processed_data()
 
     def load_processed_data(self):
-        """ Load processed messages and questions from the database """
+        """Load processed messages and questions from the database"""
         try:
             interactions = self.interaction_manager.get_all_interactions()
         except Exception as e:
@@ -44,17 +47,27 @@ class ChannelMessageHandler(SlackEventHandler):
                 except Exception as e:
                     logging.error(f"Error adding question to interaction: {e}")
 
-    def handle(self, client: SocketModeClient, req: SocketModeRequest, web_client: WebClient, bot_user_id: str):
+    def handle(
+        self,
+        client: SocketModeClient,
+        req: SocketModeRequest,
+        web_client: WebClient,
+        bot_user_id: str,
+    ):
         """Handle incoming messages from the channel and publish questions and feedback to the persist queue"""
         # Acknowledge the event immediately
-        client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
+        client.send_socket_mode_response(
+            SocketModeResponse(envelope_id=req.envelope_id)
+        )
 
         event = req.payload.get("event", {})
         ts = event.get("ts", "")  # Unique 'ts' for each message
         text = event.get("text", "")
         user_id = event.get("user", "")
         thread_ts = event.get("thread_ts")  # 'thread_ts' if part of a thread
-        channel = event.get("channel", "")  # ID of the channel where the message was sent
+        channel = event.get(
+            "channel", ""
+        )  # ID of the channel where the message was sent
 
         logging.debug(f"Event received: {event}")
 
@@ -73,24 +86,36 @@ class ChannelMessageHandler(SlackEventHandler):
                 process_bookmark_added_event(slack_web_client=web_client, event=event)
 
         # identify if the bot is trying to gather knowledge
-        if user_id == bot_user_id and not thread_ts and "?" in text and "Question:" in text:
+        if (
+            user_id == bot_user_id
+            and not thread_ts
+            and "?" in text
+            and "Question:" in text
+        ):
             # print the message text to the console
             print(text)
             print(f"Bot gathering knowledge\ntext:{text}\n")
             return
 
         # Determine the reason for skipping before the checks
-        skip_reason = self.determine_skip_reason(event, ts, text, thread_ts, user_id, bot_user_id)
+        skip_reason = self.determine_skip_reason(
+            event, ts, text, thread_ts, user_id, bot_user_id
+        )
 
         # Skip if message is invalid or from the bot itself
         if not self.is_valid_message(event) or user_id == bot_user_id:
             logging.warning(
-                f"Skipping message with ID {ts} and Parent id {thread_ts} from user {user_id}. Reason: {skip_reason}")
-            logging.info(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
+                f"Skipping message with ID {ts} and Parent id {thread_ts} from user {user_id}. Reason: {skip_reason}"
+            )
+            logging.info(
+                f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}"
+            )
             return
 
         # Identify and handle questions
-        if "?" in text and (not thread_ts):  # It's a question if not part of another thread
+        if "?" in text and (
+            not thread_ts
+        ):  # It's a question if not part of another thread
             logging.debug(f"Question identified: {text}")
             self.questions[ts] = text
             question_event = {
@@ -98,12 +123,14 @@ class ChannelMessageHandler(SlackEventHandler):
                 "ts": ts,  # Message timestamp acting as unique ID in slack
                 "thread_ts": "",  # Knowing it's a question on the main channel, we can set this to empty string
                 "channel": channel,
-                "user": user_id
+                "user": user_id,
             }
             # publish question event to the persist queue
             try:
                 # Make an API call to publish the question
-                response = requests.post(f'http://{host}:{port}/api/v1/questions/', json=question_event)
+                response = requests.post(
+                    f"http://{host}:{port}/api/v1/questions/", json=question_event
+                )
                 response.raise_for_status()
                 logging.info(f"Question event published: {question_event}")
 
@@ -113,19 +140,23 @@ class ChannelMessageHandler(SlackEventHandler):
         # Identify and handle feedback
         elif thread_ts in self.questions:  # Message is a reply to a question
             parent_question = self.questions[thread_ts]
-            logging.debug(f"Feedback identified for question '{parent_question}': {text}")
+            logging.debug(
+                f"Feedback identified for question '{parent_question}': {text}"
+            )
             feedback_event = {
                 "text": text,  # Message content
                 "ts": ts,  # Message timestamp acting as unique ID in slack
                 "thread_ts": thread_ts,  # Parent message timestamp used to link feedback to question
                 "channel": channel,
                 "user": user_id,
-                "parent_question": parent_question
+                "parent_question": parent_question,
             }
             # publish feedback event to the persist queue
             try:
                 # Make an API call to publish the feedback
-                response = requests.post(f'http://{host}:{port}/api/v1/feedback/', json=feedback_event)
+                response = requests.post(
+                    f"http://{host}:{port}/api/v1/feedback/", json=feedback_event
+                )
                 response.raise_for_status()
                 logging.info(f"Feedback published: {feedback_event}")
             except Exception as e:
@@ -133,7 +164,9 @@ class ChannelMessageHandler(SlackEventHandler):
 
         # Skip all other messages
         else:
-            logging.info(f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}")
+            logging.info(
+                f"Skipping message with ID {ts} from user {user_id}. Reason: {skip_reason}"
+            )
 
         # Update the processed_messages set with the 'ts'
         try:
@@ -145,15 +178,19 @@ class ChannelMessageHandler(SlackEventHandler):
         logging.debug(f"Processed Messages: {self.processed_messages}")
 
     def is_valid_message(self, event):
-        """ Check if the event is a valid user message """
-        return "subtype" not in event and (event.get("type") == "message" or event.get("type") == "app_mention")
+        """Check if the event is a valid user message"""
+        return "subtype" not in event and (
+            event.get("type") == "message" or event.get("type") == "app_mention"
+        )
 
     def determine_skip_reason(self, event, ts, text, thread_ts, user_id, bot_user_id):
-        """ Determine the specific reason a message is being skipped """
+        """Determine the specific reason a message is being skipped"""
         if user_id == bot_user_id:
             return "Message is from the bot itself"
         if not self.is_valid_message(event):
-            return "Invalid message type or subtype" # Usually a modification or deletion
+            return (
+                "Invalid message type or subtype"  # Usually a modification or deletion
+            )
         if thread_ts and thread_ts != ts:
             return "Message is a reply in a thread that is not a question"
         if not "?" in text:

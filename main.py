@@ -1,7 +1,9 @@
 # ./main.py
 from confluence_integration.retrieve_space import choose_space
 from vector.chroma import retrieve_relevant_documents
-from open_ai.assistants.query_assistant_from_documents import query_assistant_with_context
+from open_ai.assistants.query_assistant_from_documents import (
+    query_assistant_with_context,
+)
 from open_ai.chat.query_from_documents import query_gpt_4t_with_context
 from slack.bot import load_slack_bot
 from open_ai.assistants.openai_assistant import load_manage_assistants
@@ -10,6 +12,7 @@ from vector.create_interaction_db import VectorInteractionManager
 from interactions.identify_knowledge_gap import identify_knowledge_gaps
 from space.manager import Space
 from visualize.pages import load_confluence_pages_spacial_distribution
+
 
 def load_new_documentation_space():
     space_key, space_name = choose_space()
@@ -69,7 +72,9 @@ def main_menu():
         elif choice == "5":
             print("Starting Slack Bot Using Assistants and fast API...")
             # Run the FastAPI server
-            input("Started the FastAPI server located at './api/endpoint' and Press Enter to continue.")
+            input(
+                "Started the FastAPI server located at './api/endpoint' and Press Enter to continue."
+            )
             # Start the Slack bot in the main thread
             load_slack_bot()
             print("Slack Bot is running in parallel processing mode.")
@@ -78,7 +83,9 @@ def main_menu():
             load_manage_assistants()
 
         elif choice == "7":
-            context = input("Enter the context you want to identifying knowledge gaps in\nex:(billing reminders): ")
+            context = input(
+                "Enter the context you want to identifying knowledge gaps in\nex:(billing reminders): "
+            )
             identify_knowledge_gaps(context)
 
         elif choice == "8":
@@ -93,7 +100,9 @@ def main_menu():
 
 
 def ask_question():
-    print("\nEnter your question (type 'done' on a new line to submit, 'quit' to cancel):")
+    print(
+        "\nEnter your question (type 'done' on a new line to submit, 'quit' to cancel):"
+    )
     lines = []
     while True:
         line = input()

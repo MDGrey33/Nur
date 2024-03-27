@@ -1,5 +1,9 @@
 # ./oai_assistants/openai_assistant.py
-from open_ai.assistants.utility import new_assistant, select_file_for_upload, initiate_client
+from open_ai.assistants.utility import (
+    new_assistant,
+    select_file_for_upload,
+    initiate_client,
+)
 from open_ai.assistants.file_manager import FileManager
 from open_ai.assistants.assistant_manager import AssistantManager
 from open_ai.assistants.thread_manager import ThreadManager
@@ -18,11 +22,11 @@ def create_assistant(client, new_assistant=new_assistant):
     """
     assistant_manager = AssistantManager(client)
     return assistant_manager.create_assistant(
-        new_assistant['model'],
-        new_assistant['name'],
-        new_assistant['instructions'],
-        new_assistant['tools'],
-        new_assistant['description']
+        new_assistant["model"],
+        new_assistant["name"],
+        new_assistant["instructions"],
+        new_assistant["tools"],
+        new_assistant["description"],
     )
 
 
@@ -44,15 +48,18 @@ def chat_with_assistant(thread_manager):
 
         # File upload loop
         while True:
-            action = input("1. Add a file\n2. Continue to add your message\nChoose an option: ")
+            action = input(
+                "1. Add a file\n2. Continue to add your message\nChoose an option: "
+            )
             if action == "1":
-                file_id = chose_and_upload_file(client, file_path='context_update')
+                file_id = chose_and_upload_file(client, file_path="context_update")
                 if file_id is not None:
                     message_files.append(file_id)
                     print(f"File uploaded successfully with ID: {file_id}")
                 else:
                     print(
-                        "File upload failed or was canceled. Please try again or choose to continue without a file.")
+                        "File upload failed or was canceled. Please try again or choose to continue without a file."
+                    )
             elif action == "2":
                 break
             else:
@@ -63,12 +70,12 @@ def chat_with_assistant(thread_manager):
         print("You: \nWrite your message, or write 'QUIT' to abort the chat.")
         while True:
             user_input = input()
-            if user_input.lower() == 'quit':
+            if user_input.lower() == "quit":
                 print("Exiting chat.")
                 return  # Exit the entire chat function
             else:
                 user_message += user_input + "\n"
-                if user_input.lower() == 'done':
+                if user_input.lower() == "done":
                     break
 
         if user_message.strip():
@@ -80,7 +87,7 @@ def chat_with_assistant(thread_manager):
         print("\nContinue chatting, or type 'QUIT' to exit.")
 
 
-def chose_and_upload_file(client, file_path='context_update'):
+def chose_and_upload_file(client, file_path="context_update"):
     """
     Allows the user to select and upload a file from the specified path.
 
@@ -135,8 +142,10 @@ def add_file_to_assistant(assistant_manager, assistant_id):
     for index, (file_id, file_data) in enumerate(file_list, start=1):
         print(f"{index}. {file_data['filename']} (ID: {file_id})")
 
-    file_index = input("Select the number of the file you want to add or '0' to cancel: ")
-    if file_index == '0':
+    file_index = input(
+        "Select the number of the file you want to add or '0' to cancel: "
+    )
+    if file_index == "0":
         print("Operation canceled.")
         return
 
@@ -171,8 +180,10 @@ def chose_assistant(assistant_manager, assistants):
     print("0. Cancel - Return to the previous menu.")
     print("-------------------")
 
-    assistant_index = input("Enter the number of the assistant you want to manage or '0' to cancel: ")
-    if assistant_index == '0':
+    assistant_index = input(
+        "Enter the number of the assistant you want to manage or '0' to cancel: "
+    )
+    if assistant_index == "0":
         print("Operation canceled.")
         return None
 
@@ -234,27 +245,27 @@ def manage_assistants(client):
         return
 
     action = chose_assistant_action()
-    if action == '1':
+    if action == "1":
         # Chat with assistant
         thread_manager = ThreadManager(client, assistant_id)
         chat_with_assistant(thread_manager)
-    elif action == '2':
+    elif action == "2":
         # Add file to assistant
         assistant_manager.clean_missing_files_from_assistant(assistant_id)
         add_file_to_assistant(assistant_manager, assistant_id)
-    elif action == '3':
+    elif action == "3":
         # Update assistant parameters
         # Call the interactive update method from AssistantManager
         assistant_manager.clean_missing_files_from_assistant(assistant_id)
         assistant_manager.update_assistant_interactively(assistant_id)
         print("Assistant updated successfully.")
-    elif action == '4':
+    elif action == "4":
         # Delete the assistant
         delete_message = assistant_manager.delete_assistant(assistant_id)
         print(delete_message)
-    elif action == '5':
+    elif action == "5":
         assistant_manager.clean_missing_files_from_assistant(assistant_id)
-    elif action == '6':
+    elif action == "6":
         # exit menu
         print("Operation canceled.")
     else:
@@ -285,11 +296,13 @@ def manage_files(client):
 
         choice = input("Select an option (0-3): ")
 
-        if choice == '1':
+        if choice == "1":
             print("Available Files:")
             for file_id, file_data in files.items():
-                print(f"ID: {file_id}, Filename: {file_data['filename']}, Purpose: {file_data['purpose']}")
-        elif choice == '2':
+                print(
+                    f"ID: {file_id}, Filename: {file_data['filename']}, Purpose: {file_data['purpose']}"
+                )
+        elif choice == "2":
             if not files:
                 print("No files available to delete.")
                 continue
@@ -299,8 +312,10 @@ def manage_files(client):
             for index, (file_id, file_data) in enumerate(file_list, start=1):
                 print(f"{index}. {file_data['filename']} (ID: {file_id})")
 
-            file_index = input("Enter the number of the file you want to delete or '0' to cancel: ")
-            if file_index == '0':
+            file_index = input(
+                "Enter the number of the file you want to delete or '0' to cancel: "
+            )
+            if file_index == "0":
                 continue
 
             try:
@@ -313,10 +328,10 @@ def manage_files(client):
                     print("Invalid file number.")
             except ValueError:
                 print("Invalid input. Please enter a number.")
-        elif choice == '3':
+        elif choice == "3":
             file_id = chose_and_upload_file(client)
             print(f"File uploaded: ID {file_id}")
-        elif choice == '0':
+        elif choice == "0":
             print("Exiting File Management Menu.")
             break
         else:
@@ -338,19 +353,21 @@ def user_interaction(client):
         print("--------------------------------")
         print("1. Manage Files - Handle file-related operations.")
         print("2. Manage Assistants - View, modify, or delete assistants.")
-        print("3. Create a New Assistant - Start the process of creating a new assistant.")
+        print(
+            "3. Create a New Assistant - Start the process of creating a new assistant."
+        )
         print("0. Exit - Exit the user interaction menu.")
         print("--------------------------------")
 
         choice = input("Enter your choice (0-3): ")
-        if choice == '1':
+        if choice == "1":
             manage_files(client)
-        elif choice == '2':
+        elif choice == "2":
             manage_assistants(client)
-        elif choice == '3':
+        elif choice == "3":
             created_assistant = create_assistant(client, new_assistant)
             print(f"New assistant created with ID: {created_assistant.id}")
-        elif choice == '0':
+        elif choice == "0":
             print("Exiting user interaction menu.")
             break
         else:

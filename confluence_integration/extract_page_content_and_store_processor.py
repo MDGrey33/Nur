@@ -6,10 +6,17 @@ import time
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from configuration import api_host, api_port
-from configuration import persist_page_processing_queue_path, persist_page_vector_queue_path
+from configuration import (
+    persist_page_processing_queue_path,
+    persist_page_vector_queue_path,
+)
 from persistqueue import Queue
 from file_system.file_manager import FileManager
-from database.page_manager import store_pages_data, is_page_processed, get_last_updated_timestamp
+from database.page_manager import (
+    store_pages_data,
+    is_page_processed,
+    get_last_updated_timestamp,
+)
 from confluence_integration.retrieve_space import process_page
 from database.page_manager import get_page_ids_missing_embeds
 
@@ -18,7 +25,9 @@ host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class QueueManager:
@@ -96,7 +105,7 @@ class PageProcessor:
 
 
 def submit_embedding_creation_request(page_id):
-    endpoint_url = f'http://{host}:{port}/api/v1/embeds'
+    endpoint_url = f"http://{host}:{port}/api/v1/embeds"
     headers = {"Content-Type": "application/json"}
     payload = {"page_id": page_id}
 
@@ -105,9 +114,13 @@ def submit_embedding_creation_request(page_id):
         response.raise_for_status()  # This will raise for HTTP errors
         logging.info(f"Embedding creation request successful for page ID {page_id}.")
     except requests.exceptions.HTTPError as e:
-        logging.error(f"HTTP error occurred while submitting embedding creation request for page ID {page_id}: {e}")
+        logging.error(
+            f"HTTP error occurred while submitting embedding creation request for page ID {page_id}: {e}"
+        )
     except Exception as e:
-        logging.error(f"An error occurred while submitting embedding creation request for page ID {page_id}: {e}")
+        logging.error(
+            f"An error occurred while submitting embedding creation request for page ID {page_id}: {e}"
+        )
 
 
 def get_page_content_using_queue(space_key):
@@ -123,7 +136,9 @@ def get_page_content_using_queue(space_key):
         page_processor.process_page(page_id, page_content_map)
         vectorization_queue.enqueue_page(page_id)
         process_page_queue.task_done()
-        logging.info(f"Page with ID {page_id} processing complete, added for vectorization.")
+        logging.info(
+            f"Page with ID {page_id} processing complete, added for vectorization."
+        )
 
     # Create a ThreadPoolExecutor to manage concurrency
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -149,7 +164,9 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None
             print("All pages have embeddings. Process complete.")
             return
 
-        print(f"Attempt {attempt + 1} of {retry_limit}: Processing {len(page_ids)} pages missing embeddings.")
+        print(
+            f"Attempt {attempt + 1} of {retry_limit}: Processing {len(page_ids)} pages missing embeddings."
+        )
         for page_id in page_ids:
             # Submit a request to generate an embedding for each page ID.
             submit_embedding_creation_request(page_id)
@@ -166,7 +183,9 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None
             print("All pages now have embeddings. Process complete.")
             break  # Break out of the loop if there are no more pages missing embeddings.
 
-        print(f"After attempt {attempt + 1}, {len(page_ids)} pages are still missing embeds.")
+        print(
+            f"After attempt {attempt + 1}, {len(page_ids)} pages are still missing embeds."
+        )
 
     # After exhausting the retry limit, check if there are still pages without embeddings.
     if page_ids:

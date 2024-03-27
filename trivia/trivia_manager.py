@@ -1,4 +1,3 @@
-
 class TriviaQuizz:
     # Below is just a filler class to be written from scratch
     def __init__(self, TriviaRequestEvent):

@@ -21,15 +21,15 @@ def format_pages_as_context(file_ids, max_length=30000):
         if total_length >= max_length:
             break
         chosen_file_path = file_system_path + f"/{file_id}.txt"
-        with open(chosen_file_path, 'r') as file:
+        with open(chosen_file_path, "r") as file:
             file_content = file.read()
-            title = file_content.split('title: ')[1].split('\n')[0].strip()
-            space_key = file_content.split('spaceKey: ')[1].split('\n')[0].strip()
+            title = file_content.split("title: ")[1].split("\n")[0].strip()
+            space_key = file_content.split("spaceKey: ")[1].split("\n")[0].strip()
             document = {
                 "id": file_id,
                 "title": title,
                 "spaceKey": space_key,
-                "content": file_content
+                "content": file_content,
             }
             document_length = len(json.dumps(document))
             if total_length + document_length <= max_length:
@@ -41,8 +41,11 @@ def format_pages_as_context(file_ids, max_length=30000):
     # Truncate the last document's content if total_length exceeds max_length
     if total_length > max_length:
         last_doc = documents[-1]
-        available_space = max_length - (total_length - len(last_doc['content']))
-        last_doc['content'] = last_doc['content'][:available_space] + " [Content truncated due to size limit.]"
+        available_space = max_length - (total_length - len(last_doc["content"]))
+        last_doc["content"] = (
+            last_doc["content"][:available_space]
+            + " [Content truncated due to size limit.]"
+        )
 
     return documents
 
@@ -62,7 +65,4 @@ def get_context(context_query, max_length=30000):
     """
     context_document_ids = retrieve_relevant_documents(context_query)
     documents = format_pages_as_context(context_document_ids, max_length)
-    return {
-        "document_ids": context_document_ids,
-        "documents": documents
-    }
+    return {"document_ids": context_document_ids, "documents": documents}

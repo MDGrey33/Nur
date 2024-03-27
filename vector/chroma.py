@@ -1,5 +1,10 @@
 # Import necessary modules and functions
-from configuration import vector_folder_path, file_system_path, embedding_model_id, document_count
+from configuration import (
+    vector_folder_path,
+    file_system_path,
+    embedding_model_id,
+    document_count,
+)
 from configuration import pages_collection_name
 from file_system.file_manager import FileManager
 import chromadb
@@ -62,12 +67,12 @@ def retrieve_relevant_documents(question: str) -> List[str]:
     # Perform a similarity search in the collection
     similar_items = collection.query(
         query_embeddings=[query_embedding],  # Now passing the actual list of embeddings
-        n_results=document_count
+        n_results=document_count,
     )
 
     # Extract and return the document IDs from the results
-    if 'ids' in similar_items:
-        document_ids = [id for sublist in similar_items['ids'] for id in sublist]
+    if "ids" in similar_items:
+        document_ids = [id for sublist in similar_items["ids"] for id in sublist]
     else:
         logging.warning("No 'ids' key found in similar_items, no documents retrieved.")
         document_ids = []
@@ -87,10 +92,12 @@ def vectorize_document_and_store_in_db(page_id):
         add_or_update_embed_vector(page_id, embedding)
         logging.info(f"Embedding for page ID {page_id} stored in the database.")
     else:
-        logging.error(f"Embedding for page ID {page_id} could not be generated. {error_message}")
+        logging.error(
+            f"Embedding for page ID {page_id} could not be generated. {error_message}"
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example usage
     question = "What is the role of AI in healthcare?"
     document_ids = retrieve_relevant_documents(question)

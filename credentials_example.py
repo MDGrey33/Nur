@@ -3,10 +3,7 @@
 # Add your credentials here before running the project
 
 # Confluence credentials to allow Nur to read from confluence and add pages to confluence
-confluence_credentials = {'base_url': '',
-                          'username': '',
-                          'api_token': ''
-                          }
+confluence_credentials = {"base_url": "", "username": "", "api_token": ""}
 # OpenAI API key
 # to be used so the solution can create embeds and use the assistant to get responses
 oai_api_key = ""

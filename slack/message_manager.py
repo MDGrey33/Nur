@@ -31,17 +31,18 @@ def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
     for quiz_question_dto in quiz_question_dtos:
         try:
             # Post the original question
-            response = client.chat_postMessage(channel=channel_id, text=f"Question: {quiz_question_dto.question_text}")
+            response = client.chat_postMessage(
+                channel=channel_id, text=f"Question: {quiz_question_dto.question_text}"
+            )
             quiz_question_dto.thread_id = response["ts"]
 
             # Update the thread ID in the database
             quiz_question_manager.update_with_thread_id(
-                question_id=quiz_question_dto.id,
-                thread_id=quiz_question_dto.thread_id
+                question_id=quiz_question_dto.id, thread_id=quiz_question_dto.thread_id
             )
 
             # Construct the follow-up message with user mentions
-            user_mentions = ' '.join([f"<@{user_id}>" for user_id in user_ids])
+            user_mentions = " ".join([f"<@{user_id}>" for user_id in user_ids])
             follow_up_message = (
                 f"{user_mentions} Please contribute to the information gathering for the above question. "
                 "Feel free to tag domain experts, share the question link to relevant channels, "
@@ -49,11 +50,17 @@ def post_questions_to_slack(channel_id, quiz_question_dtos, user_ids):
             )
 
             # Post the follow-up message in a thread
-            client.chat_postMessage(channel=channel_id, text=follow_up_message, thread_ts=quiz_question_dto.thread_id)
+            client.chat_postMessage(
+                channel=channel_id,
+                text=follow_up_message,
+                thread_ts=quiz_question_dto.thread_id,
+            )
 
             # Award points to each revealer
             for user_id in user_ids:
-                score_manager.add_or_update_score(user_id, category='revealer', points=1)
+                score_manager.add_or_update_score(
+                    user_id, category="revealer", points=1
+                )
 
         except Exception as e:
             print(f"Exception occurred while posting message to Slack: {e}")
@@ -77,10 +84,12 @@ def get_message_replies(client, channel, ts):
     try:
         # Call the conversations.replies API method
         response = client.conversations_replies(channel=channel, ts=ts)
-        replies = response.get('messages', [])
+        replies = response.get("messages", [])
 
         # Filter out the original message, leaving only the replies
-        replies_without_original = [message for message in replies if message['ts'] != ts]
+        replies_without_original = [
+            message for message in replies if message["ts"] != ts
+        ]
 
         return replies
 

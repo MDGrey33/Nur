@@ -46,21 +46,22 @@ def retrieve_relevant_interaction_ids(query: str) -> List[str]:
 
     # Perform a similarity search in the collection
     similar_items = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=interaction_retrieval_count
+        query_embeddings=[query_embedding], n_results=interaction_retrieval_count
     )
 
     # Extract and return the interaction IDs from the results
-    if 'ids' in similar_items:
-        interaction_ids = [id for sublist in similar_items['ids'] for id in sublist]
+    if "ids" in similar_items:
+        interaction_ids = [id for sublist in similar_items["ids"] for id in sublist]
     else:
-        logging.warning("No 'ids' key found in similar_items, no interactions retrieved.")
+        logging.warning(
+            "No 'ids' key found in similar_items, no interactions retrieved."
+        )
         interaction_ids = []
 
     return interaction_ids
 
 
-def format_interactions(interactions: List['QAInteractions']) -> Tuple[str, List[str]]:
+def format_interactions(interactions: List["QAInteractions"]) -> Tuple[str, List[str]]:
     """
     Format a list of QAInteraction objects into a human-readable string and collect user IDs.
 
@@ -94,7 +95,9 @@ def format_interactions(interactions: List['QAInteractions']) -> Tuple[str, List
         # Format comments, handling both empty lists and lists of dictionaries
         comments_formatted = "Comments: "
         if comments:
-            comments_formatted += "; ".join([f"{comment.get('text', 'No text')}" for comment in comments])
+            comments_formatted += "; ".join(
+                [f"{comment.get('text', 'No text')}" for comment in comments]
+            )
         else:
             comments_formatted += "No comments"
 
@@ -144,7 +147,7 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
 
     # Format the question with context and query the assistant
 
-    formatted_question = (f"""After analyzing the provided questions_text,
+    formatted_question = f"""After analyzing the provided questions_text,
     Keep only the questions that are related to {context}
     From these identify those that were not provided a satisfactory answer in the answer_text
     These questions should reflect gaps in our current knowledge or documentation.
@@ -154,12 +157,14 @@ def query_assistant_with_context(context, formatted_interactions, thread_id=None
     included, how it relates to the {context} domain, and what part of the question wasn't covered.
     Only include questions relevant to this domain:{context}\n
     f"Context:{formatted_interactions}\n
-    """)
+    """
 
     print(f"Formatted question:\n{formatted_question}\n")
 
     # Query the assistant
-    messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
+    messages, thread_id = thread_manager.add_message_and_wait_for_reply(
+        formatted_question, []
+    )
     print(f"The thread_id is: {thread_id}\n Messages received: {messages}\n")
     if messages and messages.data:
         assistant_response = messages.data[0].content[0].text.value
@@ -197,7 +202,9 @@ def process_and_store_questions(assistant_response_json):
         question_text = item.get("Question")
         if question_text:
             # Add the question to the database and directly collect the QuizQuestion object
-            quiz_question_dto = quiz_question_manager.add_quiz_question(question_text=question_text)
+            quiz_question_dto = quiz_question_manager.add_quiz_question(
+                question_text=question_text
+            )
             if quiz_question_dto:
                 quiz_question_dtos.append(quiz_question_dto)
 
@@ -235,9 +242,13 @@ def identify_knowledge_gaps(context):
     query = f"no information in context: {context}"
     interaction_ids = retrieve_relevant_interaction_ids(query)
     qa_interaction_manager = QAInteractionManager()
-    relevant_qa_interactions = qa_interaction_manager.get_interactions_by_interaction_ids(interaction_ids)
+    relevant_qa_interactions = (
+        qa_interaction_manager.get_interactions_by_interaction_ids(interaction_ids)
+    )
     formatted_interactions, user_ids = format_interactions(relevant_qa_interactions)
-    assistant_response, thread_ids = query_assistant_with_context(context, formatted_interactions)
+    assistant_response, thread_ids = query_assistant_with_context(
+        context, formatted_interactions
+    )
     questions_json = strip_json(assistant_response)
     quiz_question_dtos = process_and_store_questions(questions_json)
 
@@ -245,7 +256,9 @@ def identify_knowledge_gaps(context):
     print(f"Stored questions with IDs: {[q.id for q in quiz_question_dtos]}")
 
     # Updated function call to match the expected input
-    quiz_questions = post_questions_to_slack(channel_id=channel_id, quiz_question_dtos=quiz_question_dtos, user_ids=user_ids)
+    quiz_questions = post_questions_to_slack(
+        channel_id=channel_id, quiz_question_dtos=quiz_question_dtos, user_ids=user_ids
+    )
 
 
 if __name__ == "__main__":

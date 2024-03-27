@@ -9,9 +9,10 @@ from slack_sdk.errors import SlackApiError
 from database.bookmarked_conversation_manager import BookmarkedConversationManager
 from slack.message_manager import get_message_replies
 
+
 def get_top_users_by_category(slack_web_client):
     score_manager = ScoreManager()
-    categories = ['seeker', 'revealer', 'luminary']
+    categories = ["seeker", "revealer", "luminary"]
     top_users_by_category = {}
 
     for category in categories:
@@ -19,8 +20,13 @@ def get_top_users_by_category(slack_web_client):
         # Fetch user names from Slack and format the user data for posting
         formatted_users = []
         for user in top_users:
-            user_name = get_user_name_from_id(slack_web_client, user.slack_user_id) or "Unknown User"
-            formatted_users.append({'name': user_name, 'score': getattr(user, f"{category}_score")})
+            user_name = (
+                get_user_name_from_id(slack_web_client, user.slack_user_id)
+                or "Unknown User"
+            )
+            formatted_users.append(
+                {"name": user_name, "score": getattr(user, f"{category}_score")}
+            )
         top_users_by_category[category] = formatted_users
 
     return top_users_by_category
@@ -33,12 +39,23 @@ def post_top_users_in_categories(slack_web_client, channel):
     top_users_by_category = get_top_users_by_category(slack_web_client)
 
     # Format the message
-    message_blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": "*Top 10 Users by Category:*"}}]
+    message_blocks = [
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "*Top 10 Users by Category:*"},
+        }
+    ]
     for category, users in top_users_by_category.items():
-        user_lines = [f"{idx + 1}. {user['name']} - {user['score']} points" for idx, user in enumerate(users)]
+        user_lines = [
+            f"{idx + 1}. {user['name']} - {user['score']} points"
+            for idx, user in enumerate(users)
+        ]
         category_section = {
             "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*{category}:*\n" + "\n".join(user_lines)}
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*{category}:*\n" + "\n".join(user_lines),
+            },
         }
         message_blocks.append(category_section)
 
@@ -61,22 +78,28 @@ def process_checkmark_added_event(slack_web_client, event):
     context = ""
     # Check if the reaction is to an item whose timestamp is in the list of timestamps
     if item_ts in timestamps_str:
-        print(f'\n The event refers to a knowledge gathering request\n{event}')
+        print(f"\n The event refers to a knowledge gathering request\n{event}")
         # Print the valid item timestamp to the console
-        print(f'\nEvent timestamp: {item_ts}')
+        print(f"\nEvent timestamp: {item_ts}")
         # assign the channel to the channel where the reaction was added
         channel = event.get("item", {}).get("channel")
-        knowledge_gathering_messages = get_message_replies(slack_web_client, channel, item_ts)
+        knowledge_gathering_messages = get_message_replies(
+            slack_web_client, channel, item_ts
+        )
 
         # Assuming ScoreManager or similar exists for managing scores
         score_manager = ScoreManager()
 
         # Extract unique user IDs from the replies
-        replied_user_ids = set(message.get("user") for message in knowledge_gathering_messages if "user" in message)
+        replied_user_ids = set(
+            message.get("user")
+            for message in knowledge_gathering_messages
+            if "user" in message
+        )
 
         # Update luminary score for each user who replied
         for user_id in replied_user_ids:
-            score_manager.add_or_update_score(user_id, category='luminary', points=1)
+            score_manager.add_or_update_score(user_id, category="luminary", points=1)
 
         for knowledge_gathering_message in knowledge_gathering_messages:
             # generate a string containing all the messages to include as context by appending them all
@@ -87,15 +110,15 @@ def process_checkmark_added_event(slack_web_client, event):
     print(f"Confluence page content: {confluence_page_content}")
 
     # Find the position where "json" occurs and add 4 to get the position after "json"
-    json_start_pos = confluence_page_content.find('json') + 4
+    json_start_pos = confluence_page_content.find("json") + 4
 
     # Find the position of the first opening curly brace after "json"
-    brace_start_pos = confluence_page_content.find('{', json_start_pos)
+    brace_start_pos = confluence_page_content.find("{", json_start_pos)
 
     json_string = confluence_page_content[brace_start_pos:-3].strip()
 
     # cleanup json string from escape characters
-    cleaned_json_string = re.sub(r'[\x00-\x1F]+', '', json_string)
+    cleaned_json_string = re.sub(r"[\x00-\x1F]+", "", json_string)
 
     # Parse the JSON string into a Python dictionary
     if cleaned_json_string:
@@ -106,11 +129,15 @@ def process_checkmark_added_event(slack_web_client, event):
     # Extract the page title and content into a new dictionary
     extracted_info = {
         "page_title": response_dict["page_title"],
-        "page_content": response_dict["page_content"]
+        "page_content": response_dict["page_content"],
     }
 
-    quiz_question_manager.update_with_summary_by_thread_id(thread_id=item_ts, summary=cleaned_json_string)
-    create_page_on_confluence(extracted_info["page_title"], extracted_info["page_content"])
+    quiz_question_manager.update_with_summary_by_thread_id(
+        thread_id=item_ts, summary=cleaned_json_string
+    )
+    create_page_on_confluence(
+        extracted_info["page_title"], extracted_info["page_content"]
+    )
     # After processing the checkmark reaction, post the top users
     channel = event.get("item", {}).get("channel")  # Assuming this is the channel ID
     post_top_users_in_categories(slack_web_client, channel)
@@ -125,21 +152,29 @@ def process_bookmark_added_event(slack_web_client, event):
 
     try:
         # Use the get_message_replies function to fetch the conversation
-        bookmarked_conversation_messages = get_message_replies(slack_web_client, channel, item_ts)
+        bookmarked_conversation_messages = get_message_replies(
+            slack_web_client, channel, item_ts
+        )
 
         if bookmarked_conversation_messages:
             # Assuming the first message is the main message and the rest are replies
             title = bookmarked_conversation_messages[0].get("text", "No Title")
             # Join the text of all replies to form the body, skipping the first message which is the title
-            body = "\n".join([message.get("text", "") for message in bookmarked_conversation_messages[1:]])
+            body = "\n".join(
+                [
+                    message.get("text", "")
+                    for message in bookmarked_conversation_messages[1:]
+                ]
+            )
 
             # Initialize the BookmarkedConversationManager
             bookmarked_conversation_manager = BookmarkedConversationManager()
 
             # Add the bookmarked conversation to the database
-            bookmarked_conversation_manager.add_bookmarked_conversation(title=title, body=body, thread_id=item_ts)
+            bookmarked_conversation_manager.add_bookmarked_conversation(
+                title=title, body=body, thread_id=item_ts
+            )
             print(f"Bookmarked conversation added to the database: {title}")
-
 
             # Add conversation on confluence
             create_page_on_confluence(title, body)
