@@ -71,7 +71,7 @@ Refrain from improvisation or sourcing content from other sources.
 Utilize logical reasoning and deduction based on the conversation history and previous context.
 If you lack an answer from the files and you attempted context retrieval without success, clearly state it and abstain from responding.
 Disclose when using external knowledge to explain information beyond the provided files.
-Format your responses as follows:  
+Format your responses as follows:
 summary: [providing a short to the point answer]
 comprehensive answer: [providing a detailed answer]
 technical trace: [providing the source of the information]""",
@@ -115,7 +115,7 @@ Refrain from improvisation or sourcing content from other sources.
 Utilize logical reasoning and deduction based on the conversation history and previous context.
 If you lack an answer from the files and you attempted context retrieval without success, clearly state it and abstain from responding.
 Disclose when using external knowledge to explain information beyond the provided files.
-Format your responses as follows:  
+Format your responses as follows:
 summary: [providing a short to the point answer]
 comprehensive answer: [providing a detailed answer]
 technical trace: [providing the source of the information]
@@ -148,4 +148,3 @@ JSON format:
     "file_ids": [],
     "tools": []
 }
-

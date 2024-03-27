@@ -177,5 +177,3 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None
 
 if __name__ == "__main__":
     embed_pages_missing_embeds()
-
-

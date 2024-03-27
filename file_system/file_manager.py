@@ -84,4 +84,3 @@ class FileManager:
         """
         with open(os.path.join(self.file_system_path, file_name), 'r') as file_object:
             return file_object.read()
-

@@ -134,4 +134,3 @@ if __name__ == "__main__":
 
     print("Initial Response:", initial_response)
     print("Thread ID from Initial Query:", thread_id)
-

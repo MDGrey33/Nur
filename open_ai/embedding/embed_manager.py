@@ -16,4 +16,3 @@ def embed_text(text, model):
     response = client.embeddings.create(input=text, model=model)
     embedding_vector = response.dict()["data"][0]["embedding"]
     return embedding_vector
-

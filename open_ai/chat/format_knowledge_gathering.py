@@ -63,4 +63,3 @@ def get_response_from_gpt_4t(question, context):
 def query_gpt_4t_with_context(_, context):
     response = get_response_from_gpt_4t(_, context)
     return response
-
