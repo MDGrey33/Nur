@@ -9,6 +9,7 @@ class AssistantManager:
     AssistantManager provides functionalities to manage the lifecycle of assistants.
     It includes creating, listing, loading, updating, and deleting assistants within the GPT-4-Turbo-Assistant environment.
     """
+
     def __init__(self, client):
         """
         Initialize the AssistantManager with a client to manage assistants.
@@ -18,7 +19,9 @@ class AssistantManager:
         """
         self.client = client.beta.assistants
 
-    def create_assistant(self, model, name, instructions, tools, description=None, metadata=None):
+    def create_assistant(
+        self, model, name, instructions, tools, description=None, metadata=None
+    ):
         """
         Create an assistant without files.
 
@@ -39,7 +42,7 @@ class AssistantManager:
             instructions=instructions,
             description=description,
             metadata=metadata,
-            tools=tools
+            tools=tools,
         )
         return response
 
@@ -58,7 +61,9 @@ class AssistantManager:
         list: A list of file IDs that were identified as missing and removed from the assistant.
         """
         assistant = self.load_assistant(assistant_id)
-        assistant_file_ids = assistant.file_ids if assistant.file_ids is not None else []
+        assistant_file_ids = (
+            assistant.file_ids if assistant.file_ids is not None else []
+        )
 
         # Check if the assistant has any file IDs associated with it
         if not assistant_file_ids:
@@ -69,15 +74,23 @@ class AssistantManager:
         all_files = file_manager.list()
         file_ids = list(all_files.keys())
 
-        missing_files = [file_id for file_id in assistant_file_ids if file_id not in file_ids]
+        missing_files = [
+            file_id for file_id in assistant_file_ids if file_id not in file_ids
+        ]
 
         # Check if there are any missing files
         if missing_files:
             for missing_file in missing_files:
-                print(f"Deleting missing file {missing_file} from assistant {assistant_id}.")
+                print(
+                    f"Deleting missing file {missing_file} from assistant {assistant_id}."
+                )
                 self.client.update(
                     assistant_id=assistant_id,
-                    file_ids=[file_id for file_id in assistant_file_ids if file_id != missing_file]
+                    file_ids=[
+                        file_id
+                        for file_id in assistant_file_ids
+                        if file_id != missing_file
+                    ],
                 )
         else:
             print("There are no missing files.")
@@ -100,8 +113,7 @@ class AssistantManager:
         updated_file_ids = existing_file_ids + [file_id]
 
         response = self.client.update(
-            assistant_id=assistant_id,
-            file_ids=updated_file_ids
+            assistant_id=assistant_id, file_ids=updated_file_ids
         )
         return response
 
@@ -147,31 +159,37 @@ class AssistantManager:
         assistant = self.load_assistant(assistant_id)
         # Retrieve the assistant's existing parameters.
         updatable_params = {
-            'name': assistant.name,
-            'model': assistant.model,
-            'instructions': assistant.instructions,
-            'description': assistant.description,
-            'metadata': assistant.metadata,
-            'tools': assistant.tools
+            "name": assistant.name,
+            "model": assistant.model,
+            "instructions": assistant.instructions,
+            "description": assistant.description,
+            "metadata": assistant.metadata,
+            "tools": assistant.tools,
         }
 
         # Interactive update process
         for param_name, current_value in updatable_params.items():
-            print(f'Current value of {param_name}: {current_value}')
-            user_input = input(f'Press Enter to keep the current value or enter a new value for {param_name}: ').strip()
+            print(f"Current value of {param_name}: {current_value}")
+            user_input = input(
+                f"Press Enter to keep the current value or enter a new value for {param_name}: "
+            ).strip()
             # If the user enters a new value, update the parameter
             if user_input:
-                if param_name in ['metadata', 'tools']:
+                if param_name in ["metadata", "tools"]:
                     # Convert the string input to a Python dictionary using json.loads()
                     try:
                         updatable_params[param_name] = json.loads(user_input)
                     except json.JSONDecodeError as e:
-                        print(f'Error: Invalid JSON for {param_name}. Using the current value instead.')
+                        print(
+                            f"Error: Invalid JSON for {param_name}. Using the current value instead."
+                        )
                 else:
                     updatable_params[param_name] = user_input
 
         # After all parameters are reviewed, update the assistant details
-        update_response = self.client.update(assistant_id=assistant_id, **updatable_params)
+        update_response = self.client.update(
+            assistant_id=assistant_id, **updatable_params
+        )
         return update_response
 
     def delete_assistant(self, assistant_id):

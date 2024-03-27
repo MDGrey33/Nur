@@ -15,10 +15,14 @@ def create_page_on_confluence(title, content):
     clean_content (str): The content of the page.
     """
     confluence_client = ConfluenceClient()
-    space_key = confluence_client.create_space_if_not_found(system_confluence_knowledge_space)
+    space_key = confluence_client.create_space_if_not_found(
+        system_confluence_knowledge_space
+    )
     print(f"Space key: {space_key}")
 
-    clean_content = confluence_client.validate_and_coerce_xhtml(content)  # Validate and clean the content
+    clean_content = confluence_client.validate_and_coerce_xhtml(
+        content
+    )  # Validate and clean the content
     clean_title = confluence_client.validate_and_coerce_xhtml(title)
     # Check if a page with the same title already exists under the same space key
     if confluence_client.page_exists(space_key, clean_title):

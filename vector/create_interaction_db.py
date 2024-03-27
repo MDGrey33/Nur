@@ -29,16 +29,19 @@ class VectorInteractionManager:
         collection = self.client.get_or_create_collection(collection_name)
 
         # Add interactions to the collection
-        print(f"Adding {len(interactions)} interactions to the collection '{collection_name}'...")
+        print(
+            f"Adding {len(interactions)} interactions to the collection '{collection_name}'..."
+        )
         try:
             collection.upsert(
                 ids=interaction_ids,
                 embeddings=interaction_embeddings,
-                metadatas=[{"interaction_id": iid} for iid in interaction_ids]
+                metadatas=[{"interaction_id": iid} for iid in interaction_ids],
                 # Assuming you want to store page IDs as metadata
             )
             print(
-                f"Successfully added {len(interaction_embeddings)} interactions to the collection '{collection_name}'.")
+                f"Successfully added {len(interaction_embeddings)} interactions to the collection '{collection_name}'."
+            )
 
             print(f"collection count {collection.count()} ")
 

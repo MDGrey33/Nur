@@ -16,9 +16,9 @@ from threading import Thread
 
 # Initialize Confluence API
 confluence = Confluence(
-    url=confluence_credentials['base_url'],
-    username=confluence_credentials['username'],
-    password=confluence_credentials['api_token']
+    url=confluence_credentials["base_url"],
+    username=confluence_credentials["username"],
+    password=confluence_credentials["api_token"],
 )
 
 
@@ -34,7 +34,7 @@ def get_top_level_ids(space_key):
     list: A list of page IDs for the top-level pages in the space.
     """
     top_level_pages = confluence.get_all_pages_from_space(space_key)
-    return [page['id'] for page in top_level_pages]
+    return [page["id"] for page in top_level_pages]
 
 
 # Get child pages from a page
@@ -51,7 +51,7 @@ def get_child_ids(item_id, content_type):
     """
     try:
         child_items = confluence.get_page_child_by_type(item_id, type=content_type)
-        return [child['id'] for child in child_items]
+        return [child["id"] for child in child_items]
     except requests.exceptions.HTTPError as e:
         logging.error(f"Error retrieving child items for item ID {item_id}: {e}")
         return []
@@ -77,7 +77,7 @@ def get_all_page_ids_recursive(space_key):
         Inner function to recursively get child page IDs
         """
         child_pages = []
-        child_page_ids = get_child_ids(page_id, content_type='page')
+        child_page_ids = get_child_ids(page_id, content_type="page")
 
         # Error handling added within the recursive fetching process
         for child_id in child_page_ids:
@@ -113,6 +113,7 @@ def get_all_page_ids_recursive(space_key):
 
     return all_pages
 
+
 def get_all_comment_ids_recursive(page_id):
     """
     Recursively retrieves all comment IDs for a given Confluence page.
@@ -128,16 +129,18 @@ def get_all_comment_ids_recursive(page_id):
         # Inner function to recursively get child comment IDs
         child_comment_ids = []  # Use a separate list to accumulate child comment IDs
         try:
-            immediate_child_ids = get_child_ids(comment_id, content_type='comment')
+            immediate_child_ids = get_child_ids(comment_id, content_type="comment")
             for child_id in immediate_child_ids:
                 child_comment_ids.append(child_id)
                 child_comment_ids.extend(get_child_comment_ids_recursively(child_id))
         except requests.exceptions.HTTPError as e:
-            logging.error(f"Error retrieving child comments for comment ID {comment_id}: {e}")
+            logging.error(
+                f"Error retrieving child comments for comment ID {comment_id}: {e}"
+            )
         return child_comment_ids
 
     all_comment_ids = []
-    top_level_comment_ids = get_child_ids(page_id, content_type='comment')
+    top_level_comment_ids = get_child_ids(page_id, content_type="comment")
     for comment_id in top_level_comment_ids:
         all_comment_ids.append(comment_id)
         all_comment_ids.extend(get_child_comment_ids_recursively(comment_id))
@@ -159,7 +162,7 @@ def choose_space():
     for i, space in enumerate(spaces):
         print(f"{i + 1}. {space['name']} (Key: {space['key']})")
     choice = int(input("Choose a space (number): ")) - 1
-    return spaces[choice]['key'], spaces[choice]['name']
+    return spaces[choice]["key"], spaces[choice]["name"]
 
 
 def strip_html_tags(content):
@@ -172,7 +175,7 @@ def strip_html_tags(content):
     Returns:
     str: The string with HTML tags removed.
     """
-    soup = BeautifulSoup(content, 'html.parser')
+    soup = BeautifulSoup(content, "html.parser")
     return soup.get_text()
 
 
@@ -194,7 +197,9 @@ def check_date_filter(update_date, all_page_ids):
         except Exception as e:
             logging.error(f"Error retrieving history for page ID {page_id}: {e}")
             continue
-        last_updated = datetime.strptime(page_history['lastUpdated']['when'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        last_updated = datetime.strptime(
+            page_history["lastUpdated"]["when"], "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
         if last_updated >= update_date:
             updated_pages.append(page_id)  # append the page_id to the list
     return updated_pages
@@ -202,17 +207,17 @@ def check_date_filter(update_date, all_page_ids):
 
 def format_page_content_for_llm(page_data):
     """
-        Format page data into a string of key-value pairs suitable for LLM (Language Learning Models) context.
+    Format page data into a string of key-value pairs suitable for LLM (Language Learning Models) context.
 
-        This function converts page data into a text format that can be easily consumed by language models,
-        with each key-value pair on a separate line.
+    This function converts page data into a text format that can be easily consumed by language models,
+    with each key-value pair on a separate line.
 
-        Args:
-        page_data (dict): A dictionary containing page data with keys like title, author, createdDate, etc.
+    Args:
+    page_data (dict): A dictionary containing page data with keys like title, author, createdDate, etc.
 
-        Returns:
-        str: A string representation of the page data in key-value format.
-        """
+    Returns:
+    str: A string representation of the page data in key-value format.
+    """
     content = ""
     for key, value in page_data.items():
         content += f"{key}: {value}\n"
@@ -230,8 +235,8 @@ def get_comment_content(comment_id):
     str: The content of the comment.
     """
     try:
-        comment = confluence.get_page_by_id(comment_id, expand='body.storage')
-        comment_content = comment.get('body', {}).get('storage', {}).get('value', '')
+        comment = confluence.get_page_by_id(comment_id, expand="body.storage")
+        comment_content = comment.get("body", {}).get("storage", {}).get("value", "")
         comment_text = strip_html_tags(comment_content)
         return comment_text
     except Exception as e:
@@ -250,17 +255,19 @@ def process_page(page_id, space_key, file_manager, page_content_map):
     """
     current_time = datetime.now()
     try:
-        page = confluence.get_page_by_id(page_id, expand='body.storage,history,version')
+        page = confluence.get_page_by_id(page_id, expand="body.storage,history,version")
     except Exception as e:
         logging.error(f"Error retrieving page with ID {page_id}: {e}")
         return None
     if page:
         print(f"Processing page with ID {page_id}...")
-        page_title = strip_html_tags(page['title'])
-        page_author = page['history']['createdBy']['displayName']
-        created_date = page['history']['createdDate']
-        last_updated = page['version']['when']
-        page_content = strip_html_tags(page.get('body', {}).get('storage', {}).get('value', ''))
+        page_title = strip_html_tags(page["title"])
+        page_author = page["history"]["createdBy"]["displayName"]
+        created_date = page["history"]["createdDate"]
+        last_updated = page["version"]["when"]
+        page_content = strip_html_tags(
+            page.get("body", {}).get("storage", {}).get("value", "")
+        )
         page_comments_content = ""
         page_comment_ids = get_all_comment_ids_recursive(page_id)
 
@@ -268,20 +275,22 @@ def process_page(page_id, space_key, file_manager, page_content_map):
             page_comments_content += get_comment_content(comment_id)
 
         page_data = {
-            'spaceKey': space_key,
-            'pageId': page_id,
-            'title': page_title,
-            'author': page_author,
-            'createdDate': created_date,
-            'lastUpdated': last_updated,
-            'content': page_content,
-            'comments': page_comments_content,
-            'datePulledFromConfluence': current_time
+            "spaceKey": space_key,
+            "pageId": page_id,
+            "title": page_title,
+            "author": page_author,
+            "createdDate": created_date,
+            "lastUpdated": last_updated,
+            "content": page_content,
+            "comments": page_comments_content,
+            "datePulledFromConfluence": current_time,
         }
 
         # Store data for files
         formatted_content = format_page_content_for_llm(page_data)
-        file_manager.create(f"{page_id}.txt", formatted_content)  # Create a file for each page
+        file_manager.create(
+            f"{page_id}.txt", formatted_content
+        )  # Create a file for each page
         print(f"Page with ID {page_id} processed and written to file.")
 
         # Store data for database

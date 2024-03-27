@@ -17,7 +17,8 @@ class PageData(Base):
     """
     SQLAlchemy model for storing Confluence page data.
     """
-    __tablename__ = 'page_data'
+
+    __tablename__ = "page_data"
 
     id = Column(Integer, primary_key=True)
     page_id = Column(String)
@@ -37,7 +38,8 @@ class PageProgress(Base):
     """
     SQLAlchemy model for storing Confluence page progress.
     """
-    __tablename__ = 'page_progress'
+
+    __tablename__ = "page_progress"
     id = Column(Integer, primary_key=True)
     page_id = Column(String, unique=True)
     processed = Column(Boolean, default=False)
@@ -54,7 +56,7 @@ def parse_datetime(date_string):
     Returns:
     datetime: A datetime object.
     """
-    return datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+    return datetime.fromisoformat(date_string.replace("Z", "+00:00"))
 
 
 def store_pages_data(space_key, pages_data):
@@ -67,20 +69,21 @@ def store_pages_data(space_key, pages_data):
     """
     with Session() as session:
         for page_id, page_info in pages_data.items():
-            created_date = parse_datetime(page_info['createdDate'])
-            last_updated = parse_datetime(page_info['lastUpdated'])
-            date_pulled_from_confluence = page_info['datePulledFromConfluence']
+            created_date = parse_datetime(page_info["createdDate"])
+            last_updated = parse_datetime(page_info["lastUpdated"])
+            date_pulled_from_confluence = page_info["datePulledFromConfluence"]
 
-            new_page = PageData(page_id=page_id,
-                                space_key=space_key,
-                                title=page_info['title'],
-                                author=page_info['author'],
-                                createdDate=created_date,
-                                lastUpdated=last_updated,
-                                content=page_info['content'],
-                                comments=page_info['comments'],
-                                date_pulled_from_confluence=date_pulled_from_confluence
-                                )
+            new_page = PageData(
+                page_id=page_id,
+                space_key=space_key,
+                title=page_info["title"],
+                author=page_info["author"],
+                createdDate=created_date,
+                lastUpdated=last_updated,
+                content=page_info["content"],
+                comments=page_info["comments"],
+                date_pulled_from_confluence=date_pulled_from_confluence,
+            )
             session.add(new_page)
             print(f"Page with ID {page_id} written to database")
         session.commit()
@@ -92,10 +95,14 @@ def get_page_ids_missing_embeds():
     :return: A list of page IDs.
     """
     session = Session()
-    records = session.query(PageData).filter(
-        (PageData.lastUpdated > PageData.last_embedded) |
-        (PageData.last_embedded.is_(None))
-    ).all()
+    records = (
+        session.query(PageData)
+        .filter(
+            (PageData.lastUpdated > PageData.last_embedded)
+            | (PageData.last_embedded.is_(None))
+        )
+        .all()
+    )
     page_ids = [record.page_id for record in records]
     session.close()
     return page_ids
@@ -116,7 +123,9 @@ def get_all_page_data_from_db(space_key=None):
         records = session.query(PageData).all()
 
     page_ids = [record.page_id for record in records]
-    embeddings = [record.embed for record in records]  # Assuming embed is directly stored as a string
+    embeddings = [
+        record.embed for record in records
+    ]  # Assuming embed is directly stored as a string
     all_documents = [
         f"Page id: {record.page_id}, space key: {record.space_key}, title: {record.title}, "
         f"author: {record.author}, created date: {record.createdDate}, last updated: {record.lastUpdated}, "
@@ -126,6 +135,7 @@ def get_all_page_data_from_db(space_key=None):
 
     session.close()
     return page_ids, all_documents, embeddings
+
 
 def get_page_data_from_db():
     """
@@ -138,13 +148,19 @@ def get_page_data_from_db():
     :return: Tuple of page_ids (list of page IDs), all_documents (list of document strings), and embeddings (list of embeddings as strings)
     """
     session = Session()
-    records = session.query(PageData).filter(
-        (PageData.lastUpdated > PageData.last_embedded) |
-        (PageData.last_embedded.is_(None))
-    ).all()
+    records = (
+        session.query(PageData)
+        .filter(
+            (PageData.lastUpdated > PageData.last_embedded)
+            | (PageData.last_embedded.is_(None))
+        )
+        .all()
+    )
 
     page_ids = [record.page_id for record in records]
-    embeddings = [record.embed for record in records]  # Assuming embed is directly stored as a string
+    embeddings = [
+        record.embed for record in records
+    ]  # Assuming embed is directly stored as a string
     all_documents = [
         f"Page id: {record.page_id}, space key: {record.space_key}, title: {record.title}, "
         f"author: {record.author}, created date: {record.createdDate}, last updated: {record.lastUpdated}, "
@@ -174,9 +190,13 @@ def add_or_update_embed_vector(page_id, embed_vector):
             if page:
                 page.embed = embed_vector_json  # Store the serialized list
                 page.last_embedded = datetime.now(timezone.utc)
-                print(f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated.")
+                print(
+                    f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated."
+                )
             else:
-                print(f"No page found with ID {page_id}. Consider handling this case as needed.")
+                print(
+                    f"No page found with ID {page_id}. Consider handling this case as needed."
+                )
 
             session.commit()
         except SQLAlchemyError as e:
@@ -198,7 +218,7 @@ def get_page_data_by_ids(page_ids):
     cursor = conn.cursor()
 
     # Prepare the query with placeholders for page IDs
-    placeholders = ','.join('?' for _ in page_ids)
+    placeholders = ",".join("?" for _ in page_ids)
     query = f"SELECT * FROM page_data WHERE page_id IN ({placeholders})"
 
     # Execute the query with the list of page IDs
@@ -232,7 +252,10 @@ def update_embed_date(page_ids):
     cursor = conn.cursor()
     current_time = datetime.now()
     for page_id in page_ids:
-        cursor.execute("UPDATE page_data SET last_embedded = ? WHERE page_id = ?", (current_time, page_id))
+        cursor.execute(
+            "UPDATE page_data SET last_embedded = ? WHERE page_id = ?",
+            (current_time, page_id),
+        )
     conn.commit()
     conn.close()
     return True
@@ -248,7 +271,9 @@ def mark_page_as_processed(page_id):
     current_time = datetime.now()
     record = session.query(PageProgress).filter_by(page_id=page_id).first()
     if not record:
-        record = PageProgress(page_id=page_id, processed=True, processed_time=current_time)
+        record = PageProgress(
+            page_id=page_id, processed=True, processed_time=current_time
+        )
         session.add(record)
     else:
         record.processed = True
@@ -302,7 +327,7 @@ def get_last_updated_timestamp(page_id):
 
 
 # Set up the database engine and create tables if they don't exist
-engine = create_engine('sqlite:///' + sql_file_path)
+engine = create_engine("sqlite:///" + sql_file_path)
 Base.metadata.bind = engine
 Base.metadata.create_all(engine)
 

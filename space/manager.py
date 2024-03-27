@@ -1,6 +1,10 @@
 from confluence_integration.retrieve_space import get_space_content
-from confluence_integration.extract_page_content_and_store_processor import get_page_content_using_queue
-from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
+from confluence_integration.extract_page_content_and_store_processor import (
+    get_page_content_using_queue,
+)
+from confluence_integration.extract_page_content_and_store_processor import (
+    embed_pages_missing_embeds,
+)
 from database.space_manager import SpaceManager
 from vector.create_vector_db import add_embeds_to_vector_db
 from datetime import datetime
@@ -20,7 +24,7 @@ class Space:
         get_page_content_using_queue(space_key)
         embed_pages_missing_embeds()
         space_manager = SpaceManager()
-        self.last_import_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.last_import_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         space_manager.upsert_space_info(self)
         add_embeds_to_vector_db(space_key)
         print(f"\nSpace '{space_name}' retrieval and indexing complete.")

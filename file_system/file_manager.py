@@ -14,6 +14,7 @@ class FileManager:
     Attributes:
     file_system_path (str): The path to the directory where file operations are performed.
     """
+
     def __init__(self):
         """
         Initializes the FileManager with a specific directory path.
@@ -31,7 +32,7 @@ class FileManager:
         Returns:
         str: Confirmation message that the file has been created.
         """
-        with open(os.path.join(self.file_system_path, file_name), 'w') as file_object:
+        with open(os.path.join(self.file_system_path, file_name), "w") as file_object:
             file_object.write(file_content)
             return f"File {file_name} has been created."
 
@@ -68,7 +69,7 @@ class FileManager:
         Returns:
         str: Confirmation message that the file has been updated.
         """
-        with open(os.path.join(self.file_system_path, file_name), 'a') as file_object:
+        with open(os.path.join(self.file_system_path, file_name), "a") as file_object:
             file_object.write(file_content)
             return f"File {file_name} has been added."
 
@@ -82,5 +83,5 @@ class FileManager:
         Returns:
         str: The content of the file.
         """
-        with open(os.path.join(self.file_system_path, file_name), 'r') as file_object:
+        with open(os.path.join(self.file_system_path, file_name), "r") as file_object:
             return file_object.read()

@@ -31,10 +31,13 @@ sql_file_path = database_path + "/confluence_pages_sql.db"
 
 # paths for queues
 # queue for extracting ans storing page content from Confluence
-persist_page_processing_queue_path = os.path.join(project_path, "content", "transactional", "confluence_page_processing_queue")
+persist_page_processing_queue_path = os.path.join(
+    project_path, "content", "transactional", "confluence_page_processing_queue"
+)
 # queue for creating page vectors and storing them in chroma db
-persist_page_vector_queue_path = os.path.join(project_path, "content", "transactional", "confluence_page_vector_queue")
-
+persist_page_vector_queue_path = os.path.join(
+    project_path, "content", "transactional", "confluence_page_vector_queue"
+)
 
 
 # Assistant IDs

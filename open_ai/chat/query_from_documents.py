@@ -25,22 +25,22 @@ def get_response_from_gpt_4t(question, context):
                 {
                     "role": "system",
                     "content": "You are the Q&A based on knowledge base assistant.\n"
-                               "You will always review and refer to the pages included as context. \n"
-                               "You will always answer from the pages.\n"
-                               "You will never improvise or create content from outside the files.\n"
-                               "If you do not have the answer based on the files you will clearly state that and abstain from answering.\n"
-                               "If you use your knowledge to explain some information from outside the file, you will clearly state that.\n"
+                    "You will always review and refer to the pages included as context. \n"
+                    "You will always answer from the pages.\n"
+                    "You will never improvise or create content from outside the files.\n"
+                    "If you do not have the answer based on the files you will clearly state that and abstain from answering.\n"
+                    "If you use your knowledge to explain some information from outside the file, you will clearly state that.\n",
                 },
                 {
                     "role": "user",
-                    "content": f"You will answer the following question with a summary, then provide a comprehensive answer, then provide the references aliasing them as Technical trace:  \nquestion: {question}\npages:{context}"
-                }
+                    "content": f"You will answer the following question with a summary, then provide a comprehensive answer, then provide the references aliasing them as Technical trace:  \nquestion: {question}\npages:{context}",
+                },
             ],
             temperature=0,
             max_tokens=4095,
             top_p=1,
             frequency_penalty=0,
-            presence_penalty=0
+            presence_penalty=0,
         )
     except Exception as e:
         print(f"Error querying GPT-4T: {e}")
@@ -70,15 +70,17 @@ def format_pages_as_context(file_ids):
         chosen_file_path = file_system_path + f"/{file_id}.txt"
         # Open file and extract title and space key
         try:
-            with open(chosen_file_path, 'r') as file:
+            with open(chosen_file_path, "r") as file:
                 file_content = file.read()
-                title = file_content.split('title: ')[1].split('\n')[0].strip()
-                space_key = file_content.split('spaceKey: ')[1].split('\n')[0].strip()
+                title = file_content.split("title: ")[1].split("\n")[0].strip()
+                space_key = file_content.split("spaceKey: ")[1].split("\n")[0].strip()
 
                 context += f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n"
                 context += file_content
 
-            print(f"File {file_id} (Title: {title}, Space Key: {space_key}) appended to context successfully")
+            print(
+                f"File {file_id} (Title: {title}, Space Key: {space_key}) appended to context successfully"
+            )
 
         except Exception as e:
             print(f"Error appending file {file_id} to context: {e}")
@@ -110,6 +112,7 @@ def query_gpt_4t_with_context(question, page_ids):
 
 
 if __name__ == "__main__":
-    response = query_gpt_4t_with_context("What do those documents talk about?",
-                                 ["13795383", "24576050"])
+    response = query_gpt_4t_with_context(
+        "What do those documents talk about?", ["13795383", "24576050"]
+    )
     print(response)

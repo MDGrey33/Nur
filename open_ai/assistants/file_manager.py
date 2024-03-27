@@ -1,9 +1,10 @@
 # ./oai_assistants/file_manager.py
 class FileManager:
     """
-        FileManager handles operations related to file management in the context of the GPT-4-Turbo-Assistant.
-        It provides functionalities to create, list, and delete files within the assistant's environment.
-        """
+    FileManager handles operations related to file management in the context of the GPT-4-Turbo-Assistant.
+    It provides functionalities to create, list, and delete files within the assistant's environment.
+    """
+
     def __init__(self, client):
         """
         Initializes the FileManager with a client to manage files.
@@ -24,7 +25,7 @@ class FileManager:
         Returns:
         str: The ID of the created file.
         """
-        with open(file_path, 'rb') as file_object:
+        with open(file_path, "rb") as file_object:
             response = self.client.create(file=file_object, purpose=purpose)
             return response.id
 
@@ -36,7 +37,10 @@ class FileManager:
         dict: A dictionary with file IDs as keys and file details (filename and purpose) as values.
         """
         files_data = self.client.list().data
-        return {file.id: {"filename": file.filename, "purpose": file.purpose} for file in files_data}
+        return {
+            file.id: {"filename": file.filename, "purpose": file.purpose}
+            for file in files_data
+        }
 
     def delete(self, file_id):
         """

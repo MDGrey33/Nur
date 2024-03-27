@@ -3,7 +3,9 @@ from configuration import vector_folder_path
 import chromadb
 from database.page_manager import get_all_page_data_from_db
 import json
-from confluence_integration.extract_page_content_and_store_processor import embed_pages_missing_embeds
+from confluence_integration.extract_page_content_and_store_processor import (
+    embed_pages_missing_embeds,
+)
 from configuration import pages_collection_name
 
 # Initialize the Chroma PersistentClient for disk persistence
@@ -50,14 +52,20 @@ def add_to_vector(collection_name, space_key=None):
     collection = client.get_or_create_collection(collection_name)
 
     # Add embeddings to the collection
-    print(f"Adding {len(valid_embeddings)} embeddings to the collection '{collection_name}'...")
+    print(
+        f"Adding {len(valid_embeddings)} embeddings to the collection '{collection_name}'..."
+    )
     try:
         collection.upsert(
             ids=valid_page_ids,
             embeddings=valid_embeddings,
-            metadatas=[{"page_id": pid} for pid in valid_page_ids]  # Assuming you want to store page IDs as metadata
+            metadatas=[
+                {"page_id": pid} for pid in valid_page_ids
+            ],  # Assuming you want to store page IDs as metadata
         )
-        print(f"Successfully added {len(valid_embeddings)} embeddings to the collection '{collection_name}'.")
+        print(
+            f"Successfully added {len(valid_embeddings)} embeddings to the collection '{collection_name}'."
+        )
     except Exception as e:
         print(f"Error adding embeddings to the collection: {e}")
 
@@ -71,7 +79,7 @@ def add_embeds_to_vector_db(space_key=None):
     print(f"Embeddings added to {collection_name} collection.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     embed_pages_missing_embeds()
     add_embeds_to_vector_db()
     # initiate the collection and peek at the embeddings

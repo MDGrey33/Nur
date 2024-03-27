@@ -14,10 +14,12 @@ def rename_collection(client, old_name, new_name):
     collection = client.get_collection(old_name)
     # Rename the collection using the modify method
     collection.modify(name=new_name)
-    logging.info(f"Collection '{old_name}' has been renamed to '{new_name}' successfully.")
+    logging.info(
+        f"Collection '{old_name}' has been renamed to '{new_name}' successfully."
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Initialize the ChromaDB client
     client = chromadb.PersistentClient(path=vector_folder_path)
 
@@ -29,4 +31,6 @@ if __name__ == '__main__':
     rename_collection(client, old_collection_name, new_collection_name)
 
     # Proceed with operations using the new collection name
-    print(f"Operations will now proceed using the new collection name: {new_collection_name}")
+    print(
+        f"Operations will now proceed using the new collection name: {new_collection_name}"
+    )

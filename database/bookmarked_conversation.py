@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 
 Base = declarative_base()
 
+
 class BookmarkedConversation(Base):
-    __tablename__ = 'bookmarked_conversations'
+    __tablename__ = "bookmarked_conversations"
     id = Column(Integer, primary_key=True)
     title = Column(Text)
     body = Column(Text)
@@ -14,4 +15,6 @@ class BookmarkedConversation(Base):
     posted_on_confluence = Column(DateTime, nullable=True)
 
     def __repr__(self):
-        return f"<BookmarkedConversation(title={self.title}, thread_id={self.thread_id})>"
+        return (
+            f"<BookmarkedConversation(title={self.title}, thread_id={self.thread_id})>"
+        )

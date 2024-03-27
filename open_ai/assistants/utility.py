@@ -5,7 +5,6 @@ import os
 from configuration import model_id
 
 
-
 def initiate_client():
     """
     Initializes and returns an OpenAI client using the provided API key.
@@ -31,7 +30,7 @@ def get_all_files_in_path(file_path):
     all_file_paths = []
     for root, _, files in os.walk(file_path):
         for file in files:
-            if file != '.DS_Store':
+            if file != ".DS_Store":
                 all_file_paths.append(os.path.join(root, file))
     return all_file_paths
 
@@ -88,20 +87,18 @@ technical trace: [providing the source of the information]""",
                     "properties": {
                         "context_query": {
                             "type": "string",
-                            "description": "The query to retrieve relevant context for"
+                            "description": "The query to retrieve relevant context for",
                         },
                         "max_length": {
                             "type": "integer",
-                            "description": "The maximum length of the returned context"
-                        }
+                            "description": "The maximum length of the returned context",
+                        },
                     },
-                    "required": [
-                        "context_query"
-                    ]
-                }
-            }
+                    "required": ["context_query"],
+                },
+            },
         }
-    ]
+    ],
 }
 
 new_assistant = {
@@ -122,7 +119,7 @@ technical trace: [providing the source of the information]
 document in context: [list of document ids and titles provided in context]""",
     "description": "The Ultimate Documentation AI",
     "file_ids": [],
-    "tools": []
+    "tools": [],
 }
 
 new_assistant_knwoeldge_gap = {
@@ -146,5 +143,5 @@ JSON format:
 ]""",
     "description": "The Ultimate Documentation AI",
     "file_ids": [],
-    "tools": []
+    "tools": [],
 }

@@ -15,6 +15,7 @@ class ThreadManager:
     Attributes:
     client (OpenAI_Client): An instance of the client used for handling thread operations.
     """
+
     def __init__(self, client, assistant_id, thread_id=None):
         """
         Initializes the ThreadManager with a client to manage threads.
@@ -48,7 +49,7 @@ class ThreadManager:
             thread_id=self.thread_id,
             role="user",
             content=user_message,
-            file_ids=message_files
+            file_ids=message_files,
         )
         print("\nUser message added to thread:", user_message)
 
@@ -75,14 +76,16 @@ class ThreadManager:
                 print("\nAssistant run failed.")
                 # If there's a last_error, use it to inform the user
                 if run_status.last_error:
-                    error_message = f"Run failed with error: {run_status.last_error.message}"
+                    error_message = (
+                        f"Run failed with error: {run_status.last_error.message}"
+                    )
                 else:
                     error_message = "Run failed without a specific error message."
 
                 # Instead of returning None, create and return a custom message indicating failure
                 failure_message = {
                     "role": "assistant",
-                    "content": [{"text": {"value": error_message}}]
+                    "content": [{"text": {"value": error_message}}],
                 }
                 # Here you can decide to log the error, inform the user, or take other actions
                 print(error_message)
@@ -108,8 +111,7 @@ class ThreadManager:
         str: The current status of the thread run.
         """
         return self.client.beta.threads.runs.retrieve(
-            thread_id=self.thread_id,
-            run_id=run_id
+            thread_id=self.thread_id, run_id=run_id
         )
 
     def retrieve_messages(self):
@@ -122,9 +124,7 @@ class ThreadManager:
         Returns:
         list: A list of messages from the thread.
         """
-        return self.client.beta.threads.messages.list(
-            thread_id=self.thread_id
-        )
+        return self.client.beta.threads.messages.list(thread_id=self.thread_id)
 
     def display_messages(self, messages):
         """
@@ -167,8 +167,10 @@ class ThreadManager:
         self.client.beta.threads.runs.submit_tool_outputs(
             thread_id=thread_id,
             run_id=run_id,
-            tool_outputs=[{
-                "tool_call_id": tool_call_id,
-                "output": json.dumps(output),
-            }]
+            tool_outputs=[
+                {
+                    "tool_call_id": tool_call_id,
+                    "output": json.dumps(output),
+                }
+            ],
         )

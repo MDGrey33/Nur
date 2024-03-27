@@ -49,20 +49,29 @@ def format_pages_as_context(file_ids, max_length=30000):
             # If we've already reached or exceeded the maximum length, stop adding more content.
             break
         chosen_file_path = file_system_path + f"/{file_id}.txt"
-        with open(chosen_file_path, 'r') as file:
+        with open(chosen_file_path, "r") as file:
             file_content = file.read()
             # Check if adding the next file's content will exceed the max length
-            title = file_content.split('title: ')[1].split('\n')[0].strip()
-            space_key = file_content.split('spaceKey: ')[1].split('\n')[0].strip()
-            additional_context = f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n{file_content}"
+            title = file_content.split("title: ")[1].split("\n")[0].strip()
+            space_key = file_content.split("spaceKey: ")[1].split("\n")[0].strip()
+            additional_context = (
+                f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n{file_content}"
+            )
 
             if len(context) + len(additional_context) <= max_length:
                 context += additional_context
             else:
                 # If adding the whole document would exceed the limit,
                 # only add as much as possible, then break
-                available_space = max_length - len(context) - len(" [Content truncated due to size limit.]")
-                context += additional_context[:available_space] + " [Content truncated due to size limit.]"
+                available_space = (
+                    max_length
+                    - len(context)
+                    - len(" [Content truncated due to size limit.]")
+                )
+                context += (
+                    additional_context[:available_space]
+                    + " [Content truncated due to size limit.]"
+                )
                 break  # Stop adding more content to ensure we respect the maximum length
 
     return context
@@ -112,13 +121,17 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
         print(f"Thread loaded with the following ID: {thread_id}\n")
 
     # Format the question with context and query the assistant
-    formatted_question = (f"Here is the question and the context\n\n"
-                          f"{question}\n\n"
-                          f"Context:\n{context}")
+    formatted_question = (
+        f"Here is the question and the context\n\n"
+        f"{question}\n\n"
+        f"Context:\n{context}"
+    )
     print(f"Formatted question: {formatted_question}\n")
 
     # Query the assistant
-    messages, thread_id = thread_manager.add_message_and_wait_for_reply(formatted_question, [])
+    messages, thread_id = thread_manager.add_message_and_wait_for_reply(
+        formatted_question, []
+    )
     print(f"The thread_id is: {thread_id}\n Messages received: {messages}\n")
     if messages and messages.data:
         assistant_response = messages.data[0].content[0].text.value
@@ -140,6 +153,8 @@ if __name__ == "__main__":
 
     # Second query - follow-up question using the thread ID from the first query
     follow_up_question = "What was my name?"
-    follow_up_response, _ = query_assistant_with_context(follow_up_question, [], thread_id=thread_id)
+    follow_up_response, _ = query_assistant_with_context(
+        follow_up_question, [], thread_id=thread_id
+    )
 
     print("Follow-up Response:", follow_up_response)
