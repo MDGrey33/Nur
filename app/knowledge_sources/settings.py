@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = os.path.join(os.path.dirname(__file__), "./.env")
 
+
 @lru_cache
 def get_settings():
     return Settings()

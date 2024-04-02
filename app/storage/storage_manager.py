@@ -1,5 +1,6 @@
 import os
 
+
 class StorageManager:
     def create_file(self, file_identifier, content):
         storage_folder = "./app/storage"
