@@ -7,7 +7,7 @@ from app.knowledge_sources.routing import knowledge_sources_router
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 
 app.include_router(knowledge_sources_router.router)

@@ -1,0 +1,2 @@
+body: The buy now pay later functionality is the traditional pay by invoice repackaged as a service for delayed payment.The idea behind it is to process invoices at the end of each month rather than immediately.It will require consolidating multiple purchases in one invoice for convenience.
+comments: 
