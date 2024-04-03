@@ -1,0 +1,2 @@
+body: We need to send payment reminders when the payment is delayed.
+comments: Developer: Do we need to assign penalties in case of delayed payment?, Legal: that is not legal, no penalties of any sort., Product Manager: What about reminder fees, Potaito potato, Maybe we make a new service that people sign up to automatically opt in to, and that service would be to provide them reminders for a fee., We do not want to go creative on the authorities, this does not reflect well on the companies integrity

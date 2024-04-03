@@ -1,0 +1,2 @@
+body: We need to be able to get a notification when the customer opens the invoice in their email.
+comments: 

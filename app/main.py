@@ -11,7 +11,7 @@ from app.events.routing import events
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 
 app.include_router(knowledge_sources_router.router)
