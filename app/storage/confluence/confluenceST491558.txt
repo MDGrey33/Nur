@@ -1,2 +1,0 @@
-body: We need to keep track of delayed payments.This functionality was developed and now is in production.
-comments: 

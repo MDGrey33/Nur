@@ -1,2 +1,0 @@
-body: Beautiful content
-comments: 

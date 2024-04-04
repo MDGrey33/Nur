@@ -1,2 +1,0 @@
-body: This page is to follow up on payments features.
-comments: 
