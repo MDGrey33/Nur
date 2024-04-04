@@ -9,8 +9,10 @@ from app.users.models.user import User
 class KnowledgeSource(Base, CRUDMixin):
     __tablename__ = "knowledge_source"
     id = Column(Integer, primary_key=True)
+    source_type = Column(String(256), nullable=False)
+    source_external_name = Column(String(256), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
-    source_type = Column(Integer)
+
 
     def get_filter_attributes(self):
         return [

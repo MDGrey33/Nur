@@ -1,9 +1,10 @@
+from sqlalchemy.orm import Session
+
 from app.database.database import get_db
 
 
 class CRUDMixin:
-    def get_or_create(self):
-        db = get_db()
+    def get_or_create(self, db: Session):
         filter_attrs = self.get_filter_attributes()
         filters = {attr: getattr(self, attr) for attr in filter_attrs}
         db_instance = db.query(type(self)).filter_by(**filters).first()
@@ -15,6 +16,9 @@ class CRUDMixin:
             db.commit()
             db.refresh(self)
             return self
+
+    def update(self, db: Session):
+        db.commit()
 
     def get_filter_attributes(self):
         """
