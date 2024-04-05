@@ -6,3 +6,4 @@ pymysql
 cryptography
 openai
 chromadb
+alembic
