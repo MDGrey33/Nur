@@ -1,7 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
 
-from app.database.database import Base, get_db
+from app.database.database import Base
 from app.database.mixins.crud_mixin import CRUDMixin
 from app.users.models.user import User
 

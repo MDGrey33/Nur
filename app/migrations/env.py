@@ -7,6 +7,7 @@ from alembic import context
 from app.database.database import Base
 from app.knowledge_sources.models.knowledge_source import KnowledgeSource
 from app.knowledge_sources.models.knowledge_source_item import KnowledgeSourceItem
+from app.assistants.models.assistant import Assistant
 from app.tasks.models.task import Task
 
 # this is the Alembic Config object, which provides

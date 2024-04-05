@@ -1,1 +1,5 @@
 *.env
+app/storage/*
+app/v2env
+!app/storage/storage_manager.py
+!app/storage/__init__.py
