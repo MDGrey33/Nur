@@ -1,13 +1,25 @@
-# /app/services/slack_service.py
-
 from app.chat_services.chat_service_interface import ChatServiceInterface
-
-# should be replaced with a new implementation, maybe a copy of the slack folder here
-from slack.bot import load_slack_bot
+from .slack_client import SlackClient
+from .channel_message_handler import ChannelMessageHandler
+from slack.client import get_bot_user_id
+import logging
 
 
 class SlackService(ChatServiceInterface):
-
     def start_service(self):
-        load_slack_bot()
-        print("Slack service started.")
+        bot_user_id = get_bot_user_id()
+        slack_client = SlackClient()
+        event_handlers = [ChannelMessageHandler()]
+
+        for handler in event_handlers:
+            slack_client.socket_mode_client.socket_mode_request_listeners.append(
+                lambda req: handler.handle(
+                    client=slack_client.socket_mode_client,
+                    req=req,
+                    web_client=slack_client.web_client,
+                    bot_user_id=bot_user_id,
+                )
+            )
+
+        slack_client.socket_mode_client.connect()
+        logging.info("Slack Bot has started successfully.")  # Log bot startup
