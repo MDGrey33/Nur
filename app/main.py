@@ -7,7 +7,7 @@ from app.knowledge_sources.routing import knowledge_sources_router
 # Events source
 from app.events.routing import events
 
-#Assistants
+# Assistants
 from app.assistants.routing import assistants_router
 
 
