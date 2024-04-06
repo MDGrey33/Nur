@@ -29,6 +29,7 @@ plotly = "^5.20.0"
 umap-learn = "^0.5.5"
 pymysql = "^1.1.0"
 pydantic-settings = "^2.2.1"
+alembic = "^1.13.1"
 
 
 [build-system]
