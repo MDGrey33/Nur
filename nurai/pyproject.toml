@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "nurai"
+version = "0.1.0"
+description = ""
+authors = ["Roland Abou Younes <roland@abouyounes.com>","Charbel Abou Younes <charbel@abouyounes.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+bs4 = "^0.0.2"
+pydantic = "^2.6.4"
+fastapi = "^0.110.1"
+sqlalchemy = "^2.0.29"
+pydantic-settings = "^2.2.1"
+openai = "^1.16.2"
+alembic = "^1.13.1"
+colorlog = "^6.8.2"
+atlassian-python-api = "^3.41.11"
+chromadb = "^0.4.24"
+slack-sdk = "^3.27.1"
+pymysql = "^1.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
