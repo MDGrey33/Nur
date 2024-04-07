@@ -13,3 +13,4 @@
 /bin/env.sh
 /app/v2env/
 /nurai/credentials.py
+/nurai/.env
