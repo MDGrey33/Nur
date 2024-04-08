@@ -36,12 +36,6 @@ async def handle_bot_question_event(event: BotQuestionEvent):
     return {"message": "Bot question event received", "data": event.dict()}
 
 
-@router.post("/events/checkmarks")
-async def handle_checkmark_event(event: CheckmarkEvent):
-    # Echo back the received event data
-    return {"message": "Checkmark event received", "data": event.dict()}
-
-
 @router.post("/events/bookmarks")
 async def handle_bookmark_event(event: BookmarkEvent):
     # Echo back the received event data
