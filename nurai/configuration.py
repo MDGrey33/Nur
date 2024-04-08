@@ -1,5 +1,4 @@
 # ./configuration.py
-import logging
 from pathlib import Path
 import os
 
@@ -15,10 +14,8 @@ def get_project_root() -> str:
     return str(project_root)
 
 
-logging.basicConfig(level=logging.INFO)
 
 project_path = get_project_root()
-logging.log(logging.DEBUG, f"Project path: {project_path}")
 
 # build file_system_path and database_path from project_path
 logging_path = project_path + "/content/logging"

@@ -1,7 +1,9 @@
 from ..chat_service_interface import ChatServiceInterface
 from .slack_client import SlackClient
 from .event_handlers.event_handler_factory import SlackEventHandlerFactory
-import logging
+from nurai.logger.logger import setup_logger
+
+logging = setup_logger()
 
 
 class SlackService(ChatServiceInterface):
