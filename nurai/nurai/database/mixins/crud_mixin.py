@@ -29,3 +29,23 @@ class CRUDMixin:
         raise NotImplementedError(
             "'get_filter_attributes' method must be implemented in child classes."
         )
+
+    def create_or_update(self, db: Session, **kwargs):
+        filter_attrs = self.get_filter_attributes()
+        filters = {attr: kwargs.get(attr) for attr in filter_attrs if kwargs.get(attr) is not None}
+        db_instance = db.query(type(self)).filter_by(**filters).first()
+
+        if db_instance:
+            # Update existing instance
+            for key, value in kwargs.items():
+                setattr(db_instance, key, value)
+            db.commit()
+            db.refresh(db_instance)
+            return db_instance
+        else:
+            # Create new instance
+            new_instance = type(self)(**kwargs)
+            db.add(new_instance)
+            db.commit()
+            db.refresh(new_instance)
+            return new_instance
