@@ -3,10 +3,10 @@ from nurai.chat_services.slack.event_handlers.event_handler import SlackEventHan
 from nurai.chat_services.slack.event_handlers.event_handlers import (
     SimpleMessageHandler,
     ReplyMessageHandler,
-    ReactionAddedHandler,
     BotDirectMessageHandler,
     BotMentionHandler,
 )
+from nurai.chat_services.slack.event_handlers.reaction_handlers.reaction_handlers import ReactionAddedHandler
 from nurai.logger.logger import setup_logger
 
 # The package name is automatically deduced
