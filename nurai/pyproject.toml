@@ -19,6 +19,7 @@ atlassian-python-api = "^3.41.11"
 chromadb = "^0.4.24"
 slack-sdk = "^3.27.1"
 pymysql = "^1.1.0"
+cryptography = "^42.0.5"
 
 
 [build-system]

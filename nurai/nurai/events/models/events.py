@@ -1,4 +1,4 @@
-# ./app/events/models/events.py
+# ./nurai/events/models/events.py
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 

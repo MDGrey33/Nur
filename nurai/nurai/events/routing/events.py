@@ -1,11 +1,10 @@
-# events/event_routes.py
+# /nurai/events/routing/events.py
 from fastapi import APIRouter
 from nurai.events.models.events import (
     QuestionEvent,
     FollowUpEvent,
     ReplyEvent,
     BotQuestionEvent,
-    CheckmarkEvent,
     BookmarkEvent,
 )
 
@@ -39,4 +38,5 @@ async def handle_bot_question_event(event: BotQuestionEvent):
 @router.post("/events/bookmarks")
 async def handle_bookmark_event(event: BookmarkEvent):
     # Echo back the received event data
+    print("########Bookmark event should be implemented here ##########")
     return {"message": "Bookmark event received", "data": event.dict()}

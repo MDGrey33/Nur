@@ -1,3 +1,4 @@
+# /nurai/chat_services/slack/slack_service.py
 from ..chat_service_interface import ChatServiceInterface
 from .slack_client import SlackClient
 from .event_handlers.event_handler_factory import SlackEventHandlerFactory
@@ -9,9 +10,7 @@ logging = setup_logger()
 class SlackService(ChatServiceInterface):
     def start_service(self):
         slack_client = SlackClient()
-        # Correctly obtain bot_user_id using the function from slack_client
         bot_user_id = slack_client.get_bot_user_id()
-        # Initialize the EventHandlerFactory
         event_handler_factory = SlackEventHandlerFactory()
 
         def handle_event(_, req):
