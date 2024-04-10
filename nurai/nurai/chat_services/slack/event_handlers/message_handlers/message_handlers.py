@@ -1,8 +1,7 @@
 # /nurai/chat_services/slack/event_handlers/event_handlers.py
 from nurai.chat_services.slack.event_handlers.event_handler import SlackEventHandler
 from nurai.logger.logger import setup_logger
-from nurai.events.models.events import BookmarkEvent
-import requests
+
 
 # The package name is automatically deduced
 logging = setup_logger()

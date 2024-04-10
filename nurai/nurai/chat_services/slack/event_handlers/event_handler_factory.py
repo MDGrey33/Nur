@@ -1,6 +1,6 @@
 # /nurai/chat_services/slack/event_handlers/event_handler_factory.py
 from nurai.chat_services.slack.event_handlers.event_handler import SlackEventHandler
-from nurai.chat_services.slack.event_handlers.event_handlers import (
+from nurai.chat_services.slack.event_handlers.message_handlers.message_handlers import (
     SimpleMessageHandler,
     ReplyMessageHandler,
     BotDirectMessageHandler,
