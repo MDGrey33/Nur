@@ -9,6 +9,7 @@ from nurai.knowledge_sources.models.knowledge_source import KnowledgeSource
 from nurai.knowledge_sources.models.knowledge_source_item import KnowledgeSourceItem
 from nurai.assistants.models.assistant import Assistant
 from nurai.tasks.models.task import Task
+from nurai.interactions.models.interaction import Interaction
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
