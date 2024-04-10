@@ -3,7 +3,7 @@ import os
 
 class StorageManager:
     def create_file(self, file_identifier, content):
-        storage_folder = "./app/storage"
+        storage_folder = "./content/filesystem"
         confluence_folder = os.path.join(storage_folder, "confluence")
 
         # Create the storage folder if it doesn't exist

@@ -22,6 +22,11 @@ from chromadb.config import Settings
 
 from nurai.tasks.models.task import Task
 
+from nurai.logger.logger import setup_logger
+
+logging = setup_logger()
+
+
 
 class ConfluenceSource:
     def __init__(
@@ -58,7 +63,7 @@ class ConfluenceSource:
             source_type="confluence",
             source_external_name=self.options.space_key,
         ).get_or_create(self.db)
-
+        logging.info("Starting data processing in knowledge source process function.")
         space_pages = self.confluence_helper.get_pages_from_space(
             self.options.space_key
         )
@@ -110,6 +115,7 @@ class ConfluenceSource:
             knowledge_source_item.last_processed_at = datetime.now()
 
             knowledge_source_item.update(self.db)
+            logging.info("finished data processing in knowledge source process function.")
 
         task = Task(id=self.task_id).get_or_create(self.db)
         task.status = Task.DONE
