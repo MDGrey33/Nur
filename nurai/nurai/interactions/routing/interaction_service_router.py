@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
-# Define a Pydantic model for the interaction data
 class InteractionCreate(BaseModel):
     thread_ts: str
     question_text: str
@@ -23,7 +22,7 @@ class InteractionCreate(BaseModel):
 router = APIRouter()
 
 
-@router.post("/interactions/", response_model=InteractionCreate)
+@router.post("/interactions/create_or_update/", response_model=InteractionCreate)
 def create_interaction(interaction: InteractionCreate, db: Session = Depends(get_db)):
     """
     Create a new interaction record.
