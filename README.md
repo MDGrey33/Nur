@@ -45,6 +45,7 @@ Easy onboarding, reach out if you need support.
 - visualize documentation in 3D space
 
 ### Todo:
+- Rewriting the full solution to scale
 - Working in enhancing the onboarding process
 - V0.2 branch shows the progress in standardizing the code with fast api
 
