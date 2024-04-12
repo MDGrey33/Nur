@@ -80,7 +80,7 @@ poetry install
 ```
 Run the project 
 ```warp-runnable-command
-poetry run uvicorn nurai.main:app --reload
+poetry run gunicorn -k uvicorn.workers.UvicornWorker -w 4 nurai.main:app
 ```
 To access the database 
 ```warp-runnable-command
