@@ -5,7 +5,6 @@ import os
 from colorlog import ColoredFormatter
 from configuration import logging_path
 
-
 def setup_logger():
     """Set up a logger with preconfigured settings, automatically deducing the package name."""
     # Inspect the stack to find the caller's module name
@@ -18,30 +17,32 @@ def setup_logger():
         os.makedirs(log_directory)
     log_file = os.path.join(log_directory, "log.log")
 
-    # Create a logger
+    # Create or retrieve a logger
     logger = logging.getLogger(package_name)
-    logger.setLevel(logging.DEBUG)  # Adjust as needed
+    # Check if the logger already has handlers
+    if not logger.handlers:
+        logger.setLevel(logging.DEBUG)  # Adjust as needed
 
-    # Create a rotating file handler
-    handler = RotatingFileHandler(log_file, maxBytes=10240, backupCount=5)
+        # Create a rotating file handler
+        handler = RotatingFileHandler(log_file, maxBytes=10240, backupCount=5)
 
-    # Define a color coded formatter with timestamp and function name
-    formatter = ColoredFormatter(
-        "%(log_color)s%(asctime)s - %(funcName)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        reset=True,
-        log_colors={
-            "DEBUG": "cyan",
-            "INFO": "green",
-            "WARNING": "yellow",
-            "ERROR": "red",
-            "CRITICAL": "red,bg_white",
-        },
-        secondary_log_colors={},
-        style="%",
-    )
+        # Define a color coded formatter with timestamp and function name
+        formatter = ColoredFormatter(
+            "%(log_color)s%(asctime)s - %(funcName)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            reset=True,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+            secondary_log_colors={},
+            style="%",
+        )
 
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
     return logger

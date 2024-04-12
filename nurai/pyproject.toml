@@ -20,6 +20,7 @@ chromadb = "^0.4.24"
 slack-sdk = "^3.27.1"
 pymysql = "^1.1.0"
 cryptography = "^42.0.5"
+gunicorn = "^21.2.0"
 
 
 [build-system]

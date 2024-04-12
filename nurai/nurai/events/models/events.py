@@ -1,6 +1,6 @@
 # ./nurai/events/models/events.py
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from typing import Optional
 
 
 class BaseEventModel(BaseModel):
@@ -32,17 +32,6 @@ class BotQuestionEvent(BaseEventModel):
     contains_question: bool = Field(default=True)
 
 
-class ReactionEvent(BaseModel):
-    reaction: str
-    ts: str
-    thread_ts: str
+class BookmarkEvent(BaseModel):
     channel: str
-    user: str
-
-
-class CheckmarkEvent(ReactionEvent):
-    reaction: str = Field(default="green_checkmark", Literal=True)
-
-
-class BookmarkEvent(ReactionEvent):
-    reaction: str = Field(default="bookmark", Literal=True)
+    ts: str
