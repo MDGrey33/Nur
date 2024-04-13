@@ -25,12 +25,10 @@ router = APIRouter()
 @router.post("/interactions/create_or_update/", response_model=InteractionCreate)
 def create_interaction(interaction: InteractionCreate, db: Session = Depends(get_db)):
     """
-    Create a new interaction record.
+    Create or update an interaction record based on the thread_ts.
     """
-    # Convert Pydantic model to dict
     interaction_data = interaction.dict()
     try:
-        # Create a new Interaction instance and save it to the database
         new_interaction = Interaction().create_or_update(db=db, **interaction_data)
         return new_interaction
     except Exception as e:

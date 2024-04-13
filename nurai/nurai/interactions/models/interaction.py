@@ -18,5 +18,7 @@ class Interaction(Base, CRUDMixin):
     comments = Column(Text)
 
     def get_filter_attributes(self):
-        return ["question_text", "thread_id", "assistant_thread_id", "answer_text", "channel_id", "slack_user_id",
-                "question_timestamp", "answer_timestamp", "comments"]
+        """
+        Override the method to return 'thread_ts' as the unique identifier for an interaction.
+        """
+        return ['thread_ts']

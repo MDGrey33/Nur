@@ -1,7 +1,6 @@
 # /nurai/chat_services/routing/chat_service_router.py
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 from nurai.chat_services.chat_service_factory import ChatServiceFactory
-from nurai.chat_services.slack.slack_client import SlackClient
 from nurai.logger.logger import setup_logger
 from nurai.chat_services.chat_service_interface import ChatServiceInterface
 
