@@ -44,17 +44,17 @@ async def handle_bot_question_event(event: BotQuestionEvent):
 async def handle_bookmark_event(event: BookmarkEvent):
     logging.info("Received bookmark event: %s", event.dict())
 
-    # Step 1: Fetch the Slack thread
-    fetch_url = f"http://127.0.0.1:8000/fetch-slack-thread/?channel={event.channel}&ts={event.ts}"
+    # Step 1: Fetch the chat thread using the new method
+    fetch_url = f"http://127.0.0.1:8000/fetch-chat-thread/?service_name={event.service_name}&channel={event.channel}&ts={event.ts}"
     try:
-        logging.info("Fetching Slack thread from URL: %s", fetch_url)
+        logging.info("Fetching chat thread from URL: %s", fetch_url)
         fetch_response = requests.get(fetch_url)
         fetch_response.raise_for_status()  # Ensure successful response
         interaction_data = fetch_response.json()
-        logging.info("Successfully fetched Slack thread: %s", interaction_data)
+        logging.info("Successfully fetched chat thread: %s", interaction_data)
     except requests.RequestException as e:
-        logging.error("Failed to fetch Slack thread: %s", str(e))
-        raise HTTPException(status_code=400, detail=f"Failed to fetch Slack thread: {str(e)}")
+        logging.error("Failed to fetch chat thread: %s", str(e))
+        raise HTTPException(status_code=400, detail=f"Failed to fetch chat thread: {str(e)}")
 
     # Step 2: Store the interaction
     create_url = "http://127.0.0.1:8000/interactions/create_or_update/"

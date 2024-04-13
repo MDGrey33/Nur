@@ -33,5 +33,6 @@ class BotQuestionEvent(BaseEventModel):
 
 
 class BookmarkEvent(BaseModel):
+    service_name: str
     channel: str
     ts: str
