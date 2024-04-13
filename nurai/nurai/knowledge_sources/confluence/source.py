@@ -27,7 +27,6 @@ from nurai.logger.logger import setup_logger
 logging = setup_logger()
 
 
-
 class ConfluenceSource:
     def __init__(
         self,
