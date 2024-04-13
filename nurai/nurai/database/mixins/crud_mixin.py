@@ -32,7 +32,11 @@ class CRUDMixin:
 
     def create_or_update(self, db: Session, **kwargs):
         filter_attrs = self.get_filter_attributes()
-        filters = {attr: kwargs.get(attr) for attr in filter_attrs if kwargs.get(attr) is not None}
+        filters = {
+            attr: kwargs.get(attr)
+            for attr in filter_attrs
+            if kwargs.get(attr) is not None
+        }
         db_instance = db.query(type(self)).filter_by(**filters).first()
 
         if db_instance:

@@ -13,7 +13,9 @@ from nurai.assistants.routing import assistants_router
 from nurai.chat_services.routing import chat_service_router
 
 # Interactions
-from nurai.interactions.routing.interaction_service_router import router as interactions_router
+from nurai.interactions.routing.interaction_service_router import (
+    router as interactions_router,
+)
 
 app = FastAPI()
 

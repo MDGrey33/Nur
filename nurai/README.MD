@@ -34,14 +34,14 @@ Bring the docker machines up
 docker-compose up -d
 ```
 
-Run the project 
+Run the project
 
 ```warp-runnable-command
 poetry run uvicorn nurai.main:app --reload
 ```
 To make pycharm work for you\, open a new project in pycharm and point it to  nur\/nurai
 When it says creating virtual environment click cancle
-then go to interpreter settings 
+then go to interpreter settings
 click the dropdown
 show all
 \+
@@ -78,11 +78,11 @@ Install poetry
 ```warp-runnable-command
 poetry install
 ```
-Run the project 
+Run the project
 ```warp-runnable-command
 poetry run gunicorn -k uvicorn.workers.UvicornWorker -w 4 nurai.main:app
 ```
-To access the database 
+To access the database
 ```warp-runnable-command
 mysql -h127.0.0.1 -P3306 -uuser -ppassword
 ```

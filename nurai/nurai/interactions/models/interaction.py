@@ -21,4 +21,4 @@ class Interaction(Base, CRUDMixin):
         """
         Override the method to return 'thread_ts' as the unique identifier for an interaction.
         """
-        return ['thread_ts']
+        return ["thread_ts"]

@@ -21,8 +21,9 @@ class SlackService(ChatServiceInterface):
             handler = event_handler_factory.get_handler(req.payload, bot_user_id)
             handler.handle(
                 client=self.slack_client.socket_mode_client,
-                req=req, web_client=self.slack_client.web_client,
-                bot_user_id=bot_user_id
+                req=req,
+                web_client=self.slack_client.web_client,
+                bot_user_id=bot_user_id,
             )
 
         self.slack_client.socket_mode_client.socket_mode_request_listeners.append(
@@ -35,4 +36,6 @@ class SlackService(ChatServiceInterface):
         return self.slack_client.fetch_thread_messages(channel, thread_ts)
 
     def transform_messages_to_interaction_input(self, messages, channel_id):
-        return self.slack_client.transform_messages_to_interaction_input(messages, channel_id)
+        return self.slack_client.transform_messages_to_interaction_input(
+            messages, channel_id
+        )

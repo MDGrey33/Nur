@@ -5,6 +5,7 @@ import os
 from colorlog import ColoredFormatter
 from configuration import logging_path
 
+
 def setup_logger():
     """Set up a logger with preconfigured settings, automatically deducing the package name."""
     # Inspect the stack to find the caller's module name

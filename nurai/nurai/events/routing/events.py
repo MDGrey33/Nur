@@ -54,7 +54,9 @@ async def handle_bookmark_event(event: BookmarkEvent):
         logging.info("Successfully fetched chat thread: %s", interaction_data)
     except requests.RequestException as e:
         logging.error("Failed to fetch chat thread: %s", str(e))
-        raise HTTPException(status_code=400, detail=f"Failed to fetch chat thread: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Failed to fetch chat thread: {str(e)}"
+        )
 
     # Step 2: Store the interaction
     create_url = "http://127.0.0.1:8000/interactions/create_or_update/"
@@ -65,7 +67,9 @@ async def handle_bookmark_event(event: BookmarkEvent):
         logging.info("Successfully stored interaction")
     except requests.RequestException as e:
         logging.error("Failed to store interaction: %s", str(e))
-        raise HTTPException(status_code=400, detail=f"Failed to store interaction: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Failed to store interaction: {str(e)}"
+        )
 
     logging.info("Bookmark event processed successfully")
     return {"message": "Bookmark event received and processed", "data": event.dict()}

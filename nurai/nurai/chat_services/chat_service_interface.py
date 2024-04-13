@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 
+
 class ChatServiceInterface(ABC):
     @abstractmethod
     def start_service(self):

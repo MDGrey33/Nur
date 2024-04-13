@@ -14,7 +14,6 @@ def get_project_root() -> str:
     return str(project_root)
 
 
-
 project_path = get_project_root()
 
 # build file_system_path and database_path from project_path
