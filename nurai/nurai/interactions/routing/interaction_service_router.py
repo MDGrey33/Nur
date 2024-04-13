@@ -3,20 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from nurai.database.database import get_db
 from nurai.interactions.models.interaction import Interaction
-from pydantic import BaseModel
-from datetime import datetime
-
-
-class InteractionCreate(BaseModel):
-    thread_ts: str
-    question_text: str
-    assistant_thread_id: str
-    answer_text: str
-    channel_id: str
-    slack_user_id: str
-    question_timestamp: datetime
-    answer_timestamp: datetime
-    comments: str
+from nurai.interactions.requests.interaction_create_request import InteractionCreate
 
 
 router = APIRouter()
