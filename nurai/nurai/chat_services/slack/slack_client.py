@@ -1,3 +1,4 @@
+# /nurai/chat_services/slack/slack_client.py
 from slack_sdk.socket_mode import SocketModeClient
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
