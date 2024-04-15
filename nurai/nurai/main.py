@@ -1,4 +1,8 @@
 from fastapi import FastAPI
+from nurai.logger.logger import logging
+
+# Logging
+logging.info("Starting NURAI instance")
 
 # Knowledge source
 from nurai.knowledge_sources.routing import knowledge_sources_router

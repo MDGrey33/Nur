@@ -9,9 +9,8 @@ from nurai.events.models.events import (
 )
 from fastapi import HTTPException
 import requests
-from nurai.logger.logger import setup_logger
+from nurai.logger.logger import logging
 
-logging = setup_logger()
 
 router = APIRouter()
 
@@ -42,18 +41,18 @@ async def handle_bot_question_event(event: BotQuestionEvent):
 
 @router.post("/events/bookmarks")
 async def handle_bookmark_event(event: BookmarkEvent):
-    logging.info("Received bookmark event: %s", event.dict())
+    logging.info(f"Received bookmark event:  {event.dict()}")
 
     # Step 1: Fetch the chat thread using the new method
     fetch_url = f"http://127.0.0.1:8000/fetch-chat-thread/?service_name={event.service_name}&channel={event.channel}&ts={event.ts}"
     try:
-        logging.info("Fetching chat thread from URL: %s", fetch_url)
+        logging.info(f"Fetching chat thread from URL: {fetch_url}")
         fetch_response = requests.get(fetch_url)
         fetch_response.raise_for_status()  # Ensure successful response
         interaction_data = fetch_response.json()
-        logging.info("Successfully fetched chat thread: %s", interaction_data)
+        logging.info(f"Successfully fetched chat thread: {interaction_data}")
     except requests.RequestException as e:
-        logging.error("Failed to fetch chat thread: %s", str(e))
+        logging.error(f"Failed to fetch chat thread: {str(e)}")
         raise HTTPException(
             status_code=400, detail=f"Failed to fetch chat thread: {str(e)}"
         )
@@ -61,12 +60,12 @@ async def handle_bookmark_event(event: BookmarkEvent):
     # Step 2: Store the interaction
     create_url = "http://127.0.0.1:8000/interactions/create_or_update/"
     try:
-        logging.info("Storing interaction with data: %s", interaction_data)
+        logging.info(f"Storing interaction with data: {interaction_data}")
         create_response = requests.post(create_url, json=interaction_data)
         create_response.raise_for_status()
         logging.info("Successfully stored interaction")
     except requests.RequestException as e:
-        logging.error("Failed to store interaction: %s", str(e))
+        logging.error(f"Failed to store interaction: {str(e)}")
         raise HTTPException(
             status_code=400, detail=f"Failed to store interaction: {str(e)}"
         )

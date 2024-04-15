@@ -1,11 +1,9 @@
 # /nurai/chat_services/routing/chat_service_router.py
 from fastapi import APIRouter, HTTPException, Query
 from nurai.chat_services.chat_service_factory import ChatServiceFactory
-from nurai.logger.logger import setup_logger
+from nurai.logger.logger import logging
 from nurai.chat_services.chat_service_interface import ChatServiceInterface
 
-
-logging = setup_logger()
 
 router = APIRouter()
 

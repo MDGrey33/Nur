@@ -9,10 +9,9 @@ from nurai.chat_services.slack.event_handlers.message_handlers.message_handlers 
 from nurai.chat_services.slack.event_handlers.reaction_handlers.reaction_handlers import (
     ReactionAddedHandler,
 )
-from nurai.logger.logger import setup_logger
+from nurai.logger.logger import logging
 
 # The package name is automatically deduced
-logging = setup_logger()
 
 
 class SlackEventHandlerFactory:

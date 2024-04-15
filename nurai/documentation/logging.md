@@ -8,16 +8,10 @@
 1. **Import the Logger in Your Module**
 
     ```python
-    from app.logging.logger import setup_logger
+   from nurai.logger.logger import logging
     ```
 
-2. **Initialize the Logger**
-
-    ```python
-    logging = setup_logger()
-    ```
-
-3. **Use the Logger**
+2 **Use the Logger**
 
     Log messages at different severity levels as needed.
 
@@ -28,12 +22,7 @@
 
 ### Finding Your Log Files
 
-**Location**: `./content/logging/[package_name]/[file_name].log`
-
-**Example Log File Name**: `nur.log`
-
----
-
+    Log files are stored at `./content/logging/app_log[timestamp].log`. 
 ## Detailed Guide
 
 ### Introduction to Logging in the Nur Project
@@ -55,32 +44,24 @@ The Nur project incorporates an advanced logging system designed to support deve
 Ensure your module has access to the logging system.
 
 ```python
-from app.logging.logger import setup_logger
+   from nurai.logger.logger import logging
 ```
 
-**Step 2: Initialize the Logger**
-
-Get a configured logger instance for use in your module.
-
-```python
-logger = setup_logger()
-```
-
-**Step 3: Logging Practices**
+**Step 2: Logging Practices**
 
 Utilize the logger to record events or errors.
 
 ```python
-logger.debug("Debug message")
-logger.info("Info message")
-logger.warning("Warning message")
-logger.error("Error message")
-logger.critical("Critical issue")
+logging.debug("Debug message")
+logging.info("Info message")
+logging.warning("Warning message")
+logging.error("Error message")
+logging.critical("Critical issue")
 ```
 
 ### Log File Management
 
-Logs are stored at `./content/logging/[package_name]/[file_name].log`, with `nur.log` being an example of a log file created by the system. The logging system employs rotating file handlers to manage file size and archival.
+Log files are stored at `./content/logging/app_log[timestamp].log`.
 
 ### Configuration and Best Practices
 

@@ -22,9 +22,8 @@ from chromadb.config import Settings
 
 from nurai.tasks.models.task import Task
 
-from nurai.logger.logger import setup_logger
+from nurai.logger.logger import logging
 
-logging = setup_logger()
 
 
 class ConfluenceSource:

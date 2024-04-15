@@ -5,9 +5,8 @@ from slack_sdk.errors import SlackApiError
 import os
 import json
 from datetime import datetime
-from nurai.logger.logger import setup_logger
+from nurai.logger.logger import logging
 
-logging = setup_logger()
 
 slack_bot_user_oauth_token = os.environ.get("SLACK_BOT_OAUTH_TOKEN")
 slack_app_level_token = os.environ.get("SLACK_APP_LEVEL_TOKEN")

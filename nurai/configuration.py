@@ -17,7 +17,7 @@ def get_project_root() -> str:
 project_path = get_project_root()
 
 # build file_system_path and database_path from project_path
-logging_path = project_path + "/content/logging"
+logging_path = project_path + "/content/logging/"
 file_system_path = project_path + "/content/file_system"
 database_path = project_path + "/content/database"
 vector_folder_path = database_path + "/confluence_page_vectors"

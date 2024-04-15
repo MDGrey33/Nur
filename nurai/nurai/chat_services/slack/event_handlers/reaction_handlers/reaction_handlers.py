@@ -1,11 +1,8 @@
 # /nurai/chat_services/slack/event_handlers/reaction_handlers/reaction_handlers.py
 from nurai.chat_services.slack.event_handlers.event_handler import SlackEventHandler
-from nurai.logger.logger import setup_logger
+from nurai.logger.logger import logging
 from nurai.events.models.events import BookmarkEvent
 import requests
-
-# The package name is automatically deduced
-logging = setup_logger()
 
 
 class ReactionAddedHandler(SlackEventHandler):
@@ -36,9 +33,9 @@ class ReactionAddedHandler(SlackEventHandler):
             logging.info("API called")
             logging.info(f"Response status code: {response.status_code}")
             if response.status_code == 200:
-                print("Bookmark event processed successfully.")
+                logging.info("Bookmark event processed successfully.")
             else:
-                print("Failed to process bookmark event.")
+                logging.info("Failed to process bookmark event.")
         else:
             # Handle other reactions as before
             logging.info("Handling other reaction on a message")

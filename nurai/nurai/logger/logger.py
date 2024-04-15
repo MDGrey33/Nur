@@ -1,49 +1,43 @@
-import inspect
-import logging
-from logging.handlers import RotatingFileHandler
+# filename: logger.py
+
+from loguru import logger
 import os
-from colorlog import ColoredFormatter
+from datetime import datetime
 from configuration import logging_path
 
 
-def setup_logger():
-    """Set up a logger with preconfigured settings, automatically deducing the package name."""
-    # Inspect the stack to find the caller's module name
-    caller_frame = inspect.stack()[1]
-    module = inspect.getmodule(caller_frame[0])
-    package_name = module.__name__.split(".")[0] if module else "default"
+class _Logger:
+    _instance = None
 
-    log_directory = os.path.join(logging_path, package_name)
-    if not os.path.exists(log_directory):
-        os.makedirs(log_directory)
-    log_file = os.path.join(log_directory, "log.log")
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(_Logger, cls).__new__(cls)
+            cls._instance._setup_logger()
+        return cls._instance
 
-    # Create or retrieve a logger
-    logger = logging.getLogger(package_name)
-    # Check if the logger already has handlers
-    if not logger.handlers:
-        logger.setLevel(logging.DEBUG)  # Adjust as needed
+    def _setup_logger(self):
+        # Remove all existing handlers
+        logger.remove()
 
-        # Create a rotating file handler
-        handler = RotatingFileHandler(log_file, maxBytes=10240, backupCount=5)
+        # Ensure the logging path exists
+        if not os.path.exists(logging_path):
+            os.makedirs(logging_path)
 
-        # Define a color coded formatter with timestamp and function name
-        formatter = ColoredFormatter(
-            "%(log_color)s%(asctime)s - %(funcName)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            reset=True,
-            log_colors={
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "red,bg_white",
-            },
-            secondary_log_colors={},
-            style="%",
-        )
+        # Prepare the log file path with a timestamp to avoid overwriting
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file_path = os.path.join(logging_path, f"app_log_{timestamp}.log")
 
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        # Define the log format
+        file_format = "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {message}"
 
-    return logger
+        # Add only the file handler with rotation
+        logger.add(log_file_path, rotation="10 MB", format=file_format, level="DEBUG")
+        logger.info(f"Logging to file: {log_file_path}")
+
+    def __getattr__(self, name):
+        # Delegate method calls to the underlying Loguru logger
+        return getattr(logger, name)
+
+
+# Singleton instantiation
+logging = _Logger()
