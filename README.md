@@ -141,10 +141,15 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 4. Outgoing to confluence API for (document management)
 
 ## Technologies
-- chromadb
-- slack
-- confluence
-- persis-queue
+- Confluence (Data source)
+- Slack (Chat service)
+- OpenAI GPT4T (Text processing and generation)
+- OpenAI Assistant (Chat management and context)
+- OpenAI Embeds (Embed generation for text)
+- ChromaDB (Vector db similarity search using embeds)
+- SQLLite (local database for Documents and Interactions)
+- FastAPI (API endpoint to run async and parallel processing)
+
 ## Technologies in consideration
 - aws
 - azure
