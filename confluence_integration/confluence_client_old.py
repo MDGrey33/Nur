@@ -10,9 +10,10 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-class ConfluenceClient(Confluence):
+
+class ConfluenceClient:
     """
-    A class to handle interactions with the Confluence API, extending the base Confluence class.
+    A class to handle interactions with the Confluence API.
     """
 
     def __init__(self):
@@ -24,11 +25,7 @@ class ConfluenceClient(Confluence):
         username (str): The username for authentication.
         api_token (str): The API token for authentication.
         """
-        super().__init__(
-            url=confluence_credentials["base_url"],
-            username=confluence_credentials["username"],
-            password=confluence_credentials["api_token"],
-        )
+        self.initialize_confluence_client()
 
     def initialize_confluence_client(self):
         """
@@ -40,10 +37,14 @@ class ConfluenceClient(Confluence):
             password=confluence_credentials["api_token"],
         )
 
+    def page_exists(self, space_key, title):
+        """Check if a page with the given title exists in the given space."""
+        return self.confluence.page_exists(space_key, title)
+
     def get_page_id_by_title(self, space_key, title):
         """Retrieve the page ID for a given page title in a given space."""
         try:
-            return super().get_page_id(space_key, title)
+            return self.confluence.get_page_id(space_key, title)
         except Exception as e:
             print(f"Error retrieving page ID for {title}: {e}")
             return None
@@ -89,12 +90,12 @@ class ConfluenceClient(Confluence):
             # Handle the error as per your policy, e.g., re-raise, return None, or provide default content
             raise
 
-    def update_page_by_id(self, page_id, title, content):
+    def update_page(self, page_id, title, content):
         """Update an existing page with new content."""
         clean_content = self.validate_and_coerce_xhtml(
             content
         )  # Validate and clean the content
-        return super().update_page(
+        return self.confluence.update_page(
             page_id=page_id, title=title, body=clean_content
         )
 
@@ -137,7 +138,7 @@ class ConfluenceClient(Confluence):
         limit = 50  # Set a reasonable default limit for each API request
 
         while True:
-            response = super().get_all_spaces(
+            response = self.confluence.get_all_spaces(
                 start=start, limit=limit, expand="description.plain,body.view,value"
             )
             spaces = response.get("results", [])
@@ -175,7 +176,7 @@ class ConfluenceClient(Confluence):
                 if space_key is None:
                     space_key = self.generate_space_key(space_name)
                 print(f"Creating space with key: {space_key}, abd name: {space_name}")
-                super().create_space(space_key=space_key, space_name=space_name)
+                self.confluence.create_space(space_key=space_key, space_name=space_name)
                 return space_key
         except Exception as e:
             logging.error("Error creating space: %s", e, exc_info=True)
@@ -197,7 +198,7 @@ class ConfluenceClient(Confluence):
             content
         )  # Validate and clean the content
         clean_title = self.validate_and_coerce_xhtml(title)
-        return super().create_page(
+        return self.confluence.create_page(
             space=space_key,
             title=clean_title,
             body=clean_content,

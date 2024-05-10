@@ -29,7 +29,7 @@ def create_page_on_confluence(title, content):
         page_id = confluence_client.get_page_id_by_title(space_key, clean_title)
         if page_id:
             # Update the existing page if it's under the same space key
-            confluence_client.update_page(page_id, clean_title, clean_content)
+            confluence_client.update_page_by_id(page_id, clean_title, clean_content)
         else:
             # Skip if it's under a different space key
             return f"Skipping update for interaction  - Page found under a different space key"
