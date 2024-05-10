@@ -3,8 +3,6 @@
 import os
 from datetime import datetime
 from bs4 import BeautifulSoup
-from atlassian import Confluence
-from credentials import confluence_credentials
 from database.page_manager import mark_page_as_processed
 from persistqueue import Queue
 from configuration import persist_page_processing_queue_path
@@ -14,12 +12,7 @@ import logging
 from threading import Thread
 
 
-# Initialize Confluence API
-confluence = Confluence(
-    url=confluence_credentials["base_url"],
-    username=confluence_credentials["username"],
-    password=confluence_credentials["api_token"],
-)
+confluence_client = ConfluenceClient()
 
 
 # Get top level pages from a space
@@ -33,7 +26,7 @@ def get_top_level_ids(space_key):
     Returns:
     list: A list of page IDs for the top-level pages in the space.
     """
-    top_level_pages = confluence.get_all_pages_from_space(space_key)
+    top_level_pages = confluence_client.get_all_pages_from_space(space_key)
     return [page["id"] for page in top_level_pages]
 
 
@@ -50,7 +43,7 @@ def get_child_ids(item_id, content_type):
     list: A list of IDs for child items.
     """
     try:
-        child_items = confluence.get_page_child_by_type(item_id, type=content_type)
+        child_items = confluence_client.get_page_child_by_type(item_id, type=content_type)
         return [child["id"] for child in child_items]
     except requests.exceptions.HTTPError as e:
         logging.error(f"Error retrieving child items for item ID {item_id}: {e}")
@@ -193,7 +186,7 @@ def check_date_filter(update_date, all_page_ids):
     updated_pages = []
     for page_id in all_page_ids:
         try:
-            page_history = confluence.history(page_id)  # directly use page_id
+            page_history = confluence_client.history(page_id)  # directly use page_id
         except Exception as e:
             logging.error(f"Error retrieving history for page ID {page_id}: {e}")
             continue
@@ -235,7 +228,7 @@ def get_comment_content(comment_id):
     str: The content of the comment.
     """
     try:
-        comment = confluence.get_page_by_id(comment_id, expand="body.storage")
+        comment = confluence_client.get_page_by_id(comment_id, expand="body.storage")
         comment_content = comment.get("body", {}).get("storage", {}).get("value", "")
         comment_text = strip_html_tags(comment_content)
         return comment_text
@@ -255,7 +248,7 @@ def process_page(page_id, space_key, file_manager, page_content_map):
     """
     current_time = datetime.now()
     try:
-        page = confluence.get_page_by_id(page_id, expand="body.storage,history,version")
+        page = confluence_client.get_page_by_id(page_id, expand="body.storage,history,version")
     except Exception as e:
         logging.error(f"Error retrieving page with ID {page_id}: {e}")
         return None
@@ -338,7 +331,6 @@ def get_space_content(space_key, update_date=None):
 
 
 if __name__ == "__main__":
-
     # Initial space retrieve
     space_key = choose_space()
     get_space_content(space_key)
