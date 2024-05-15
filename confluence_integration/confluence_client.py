@@ -123,7 +123,7 @@ class ConfluenceClient(Confluence):
         Returns:
         list: A list of child item data objects.
         """
-        # Implementation goes here
+        # Implementation in confluence.get_page_child_by_type
 
     def retrieve_space_list(self):
         """
