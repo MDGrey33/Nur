@@ -1,4 +1,5 @@
-from confluence_integration.retrieve_space import get_space_content
+# ./space/manager.py
+from confluence_integration.retrieve_space_2 import get_space_content
 from confluence_integration.extract_page_content_and_store_processor import (
     get_page_content_using_queue,
 )
@@ -21,6 +22,7 @@ class Space:
         self.space_name = space_name
         print("Retrieving space content...")
         get_space_content(space_key)
+        """
         get_page_content_using_queue(space_key)
         embed_pages_missing_embeds()
         space_manager = SpaceManager()
@@ -28,3 +30,4 @@ class Space:
         space_manager.upsert_space_info(self)
         add_embeds_to_vector_db(space_key)
         print(f"\nSpace '{space_name}' retrieval and indexing complete.")
+        """

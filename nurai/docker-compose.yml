@@ -1,0 +1,33 @@
+version: '3.3'
+services:
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'main_db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - main-db:/var/lib/mysql
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    volumes:
+      - chroma_data:/chroma/.chroma/index
+    ports:
+      - 8001:8000
+    networks:
+      - net
+# Names our volume
+volumes:
+  main-db:
+  chroma_data:
+    driver: local
+
+networks:
+  net:
+    driver: bridge

@@ -1,0 +1,9 @@
+fastapi[all]
+uvicorn[standard]
+atlassian-python-api
+sqlalchemy
+pymysql
+cryptography
+openai
+chromadb
+alembic
