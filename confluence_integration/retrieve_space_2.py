@@ -9,6 +9,7 @@ from database.page_manager import store_pages_data
 
 confluence_client = ConfluenceClient()
 
+
 def choose_space():
     """Prompt the user to choose a Confluence space from a list of available spaces."""
     spaces = confluence_client.retrieve_space_list()
@@ -17,6 +18,7 @@ def choose_space():
     choice = int(input("Choose a space (number): ")) - 1
     return spaces[choice]["key"], spaces[choice]["name"]
 
+
 def get_all_pages_from_space(space_key):
     """Retrieve all pages from a specified Confluence space using pagination."""
     pages = []
@@ -24,7 +26,8 @@ def get_all_pages_from_space(space_key):
     limit = 50
     while True:
         try:
-            response = confluence_client.get_all_pages_from_space(space_key, start=start, limit=limit, expand="body.storage,history,version")
+            response = confluence_client.get_all_pages_from_space(space_key, start=start, limit=limit,
+                                                                  expand="body.storage,history,version")
             if not response:
                 print(f"No pages found in space {space_key}.")
                 break
@@ -37,10 +40,12 @@ def get_all_pages_from_space(space_key):
             break
     return pages
 
+
 def strip_html_tags(content):
     """Remove HTML tags from a string."""
     soup = BeautifulSoup(content, "html.parser")
     return soup.get_text()
+
 
 def get_comments_for_page(page_id):
     """Retrieve all comments for a specified page using pagination."""
@@ -49,7 +54,8 @@ def get_comments_for_page(page_id):
     limit = 50  # Adjust based on your preference or API limits
     while True:
         try:
-            fetched_comments = confluence_client.get_page_child_by_type(page_id, type="comment", start=start, limit=limit)
+            fetched_comments = confluence_client.get_page_child_by_type(page_id, type="comment", start=start,
+                                                                        limit=limit)
             print(f"Fetched {len(fetched_comments)} comments for page {page_id} starting at {start}")
             if not fetched_comments:
                 break
@@ -62,27 +68,35 @@ def get_comments_for_page(page_id):
             break
     return comments
 
+
 def get_comment_content(comment_id):
-    """Retrieve the content of a comment."""
+    """Retrieve the content and metadata of a comment."""
     try:
-        comment = confluence_client.get_page_by_id(comment_id, expand="body.storage")
+        comment = confluence_client.get_page_by_id(comment_id, expand="body.storage,history")
         comment_content = comment.get("body", {}).get("storage", {}).get("value", "")
         comment_text = strip_html_tags(comment_content)
-        return comment_text
-    except Exception as e:
-        logging.error(f"Error retrieving content for comment ID {comment_id}: {e}")
-        return ""  # Return empty string if an error occurs
-
-def format_comment(comment):
-    """Format a comment for storage."""
-    try:
-        comment_text = get_comment_content(comment['id'])
-        return {
+        comment_metadata = {
             'id': comment['id'],
             'author': comment.get('history', {}).get('createdBy', {}).get('displayName', 'Unknown'),
             'createdDate': comment.get('history', {}).get('createdDate', 'Unknown'),
             'content': comment_text
         }
+        return comment_metadata
+    except Exception as e:
+        logging.error(f"Error retrieving content for comment ID {comment_id}: {e}")
+        return {
+            'id': comment_id,
+            'author': 'Unknown',
+            'createdDate': 'Unknown',
+            'content': 'No content'
+        }
+
+
+def format_comment(comment):
+    """Format a comment for storage."""
+    try:
+        comment_metadata = get_comment_content(comment['id'])
+        return comment_metadata
     except KeyError as e:
         logging.error(f"Missing key in comment {comment['id']}: {e}")
         return {
@@ -91,6 +105,7 @@ def format_comment(comment):
             'createdDate': 'Unknown',
             'content': 'No content'
         }
+
 
 def process_page(page, space_key):
     """Process a page and store its data in files and a database."""
@@ -133,6 +148,7 @@ def process_page(page, space_key):
         logging.error(f"Error processing page: {e}")
         return None
 
+
 def get_space_content(space_key):
     """Retrieve and process all pages from a specified Confluence space."""
     all_pages = get_all_pages_from_space(space_key)
@@ -141,6 +157,7 @@ def get_space_content(space_key):
 
     print(f"Processed {len(processed_pages)} pages from space {space_key}.")
     return processed_pages
+
 
 if __name__ == "__main__":
     space_key, space_name = choose_space()
