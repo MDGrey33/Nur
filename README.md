@@ -160,3 +160,25 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 
 ## Documentation
 Refer to the ./documentation folder for project documentation.
+
+## Test instruction
+### preparation
+Create a free confluence space and slack workspace.
+More detail in the README.md though in brief:
+Watch the video
+Clone the repo
+Create the slack app using the manifesto
+Create an assistant on your open ai account
+Create the credentials and configuration files
+Launch the 3 scripts
+Add some documentation on confluence
+Load the space from the terminal
+Invite the bot to slack
+### Test scenarios:
+1. ask question related to your documentation
+2. ask questions not included in your documentation
+3. have a conversation without a "?" in which you ask a question and then reply with the answer then bookmark it to add it to Nurs knowledge
+4. ask a question related to the data you just bookmarked
+5. from the terminal request a knowledge gap recovery
+6. Answer the questions the bot asked on the channel and slect them as complete
+7. monitor the points you got on the score board in the channel
