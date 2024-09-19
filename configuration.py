@@ -43,7 +43,7 @@ persist_page_vector_queue_path = os.path.join(
 # Assistant IDs
 qa_assistant_id_prod_shams = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
 qa_assistant_id_with_rag_shams = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
-qa_assistant_personal = "asst_XGN0sfllK35yGC1TUb5n9BEZ"
+qa_assistant_personal = "asst_OlrRREJtVRX3abmmppk3Mshj"
 quizz_assistant_id_amar = "asst_nMlrzxoYSepkH0AigAtRDMdl"
 qa_assistant_id_on_free_credit_account = "asst_RjPJlkVCfaHTLgalw9BXAuBi"
 quizz_assistant_id_personal = "asst_DQv5SrdFO1atzNB5PA5sd1nH"
@@ -55,13 +55,14 @@ quizz_assistant_id = quizz_assistant_id_personal
 # Assistants have as part of the assistant the model id
 gpt_3t = ""
 gpt_4t = "gpt-4-1106-preview"
-model_id = gpt_4t
+gpt_4o = "gpt-4o"
+model_id = gpt_4o
 
 # Embedding model IDs
 embedding_model_id_latest_large = "text-embedding-3-large"
 embedding_model_id_latest_small = "text-embedding-3-small"
 embedding_model_id_ada = "text-embedding-ada-002"
-embedding_model_id = embedding_model_id_latest_large
+embedding_model_id = embedding_model_id_latest_small
 
 # page retrieval for answering questions
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
@@ -91,3 +92,6 @@ slack_channel_tt_ta_debug = "C06EA5WFGUF"
 slack_channel_tt_ta = "C052GJ7GLVC"
 slack_channel_debug = "C06RLR5S049"
 channel_id = slack_channel_debug
+
+# Add https:// to the Confluence base URL
+confluence_base_url = "https://abouyounes.atlassian.net/wiki"

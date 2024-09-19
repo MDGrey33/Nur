@@ -1,5 +1,6 @@
 # ./api/endpoint.py
 import os
+import logging
 from fastapi import FastAPI
 import uvicorn
 from openai import OpenAI
@@ -11,6 +12,10 @@ from vector.chroma import vectorize_document_and_store_in_db
 from configuration import api_host, api_port
 from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
 from trivia.trivia_manager import TriviaQuizz
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
@@ -53,20 +58,25 @@ class TriviaRequestEvent(BaseModel):
 
 @processor.post("/api/v1/questions")
 def create_question(question_event: QuestionEvent):
-    thread = threading.Thread(target=process_question, args=(question_event,))
-    thread.start()
-    return {
-        "message": "Question received, processing in background",
-        "data": question_event,
-    }
+    try:
+        response = client.create_assistant(
+            instructions="Answer the question based on the provided context.",
+            model="text-davinci-003",
+            tools=["retrieval"],
+            input=question_event.text
+        )
+        return {
+            "message": "Question received, processing in background",
+            "data": response,
+        }
+    except openai.error.OpenAIError as e:
+        logger.error(f"Error querying OpenAI API: {e}")
+        return {"error": "Failed to process the question"}
 
 
 @processor.post("/api/v1/feedback")
-def create_feedback(feedback_event: FeedbackEvent):  # Changed to handle feedback
-    # Assuming you have a separate or modified process for handling feedback
-    thread = threading.Thread(
-        target=process_feedback, args=(feedback_event,)
-    )  # You may need a different function for processing feedback
+def create_feedback(feedback_event: FeedbackEvent):
+    thread = threading.Thread(target=process_feedback, args=(feedback_event,))
     thread.start()
     return {
         "message": "Feedback received, processing in background",
@@ -74,14 +84,9 @@ def create_feedback(feedback_event: FeedbackEvent):  # Changed to handle feedbac
     }
 
 
-# refactor: should be changed to page_embed
 @processor.post("/api/v1/embeds")
-def create_embeds(EmbedRequest: EmbedRequest):
-    """
-    Endpoint to initiate the embedding generation and storage process in the background.
-    """
-    # Using threading to process the embedding generation and storage without blocking the endpoint response
-    page_id = EmbedRequest.page_id
+def create_embeds(embed_request: EmbedRequest):
+    page_id = embed_request.page_id
     thread = threading.Thread(
         target=vectorize_document_and_store_in_db, args=(page_id,)
     )
@@ -93,22 +98,15 @@ def create_embeds(EmbedRequest: EmbedRequest):
 
 
 @processor.post("/api/v1/interaction_embeds")
-def create_interaction_embeds(InteractionEmbedRequest: InteractionEmbedRequest):
-    """
-    Endpoint to initiate the embedding generation and storage process in the background.
-    """
-    interaction_id = InteractionEmbedRequest.interaction_id
-    print(
-        f"Received interaction embed request for ID: {interaction_id}"
-    )  # Debugging line
+def create_interaction_embeds(interaction_embed_request: InteractionEmbedRequest):
+    interaction_id = interaction_embed_request.interaction_id
+    print(f"Received interaction embed request for ID: {interaction_id}")
 
-    # Use threading to process the embedding generation and storage without blocking the endpoint response
     thread = threading.Thread(
         target=vectorize_interaction_and_store_in_db, args=(interaction_id,)
     )
     thread.start()
 
-    # Make sure to return a response that matches what your client expects
     return {
         "message": "Interaction embedding generation initiated, processing in background",
         "interaction_id": interaction_id,
@@ -116,20 +114,13 @@ def create_interaction_embeds(InteractionEmbedRequest: InteractionEmbedRequest):
 
 
 @processor.post("/api/v1/create_trivia")
-def create_trivia(TriviaRequestEvent: TriviaRequestEvent):
-    """
-    Endpoint to initiate a trivia quizz based on a sepecific domain and share it in specified channel.
-    args: domain, thread_ts, channel, user
-    """
-    # Using retrieve context retrieve interactions where the model failed to find relevant context that are closest to the domain mentioned.
-    # Share the questions on the channel in question and tag the user.
-    # The bot then posts the first question and allows the conversation to go on untill it detects a :check mark: emoji on each question.
-    # The bot will also count the thumbs up provided on each message and keep track of each users thumbs up count.
-    # The bot then creates a confluence page under "Q&A KB" confluence space tagging the top 3 contributors
-
-    thread = threading.Thread(target=TriviaQuizz, args=(TriviaRequestEvent))
+def create_trivia(trivia_request_event: TriviaRequestEvent):
+    thread = threading.Thread(target=TriviaQuizz, args=(trivia_request_event,))
     thread.start()
-    return "STUB TEXT - STILL IN DEVELOPMENT \nmessage: Trivia creation request initiated, processing in background"
+    return {
+        "message": "Trivia creation request initiated, processing in background",
+        "data": trivia_request_event,
+    }
 
 
 def main():
