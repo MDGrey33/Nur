@@ -5,7 +5,7 @@ from fastapi import FastAPI
 import uvicorn
 from openai import OpenAI
 import threading
-from credentials import oai_api_key
+from credentials import oai_api_key  # Import the API key from credentials
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
 from vector.chroma import vectorize_document_and_store_in_db
@@ -24,6 +24,7 @@ processor = FastAPI()
 
 client = OpenAI(api_key=oai_api_key)
 
+BASE_URL = "https://api.openai.com/v2"
 
 class QuestionEvent(BaseModel):
     text: str

@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 persist-queue = "^0.8.1"
-openai = "^1.12.0"
+openai = "^1.46.1"
 langchain = "^0.1.7"
 chromadb = "^0.4.22"
 fastapi = "^0.109.2"

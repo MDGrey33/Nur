@@ -110,7 +110,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
     print(f"\n\nContext formatted: {context}\n")
 
     # Initialize ThreadManager with or without an existing thread_id
-    thread_manager = ThreadManager(client, assistant.id, thread_id)
+    thread_manager = ThreadManager(assistant.id, thread_id)
     print(f"Thread manager initiated: {thread_manager}\n")
 
     # If no thread_id was provided, create a new thread
@@ -130,7 +130,7 @@ def query_assistant_with_context(question, page_ids, thread_id=None):
 
     # Query the assistant
     messages, thread_id = thread_manager.add_message_and_wait_for_reply(
-        formatted_question, []
+        formatted_question
     )
     print(f"The thread_id is: {thread_id}\n Messages received: {messages}\n")
     if messages and messages.data:

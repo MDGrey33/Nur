@@ -13,6 +13,13 @@ from interactions.identify_knowledge_gap import identify_knowledge_gaps
 from space.manager import Space
 from visualize.pages import load_confluence_pages_spacial_distribution
 
+import os
+import pandas as pd
+from openai import OpenAI
+from credentials import oai_api_key  # Import the API key from credentials
+
+# Initialize the OpenAI client with the API key
+client = OpenAI(api_key=oai_api_key)
 
 def load_new_documentation_space():
     space_key, space_name = choose_space()

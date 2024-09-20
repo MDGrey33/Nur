@@ -1,8 +1,9 @@
-# ./oai_assistants/thread_manager.py
+# ./open_ai/assistants/thread_manager.py
 import time
 import json
 from context.prepare_context import get_context
-
+from credentials import oai_api_key  # Import the API key from credentials
+from openai import OpenAI
 
 class ThreadManager:
     """
@@ -16,16 +17,15 @@ class ThreadManager:
     client (OpenAI_Client): An instance of the client used for handling thread operations.
     """
 
-    def __init__(self, client, assistant_id, thread_id=None):
+    def __init__(self, assistant_id, thread_id=None):
         """
         Initializes the ThreadManager with a client to manage threads.
 
         Parameters:
-        client (OpenAI_Client): The client object used for thread operations.
         assistant_id (str): The ID of the assistant associated with this thread manager.
         thread_id (str, optional): The identifier of an existing thread to be managed. Default is None.
         """
-        self.client = client
+        self.client = OpenAI(api_key=oai_api_key)  # Initialize the client with the API key
         self.assistant_id = assistant_id
         self.thread_id = thread_id
 
@@ -43,13 +43,12 @@ class ThreadManager:
         else:
             print("\nThread already initialized with ID:", self.thread_id)
 
-    def add_message_and_wait_for_reply(self, user_message, message_files=[]):
+    def add_message_and_wait_for_reply(self, user_message):
         # Add the user's message to the thread
         self.client.beta.threads.messages.create(
             thread_id=self.thread_id,
             role="user",
             content=user_message,
-            file_ids=message_files,
         )
         print("\nUser message added to thread:", user_message)
 
