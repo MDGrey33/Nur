@@ -17,6 +17,7 @@ import os
 import pandas as pd
 from openai import OpenAI
 from credentials import oai_api_key  # Import the API key from credentials
+from endpoint.import_files import import_files  # Import the import_files function
 
 # Initialize the OpenAI client with the API key
 client = OpenAI(api_key=oai_api_key)
@@ -51,8 +52,9 @@ def main_menu():
         print("6. Manage assistants")
         print("7. Identify knowledge gaps")
         print("8. Visualize Confluence Pages Spacial Distribution")
+        print("9. Load Files from Import Folder")  # New menu item
         print("0. Cancel/Quit")
-        choice = input("Enter your choice (0-6): ")
+        choice = input("Enter your choice (0-9): ")
 
         if choice == "1":
             print("Loading new documentation space...")
@@ -99,11 +101,16 @@ def main_menu():
             print("Starting 3D visualization process...")
             load_confluence_pages_spacial_distribution()
 
+        elif choice == "9":
+            print("Loading files from import folder...")
+            result = import_files()
+            print(result)
+
         elif choice == "0":
             print("Exiting program.")
             break
         else:
-            print("Invalid choice. Please enter 0, 1, 2, 3, 4, 5, 6 or 7.")
+            print("Invalid choice. Please enter 0, 1, 2, 3, 4, 5, 6, 7, 8, or 9.")
 
 
 def ask_question():

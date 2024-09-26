@@ -85,3 +85,7 @@ class FileManager:
         """
         with open(os.path.join(self.file_system_path, file_name), "r") as file_object:
             return file_object.read()
+
+def create_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
