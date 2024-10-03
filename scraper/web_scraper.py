@@ -1,3 +1,4 @@
+import os
 import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
@@ -25,9 +26,11 @@ def main():
     start_url = input("Enter the starting URL: ").strip()
     allowed_domain = input("Enter the allowed domain: ").strip()
 
+    output_file = os.path.join('scraper', 'output.json')
+
     process = CrawlerProcess(settings={
         'FEED_FORMAT': 'json',
-        'FEED_URI': 'output.json'
+        'FEED_URI': output_file
     })
 
     process.crawl(WebsiteSpider, start_url=start_url, allowed_domain=allowed_domain)

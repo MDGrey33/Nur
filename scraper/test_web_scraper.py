@@ -7,7 +7,7 @@ def test_web_scraper():
     # Set up the test environment
     start_url = "http://books.toscrape.com/"
     allowed_domain = "books.toscrape.com"
-    output_file = "test_output.json"
+    output_file = os.path.join('scraper', 'test_output.json')
 
     # Run the scraper
     process = CrawlerProcess(settings={
