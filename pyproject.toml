@@ -31,6 +31,7 @@ pypdf2 = "^3.0.1"
 pandas = "^2.2.3"
 docx = "^0.2.4"
 python-docx = "^1.1.2"
+scrapy = "^2.11.2"
 
 
 [build-system]
