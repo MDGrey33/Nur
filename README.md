@@ -16,6 +16,7 @@ Currently in extensive MVP testing.
 ## Business model
 Open Source free to use -
 Apache-2 license
+Notable solutions built as a subset of the Nur AI Functionality is Toptal's Top Assist https://github.com/toptal/top_assist
 
 Easy onboarding, reach out if you need support.
 
