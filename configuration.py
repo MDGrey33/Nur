@@ -30,7 +30,8 @@ vector_chunk_folder_path = database_path + "/confluence_page_vectors"
 sql_file_path = database_path + "/confluence_pages_sql.db"
 
 # paths for queues
-# queue for extracting ans storing page content from Confluence
+# Refactor: check if the queues are still used if note remove those lines 
+# queue for extracting and storing page content from Confluence
 persist_page_processing_queue_path = os.path.join(
     project_path, "content", "transactional", "confluence_page_processing_queue"
 )
@@ -41,14 +42,11 @@ persist_page_vector_queue_path = os.path.join(
 
 
 # Assistant IDs
-qa_assistant_id_prod_shams = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
-qa_assistant_id_with_rag_shams = "asst_IPv0wtSLfiVavwP1qUqBAyVi"
-qa_assistant_personal = "asst_XGN0sfllK35yGC1TUb5n9BEZ"
-quizz_assistant_id_amar = "asst_nMlrzxoYSepkH0AigAtRDMdl"
-qa_assistant_id_on_free_credit_account = "asst_RjPJlkVCfaHTLgalw9BXAuBi"
-quizz_assistant_id_personal = "asst_DQv5SrdFO1atzNB5PA5sd1nH"
-qa_assistant_id = qa_assistant_personal
-quizz_assistant_id = quizz_assistant_id_personal
+# Create one assistant for Q&A and one for Quizzes in your open AI account with the configuration in ./documentation/prompts.md
+qa_assistant_personal_shams = "asst_XGN0sfllK35yGC1TUb5n9BEZ"
+quizz_assistant_id_personal_amar = "asst_DQv5SrdFO1atzNB5PA5sd1nH"
+qa_assistant_id = qa_assistant_personal_shams
+quizz_assistant_id = quizz_assistant_id_personal_amar
 
 # Model IDs
 # Doesn't apply for assistants
@@ -61,7 +59,7 @@ model_id = gpt_4t
 embedding_model_id_latest_large = "text-embedding-3-large"
 embedding_model_id_latest_small = "text-embedding-3-small"
 embedding_model_id_ada = "text-embedding-ada-002"
-embedding_model_id = embedding_model_id_latest_large
+embedding_model_id = embedding_model_id_latest_small
 
 # page retrieval for answering questions
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
@@ -73,9 +71,9 @@ interaction_retrieval_count = 5
 # Configuration for the Nur Services API
 # get the values from the environment variables if available or use the default values
 api_host = os.environ.get("NUR_API_HOST", "localhost")
-api_port = os.environ.get("NUR_API_PORT", "8000")
+api_port = os.environ.get("NUR_API_PORT", "8001")
 
-# Name of the vector collection
+# Name of the vector collections
 pages_collection_name = "pages"
 interactions_collection_name = "interactions"
 
@@ -85,9 +83,6 @@ system_knowledge_space_private = "Nur Documentation"
 system_confluence_knowledge_space = system_knowledge_space_private
 
 
-# Knowledge collection Slack channel ids
-slack_channel_priv_kb = "C06EGCDNA4A"
-slack_channel_tt_ta_debug = "C06EA5WFGUF"
-slack_channel_tt_ta = "C052GJ7GLVC"
+# Knowledge gap recovery Slack channel ids
 slack_channel_debug = "C06RLR5S049"
 channel_id = slack_channel_debug

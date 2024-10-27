@@ -72,7 +72,8 @@ Easy onboarding, reach out if you need support.
 ## Configuration
 1. Rename credentials_example.py to credentials.py & .env.example to .env
 2. Follow the instructions in the files to fill in the values
-
+3. Follow the instructions in the configuration.py to add the relevant IDs
+4. rename the .env.example to .env and update the values in the file
 
 ### Run Nur via shell
 
