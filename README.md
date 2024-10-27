@@ -23,8 +23,6 @@ Easy onboarding, reach out if you need support.
 ## Team
 - [Roland Younes](https://www.linkedin.com/in/rolanday/): With 24 years in tech, including 10 years in tech management and software development, Roland brings a wealth of experience alongside a 2-year deep dive into Gen AI and Python.
 
-- [Charbel Abou Younes](https://www.linkedin.com/in/charbelay/): Charbel, a software development virtuoso, brings his AWS expertise and Adobe Commerce proficiency to the fore, ensuring robust and scalable cloud solutions.
-
 - You...? Interested in AI, documentation, and making a difference? Join us! Whether it’s for a chat, a feature request, or to contribute, we're open to your ideas and contributions.
 
 ## Feature list
@@ -48,25 +46,12 @@ Easy onboarding, reach out if you need support.
 ### Todo:
 - Rewriting the full solution to scale
 - Working in enhancing the onboarding process
-- V0.2 branch shows the progress in standardizing the code with fast api
+- Modular branch shows the progress in standardizing the code with fast api
 
 - Space management
   - Retrieve documentation updates nightly
   - Delete documentation scope (Space) from vector
-
-- Advanced Knowledge gap recovery gamification
-  - Collects the top unanswered questions by theme
-  - Identify the people who asked them
-  - We invite to the Trivia channel the users who asked the. questions and the domain experts
-  - The bot asks the questions, people answer and discuss till satisfaction
-  - People thumbs up the good contributions
-  - The bot collects the conversation data and based on it:
-  - Proposes new documents
-  - Upgrades the leaderboard with the top contributors
-
-- Refactor
-  - Move everything network to a network package
-    - organize network functions into objects
+  - Private chat with users after oauth on all spaces they have access to
 
 - Enable function calling for context retrieval
 
@@ -77,13 +62,11 @@ Easy onboarding, reach out if you need support.
 - Add credibility rating to database
 
 
-
 ## Setup
 ### prerequisites:
 - sqlite3
 - Python 3.12
 - poetry
-- pycharm
 
 
 ## Configuration
@@ -108,7 +91,7 @@ Refer to the ./documentation/slack_app_manifest_installation_guide.md for slack 
 
 `poetry run python ./slack/bot.py` (slack bot stream listener)
 
-### Run Nur via Docker
+### Run Nur via Docker (experimental)
 
 We will use docker compose to build 3 containers of Nur. Each one is used to run a separate part of the app:
 * `nur-manager` will create a container allowing us to use `main.py` functionality. It is meant to be interactive (read further for details).
@@ -158,6 +141,7 @@ Bear in mind that the Dockerized version uses a shared volume named `nur_shared_
 - celery
 - rabbitmq
 - postgreaql
+- Alembic
 
 ## Documentation
 Refer to the ./documentation folder for project documentation.

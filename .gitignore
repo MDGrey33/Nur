@@ -4,7 +4,12 @@
 /credentials.py
 /configuration.py
 /content/*
-/content.toptal.backup/*
+!content/database/
+!content/file_system/
+!content/charts/
+content/database/*
+content/file_system/*
+content/charts/*
 /backup/
 /environment.yml
 /debug/
