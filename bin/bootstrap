@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is no longer used, the content directory is now created directly when you clone git
+# the plugin is included in poetry.toml
+
 # Check if the "content" directory structure needs to be created
 if [ ! -d "content" ]; then
     echo "Creating the 'content' directory structure..."
