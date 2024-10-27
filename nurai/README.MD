@@ -1,13 +1,13 @@
 
 ## Setup the project
 
-Clone branch nur\-v0\.2 to folder nur
+Clone branch nur\modular to folder Nur
 ```warp-runnable-command
-git clone -b nur-v0.2 https://github.com/mdgrey33/nur.git nur
+git clone -b modular https://github.com/mdgrey33/nur.git Nur
 ```
 Go to the folder you cloned Nur to and thne to the folder nurai where we have the poetry package
 ```warp-runnable-command
-cd nur/nurai
+cd Nur/nurai
 ```
 Install poetry
 ```warp-runnable-command
@@ -15,18 +15,20 @@ poetry install
 ```
 Add the \.env file as follows
 ```text
-PYTHONPATH="/Users/roland/code/Nur_dev:$PYTHONPATH"
+PYTHONPATH="/Users/roland/code/Nur:$PYTHONPATH"
 NUR_API_HOST="localhost"
 NUR_API_PORT=8001
 
 #app .env
 
 # Confluence Test Credentials
+# Setup a dummy account in confluence and use it's details here
 CONFLUENCE_TEST_URL=https://abouyounes.atlassian.net/
 CONFLUENCE_TEST_USERNAME=roland@abouyounes.com
 CONFLUENCE_TEST_API_TOKEN=key
 
 # OpenAI Key
+# Setup an account in openai and use it's key here
 OPEN_AI_KEY=key
 ```
 Bring the docker machines up
@@ -39,7 +41,7 @@ Run the project
 ```warp-runnable-command
 poetry run uvicorn nurai.main:app --reload
 ```
-To make pycharm work for you\, open a new project in pycharm and point it to  nur\/nurai
+To make pycharm work for you\, open a new project in pycharm and point it to  Nur\/nurai
 When it says creating virtual environment click cancle
 then go to interpreter settings
 click the dropdown
@@ -64,11 +66,11 @@ mysql -h127.0.0.1 -P3306 -uuser -ppassword
 
 Go to the folder you cloned Nur to and thne to the folder nurai where we have the poetry package
 ```warp-runnable-command
-cd code/nur
+cd code/Nur
 ```
 Get latest updates from git
 ```warp-runnable-command
-git pull origin nur-v0.2
+git pull origin modular
 ```
 Move to the poetry package
 ```warp-runnable-command
@@ -98,4 +100,12 @@ cd code/nur/nurai
 poetry run alembic revision --autogenerate -m "Initialize the db"
 # Apply the migration
 poetry run alembic upgrade head
+```
+
+## Instructions for using Cursor
+
+# Always prefix your #i instructions with 
+
+```
+Knowing the project is in migration, we need to move fromt he old functionality under Nur to the new functionality under Nur/nurai where we are using the factory pattern
 ```

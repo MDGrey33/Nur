@@ -14,3 +14,4 @@
 /app/v2env/
 /nurai/credentials.py
 /nurai/.env
+/nurai/content/logging

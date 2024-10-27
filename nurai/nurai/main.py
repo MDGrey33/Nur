@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from nurai.logger.logger import logging
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Logging
 logging.info("Starting NURAI instance")

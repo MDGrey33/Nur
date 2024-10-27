@@ -31,7 +31,7 @@ vector_chunk_folder_path = database_path + "/confluence_page_vectors"
 sql_file_path = database_path + "/confluence_pages_sql.db"
 
 # paths for queues
-# queue for extracting ans storing page content from Confluence
+# queue for extracting and storing page content from Confluence
 persist_page_processing_queue_path = os.path.join(
     project_path, "content", "transactional", "confluence_page_processing_queue"
 )
