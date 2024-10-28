@@ -70,7 +70,7 @@ class ConfluenceClient:
                 user_mention.replace_with(readable_mention)
 
             # Convert Slack URLs to standard anchor tags
-            for link in soup.find_all(text=re.compile("<https?://[^\s]+>")):
+            for link in soup.find_all(text=re.compile(r"<https?://[^\s]+>")):
                 url = re.search(r"<(https?://[^\s]+)>", link)
                 if url:
                     new_link = soup.new_tag("a", href=url.group(1))
