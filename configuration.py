@@ -43,8 +43,8 @@ persist_page_vector_queue_path = os.path.join(
 
 # Assistant IDs
 # Create one assistant for Q&A and one for Quizzes in your open AI account with the configuration in ./documentation/prompts.md
-qa_assistant_personal_shams = "asst_XGN0sfllK35yGC1TUb5n9BEZ"
-quizz_assistant_id_personal_amar = "asst_DQv5SrdFO1atzNB5PA5sd1nH"
+qa_assistant_personal_shams = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
+quizz_assistant_id_personal_amar = "asst_nMlrzxoYSepkH0AigAtRDMdl"
 qa_assistant_id = qa_assistant_personal_shams
 quizz_assistant_id = quizz_assistant_id_personal_amar
 
@@ -52,7 +52,7 @@ quizz_assistant_id = quizz_assistant_id_personal_amar
 # Doesn't apply for assistants
 # Assistants have as part of the assistant the model id
 gpt_3t = ""
-gpt_4t = "gpt-4-1106-preview"
+gpt_4t = "gpt-4-turbo-preview"
 model_id = gpt_4t
 
 # Embedding model IDs
