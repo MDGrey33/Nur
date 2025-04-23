@@ -3,10 +3,12 @@ from open_ai.assistants.utility import (
     new_assistant,
     select_file_for_upload,
     initiate_client,
+    get_all_files_in_path,
 )
 from open_ai.assistants.file_manager import FileManager
 from open_ai.assistants.assistant_manager import AssistantManager
 from open_ai.assistants.thread_manager import ThreadManager
+import os
 
 
 def create_assistant(client, new_assistant=new_assistant):
@@ -30,12 +32,13 @@ def create_assistant(client, new_assistant=new_assistant):
     )
 
 
-def chat_with_assistant(thread_manager):
+def chat_with_assistant(thread_manager, client):
     """
     Facilitates a chat interaction with an assistant using the provided thread manager.
 
     Parameters:
     thread_manager (ThreadManager): An instance of ThreadManager to handle the chat thread.
+    client: OpenAI client instance used for file operations.
 
     Returns:
     None
@@ -123,38 +126,30 @@ def chose_and_upload_file(client, file_path="context_update"):
         return file_id
 
 
-def add_file_to_assistant(assistant_manager, assistant_id):
+def add_files_to_assistant_v2(client, assistant_id):
     """
-    Adds a file to the specified assistant.
-
-    Parameters:
-    assistant_manager (AssistantManager): An instance of AssistantManager to handle file addition.
-    assistant_id (str): The ID of the assistant to add the file to.
-
-    Returns:
-    None
+    Uploads files, creates a vector store, adds files to it, and updates the assistant to use the vector store and retrieval tool (v2 API).
     """
-    file_manager = FileManager(client)
-    files = file_manager.list()
-
+    file_paths = get_all_files_in_path("content/file_system")
+    if not file_paths:
+        print("No files found in content/file_system.")
+        return
     print("Available Files:")
-    file_list = list(files.items())
-    for index, (file_id, file_data) in enumerate(file_list, start=1):
-        print(f"{index}. {file_data['filename']} (ID: {file_id})")
-
-    file_index = input(
-        "Select the number of the file you want to add or '0' to cancel: "
-    )
+    for idx, path in enumerate(file_paths, 1):
+        print(f"{idx}. {os.path.basename(path)} ({path})")
+    file_index = input("Select the number of the file you want to add or '0' to cancel: ")
     if file_index == "0":
         print("Operation canceled.")
         return
-
     try:
         file_index = int(file_index) - 1
-        if 0 <= file_index < len(file_list):
-            file_id_to_add = file_list[file_index][0]
-            assistant_manager.add_file_to_assistant(assistant_id, file_id_to_add)
-            print("File added successfully.")
+        if 0 <= file_index < len(file_paths):
+            selected_file = file_paths[file_index]
+            assistant_manager = AssistantManager(client)
+            assistant = assistant_manager.load_assistant(assistant_id)
+            from open_ai.assistants.query_assistant_from_documents import add_files_to_assistant
+            updated_assistant = add_files_to_assistant(assistant, [selected_file])
+            print("File added and assistant updated for retrieval (v2 API).")
             assistant_manager.print_assistant_details(assistant_id)
         else:
             print("Invalid file number.")
@@ -248,11 +243,9 @@ def manage_assistants(client):
     if action == "1":
         # Chat with assistant
         thread_manager = ThreadManager(client, assistant_id)
-        chat_with_assistant(thread_manager)
+        chat_with_assistant(thread_manager, client)
     elif action == "2":
-        # Add file to assistant
-        assistant_manager.clean_missing_files_from_assistant(assistant_id)
-        add_file_to_assistant(assistant_manager, assistant_id)
+        add_files_to_assistant_v2(client, assistant_id)
     elif action == "3":
         # Update assistant parameters
         # Call the interactive update method from AssistantManager

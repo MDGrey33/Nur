@@ -9,26 +9,40 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def add_files_to_assistant(assistant, file_ids):
+def add_files_to_assistant(assistant, file_paths):
     """
-    Adds specified files to the assistant's context for referencing in responses.
+    Adds specified files to a vector store and associates it with the assistant for retrieval in v2 API.
 
     Args:
-    assistant (Assistant): The assistant to which files will be added.
-    file_ids (list of str): List of file IDs to be added to the assistant.
+    assistant (Assistant): The assistant to which files will be associated via vector store.
+    file_paths (list of str): List of file paths to be uploaded and added to the vector store.
     """
     client = initiate_client()
-    file_manager = FileManager(client)
-    assistant_manager = AssistantManager(client)
 
-    for file_id in file_ids:
-        chosen_file_path = file_system_path + f"/{file_id}.txt"
-        purpose = "assistants"
-        uploaded_file_id = file_manager.create(chosen_file_path, purpose)
-        print(f"File uploaded successfully with ID: {uploaded_file_id}")
+    # Upload files and collect their IDs
+    uploaded_file_ids = []
+    for file_path in file_paths:
+        file_obj = client.files.create(file=open(file_path, "rb"), purpose="assistants")
+        uploaded_file_ids.append(file_obj.id)
+        print(f"File uploaded successfully with ID: {file_obj.id}")
 
-        assistant_manager.add_file_to_assistant(assistant.id, uploaded_file_id)
-        print(f"File {chosen_file_path} added to assistant {assistant.id}")
+    # Create a vector store
+    vector_store = client.beta.vector_stores.create()
+    print(f"Vector store created with ID: {vector_store.id}")
+
+    # Add files to the vector store
+    for file_id in uploaded_file_ids:
+        client.beta.vector_stores.files.create(vector_store_id=vector_store.id, file_id=file_id)
+        print(f"File {file_id} added to vector store {vector_store.id}")
+
+    # Update the assistant to use the vector store and retrieval tool
+    updated_assistant = client.beta.assistants.update(
+        assistant_id=assistant.id,
+        tools=[{"type": "retrieval"}],
+        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}}
+    )
+    print(f"Assistant {assistant.id} updated to use vector store {vector_store.id} with retrieval tool.")
+    return updated_assistant
 
 
 def format_pages_as_context(file_ids, max_length=30000):

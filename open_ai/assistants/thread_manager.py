@@ -48,8 +48,7 @@ class ThreadManager:
         self.client.beta.threads.messages.create(
             thread_id=self.thread_id,
             role="user",
-            content=user_message,
-            file_ids=message_files,
+            content=user_message
         )
         print("\nUser message added to thread:", user_message)
 
