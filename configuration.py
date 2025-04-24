@@ -43,8 +43,8 @@ persist_page_vector_queue_path = os.path.join(
 
 # Assistant IDs
 # Create one assistant for Q&A and one for Quizzes in your open AI account with the configuration in ./documentation/prompts.md
-qa_assistant_personal_shams = "asst_wgR4j28Hf6CZKhuT2r4qovI8"
-quizz_assistant_id_personal_amar = "asst_nMlrzxoYSepkH0AigAtRDMdl"
+qa_assistant_personal_shams = "asst_47gs7vcUWtFv0AYmIn6U7eP5"
+quizz_assistant_id_personal_amar = "asst_kPz810EmoWUEbKYvSS0rGkqp"
 qa_assistant_id = qa_assistant_personal_shams
 quizz_assistant_id = quizz_assistant_id_personal_amar
 
@@ -59,14 +59,14 @@ model_id = gpt_4t
 embedding_model_id_latest_large = "text-embedding-3-large"
 embedding_model_id_latest_small = "text-embedding-3-small"
 embedding_model_id_ada = "text-embedding-ada-002"
-embedding_model_id = embedding_model_id_latest_small
+embedding_model_id = embedding_model_id_latest_large
 
 # page retrieval for answering questions
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
-document_count = 2
+document_count = 15
 # interaction retrieval for identifying knowledge gaps interaction_retrieval_count is recommended from 3 to 10 where
 # 3 is minimum cost and 10 is maximum comprehensive list of questions
-interaction_retrieval_count = 5
+interaction_retrieval_count = 10
 
 # Configuration for the Nur Services API
 # get the values from the environment variables if available or use the default values

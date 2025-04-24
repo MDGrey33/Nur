@@ -78,3 +78,15 @@ class SpaceManager:
             operation = "Added"
         self.session.commit()
         return operation
+
+    def list_all_spaces(self):
+        """Return all imported spaces as a list of dicts."""
+        spaces = self.session.query(SpaceInfo).all()
+        return [
+            {
+                'space_key': s.space_key,
+                'space_name': s.space_name,
+                'last_import_date': s.last_import_date.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            for s in spaces
+        ]

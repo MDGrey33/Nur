@@ -239,5 +239,6 @@ class ConfluenceClient:
         # Implementation goes here
 
 
-conf_client = ConfluenceClient()
-conf_client.create_space_if_not_found(space_name="Nur documentation QnA")
+if __name__ == "__main__":
+    conf_client = ConfluenceClient()
+    conf_client.create_space_if_not_found(space_name="Nur documentation QnA")
