@@ -168,8 +168,8 @@ class ConfluenceClient:
             if self.space_exists_by_name(space_name):
                 # If the space exists, return its key
                 for space in self.retrieve_space_list():
-                    print(f"{space['name']}found")
                     if space["name"] == space_name:
+                        print(f"{space['name']}found")
                         return space["key"]
             else:
                 # If the space doesn't exist, create a new one

@@ -8,6 +8,7 @@ from slack.event_consumer import get_user_name_from_id
 from slack_sdk.errors import SlackApiError
 from database.bookmarked_conversation_manager import BookmarkedConversationManager
 from slack.message_manager import get_message_replies
+from use_cases.conversation_to_document import generate_document_from_conversation
 
 
 def get_top_users_by_category(slack_web_client):
@@ -157,15 +158,19 @@ def process_bookmark_added_event(slack_web_client, event):
         )
 
         if bookmarked_conversation_messages:
-            # Assuming the first message is the main message and the rest are replies
-            title = bookmarked_conversation_messages[0].get("text", "No Title")
-            # Join the text of all replies to form the body, skipping the first message which is the title
-            body = "\n".join(
-                [
-                    message.get("text", "")
-                    for message in bookmarked_conversation_messages[1:]
-                ]
+            # Concatenate all messages in the thread into a single string
+            conversation_string = "\n".join(
+                [msg.get("text", "") for msg in bookmarked_conversation_messages]
             )
+
+            # Generate document using Najm assistant
+            doc = generate_document_from_conversation(conversation_string)
+            title = doc["title"]
+            body = doc["body"]
+
+            # Debug: Print what will be sent to Confluence
+            print("DEBUG: Creating page with title:", title)
+            print("DEBUG: Creating page with body:", body)
 
             # Initialize the BookmarkedConversationManager
             bookmarked_conversation_manager = BookmarkedConversationManager()

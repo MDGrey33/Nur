@@ -43,10 +43,15 @@ persist_page_vector_queue_path = os.path.join(
 
 # Assistant IDs
 # Create one assistant for Q&A and one for Quizzes in your open AI account with the configuration in ./documentation/prompts.md
-qa_assistant_personal_shams = "asst_47gs7vcUWtFv0AYmIn6U7eP5"
-quizz_assistant_id_personal_amar = "asst_kPz810EmoWUEbKYvSS0rGkqp"
-qa_assistant_id = qa_assistant_personal_shams
-quizz_assistant_id = quizz_assistant_id_personal_amar
+# All possible assistant ids to chose from
+qa_assistant_groupon_shams = "asst_47gs7vcUWtFv0AYmIn6U7eP5"
+quizz_assistant_id_groupon_amar = "asst_kPz810EmoWUEbKYvSS0rGkqp"
+# Najm assistant for conversation-to-confluence-page formatting (Groupon workspace)
+conversation_to_confluence_id_groupon_najm = "asst_YejB21s02oTxJGCrP35AHoSn"
+# Assistant variables to use in the code
+qa_assistant_id = qa_assistant_groupon_shams
+quizz_assistant_id = quizz_assistant_id_groupon_amar
+conversation_to_confluence_id = conversation_to_confluence_id_groupon_najm
 
 # Model IDs
 # Doesn't apply for assistants
