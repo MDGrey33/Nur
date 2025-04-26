@@ -9,6 +9,7 @@ from slack_sdk.errors import SlackApiError
 from database.bookmarked_conversation_manager import BookmarkedConversationManager
 from slack.message_manager import get_message_replies
 from use_cases.conversation_to_document import generate_document_from_conversation
+import requests
 
 
 def get_top_users_by_category(slack_web_client):
@@ -162,29 +163,12 @@ def process_bookmark_added_event(slack_web_client, event):
             conversation_string = "\n".join(
                 [msg.get("text", "") for msg in bookmarked_conversation_messages]
             )
-
-            # Generate document using Najm assistant
-            doc = generate_document_from_conversation(conversation_string)
-            title = doc["title"]
-            body = doc["body"]
-
-            # Debug: Print what will be sent to Confluence
-            print("DEBUG: Creating page with title:", title)
-            print("DEBUG: Creating page with body:", body)
-
-            # Initialize the BookmarkedConversationManager
-            bookmarked_conversation_manager = BookmarkedConversationManager()
-
-            # Add the bookmarked conversation to the database
-            bookmarked_conversation_manager.add_bookmarked_conversation(
-                title=title, body=body, thread_id=item_ts
+            # POST to the async API endpoint
+            response = requests.post(
+                "http://localhost:8001/api/v1/bookmark_to_confluence",
+                json={"conversation": conversation_string, "thread_id": item_ts}
             )
-            print(f"Bookmarked conversation added to the database: {title}")
-
-            # Add conversation on confluence
-            create_page_on_confluence(title, body)
-            bookmarked_conversation_manager.update_posted_on_confluence(item_ts)
-
+            print("Bookmark event sent to async endpoint:", response.json())
         else:
             print("No messages found for the bookmarked conversation.")
     except SlackApiError as e:
