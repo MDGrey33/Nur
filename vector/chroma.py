@@ -11,7 +11,8 @@ import chromadb
 import logging
 from typing import List
 from open_ai.embedding.embed_manager import embed_text
-from database.page_manager import add_or_update_embed_vector
+from database.page_manager import add_or_update_embed_vector, Session, PageData
+import json
 
 
 def generate_document_embedding(page_id, model=embedding_model_id):
@@ -80,6 +81,35 @@ def retrieve_relevant_documents(question: str) -> List[str]:
     return document_ids
 
 
+def upsert_page_to_chromadb(page_id):
+    # Retrieve page from DB
+    with Session() as session:
+        page = session.query(PageData).filter_by(page_id=page_id).first()
+        if not page or not page.embed:
+            print(f"No page or embedding found with ID {page_id} for ChromaDB upsert.")
+            return
+        embedding = json.loads(page.embed)
+        metadata = {
+            "page_id": page.page_id,
+            "title": page.title,
+            "author": page.author,
+            "createdDate": page.createdDate.isoformat() if page.createdDate else "",
+            "lastUpdated": page.lastUpdated.isoformat() if page.lastUpdated else "",
+        }
+        document = page.content
+
+    # Upsert to ChromaDB
+    client = chromadb.PersistentClient(path=vector_folder_path)
+    collection = client.get_collection(pages_collection_name)
+    collection.upsert(
+        ids=[page_id],
+        embeddings=[embedding],
+        metadatas=[metadata],
+        documents=[document]
+    )
+    print(f"Upserted page {page_id} to ChromaDB.")
+
+
 def vectorize_document_and_store_in_db(page_id):
     """
     Vectorize a document and store it in the database.
@@ -91,6 +121,8 @@ def vectorize_document_and_store_in_db(page_id):
         # Store the embedding in the database
         add_or_update_embed_vector(page_id, embedding)
         logging.info(f"Embedding for page ID {page_id} stored in the database.")
+        # Upsert to ChromaDB
+        upsert_page_to_chromadb(page_id)
     else:
         logging.error(
             f"Embedding for page ID {page_id} could not be generated. {error_message}"

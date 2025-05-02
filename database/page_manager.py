@@ -71,7 +71,7 @@ def store_pages_data(space_key, pages_data):
         for page_id, page_info in pages_data.items():
             created_date = parse_datetime(page_info["createdDate"])
             last_updated = parse_datetime(page_info["lastUpdated"])
-            date_pulled_from_confluence = page_info["datePulledFromConfluence"]
+            date_pulled_from_confluence = page_info["date_pulled_from_confluence"]
 
             new_page = PageData(
                 page_id=page_id,

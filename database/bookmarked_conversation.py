@@ -13,6 +13,7 @@ class BookmarkedConversation(Base):
     thread_id = Column(String)
     bookmarked_on_slack = Column(DateTime, default=datetime.now(timezone.utc))
     posted_on_confluence = Column(DateTime, nullable=True)
+    page_id = Column(String, nullable=True)
 
     def __repr__(self):
         return (

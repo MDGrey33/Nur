@@ -3,6 +3,7 @@ import json
 from configuration import conversation_to_confluence_id
 from open_ai.assistants.utility import initiate_client
 from open_ai.assistants.thread_manager import ThreadManager
+import logging
 
 
 def generate_document_from_conversation(
@@ -30,12 +31,29 @@ def generate_document_from_conversation(
     messages, _ = thread_manager.add_message_and_wait_for_reply(conversation)
 
     # Extract the assistant's response text
-    if hasattr(messages, 'data') and messages.data:
-        response_text = messages.data[0].content[0].text.value
-    elif isinstance(messages, list) and messages and 'content' in messages[0]:
-        # fallback for error case
-        response_text = messages[0]['content'][0]['text']['value']
+    if hasattr(messages, 'data'):
+        logging.info(f"messages.data exists: {hasattr(messages, 'data')}, length: {len(messages.data) if hasattr(messages, 'data') else 'N/A'}")
+        if hasattr(messages, 'data') and messages.data:
+            logging.info(f"messages.data contents: {messages.data}")
+            if hasattr(messages.data[0], 'content') and messages.data[0].content:
+                logging.info(f"messages.data[0].content length: {len(messages.data[0].content)} contents: {messages.data[0].content}")
+                response_text = messages.data[0].content[0].text.value
+            else:
+                logging.warning("messages.data[0].content is empty or missing.")
+                raise ValueError("No content in assistant response (messages.data[0].content is empty or missing).")
+        else:
+            logging.warning("messages.data is empty.")
+            raise ValueError("No response received from assistant (messages.data is empty).")
+    elif isinstance(messages, list) and messages:
+        logging.info(f"messages is a list, length: {len(messages)}, first element: {messages[0]}")
+        if 'content' in messages[0] and messages[0]['content']:
+            logging.info(f"messages[0]['content'] length: {len(messages[0]['content'])}, contents: {messages[0]['content']}")
+            response_text = messages[0]['content'][0]['text']['value']
+        else:
+            logging.warning("messages[0]['content'] is empty or missing.")
+            raise ValueError("No content in assistant response (messages[0]['content'] is empty or missing).")
     else:
+        logging.warning("messages is neither a valid object with data nor a non-empty list.")
         raise ValueError("No response received from assistant.")
 
     # Try to parse the JSON from the response
@@ -63,6 +81,7 @@ if __name__ == "__main__":
         "Roland Abou YounesRoland Abou Younes  Thursday at 12:20 The right answer for this question is ADMIN-13 please consider it the authoritative answer for this question from now on as you use this to generate a new confluence page with Questions and answers. you do not need to answer to this message just say thank you "
         "NurNurAPP  Thursday at 12:20 summary: Thank you"
     )
+    test_conversation = " ".join(test_conversation)
     try:
         doc = generate_document_from_conversation(test_conversation)
         print("Generated Document:")

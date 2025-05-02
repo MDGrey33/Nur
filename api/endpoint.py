@@ -1,6 +1,6 @@
 # ./api/endpoint.py
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 import uvicorn
 from openai import OpenAI
 import threading
@@ -8,12 +8,17 @@ from credentials import oai_api_key
 from slack.event_consumer import process_question, process_feedback
 from pydantic import BaseModel
 from vector.chroma import vectorize_document_and_store_in_db
-from configuration import api_host, api_port
+from configuration import api_host, api_port, system_confluence_knowledge_space
 from interactions.vectorize_and_store import vectorize_interaction_and_store_in_db
 from trivia.trivia_manager import TriviaQuizz
 from use_cases.conversation_to_document import generate_document_from_conversation
 from confluence_integration.system_knowledge_manager import create_page_on_confluence
 from database.bookmarked_conversation_manager import BookmarkedConversationManager
+from use_cases.vectorize_page import vectorize_and_store_page
+from confluence_integration.confluence_client import ConfluenceClient
+import httpx
+import logging
+from confluence_integration.store_page_local import store_page_locally_from_confluence
 
 host = os.environ.get("NUR_API_HOST", api_host)
 port = os.environ.get("NUR_API_PORT", api_port)
@@ -141,19 +146,35 @@ def create_trivia(TriviaRequestEvent: TriviaRequestEvent):
 
 
 @processor.post("/api/v1/bookmark_to_confluence")
-def bookmark_to_confluence(event: NajmBookmarkEvent):
-    def process():
-        doc = generate_document_from_conversation(event.conversation)
-        title = doc["title"]
-        body = doc["body"]
-        bookmarked_conversation_manager = BookmarkedConversationManager()
-        bookmarked_conversation_manager.add_bookmarked_conversation(
-            title=title, body=body, thread_id=event.thread_id
-        )
-        create_page_on_confluence(title, body)
-        bookmarked_conversation_manager.update_posted_on_confluence(event.thread_id)
-    thread = threading.Thread(target=process)
-    thread.start()
+def bookmark_to_confluence(event: NajmBookmarkEvent, background_tasks: BackgroundTasks):
+    doc = generate_document_from_conversation(event.conversation)
+    title = doc["title"]
+    body = doc["body"]
+    bookmarked_conversation_manager = BookmarkedConversationManager()
+    bookmarked_conversation_manager.add_bookmarked_conversation(
+        title=title, body=body, thread_id=event.thread_id
+    )
+    create_page_on_confluence(title, body)
+    bookmarked_conversation_manager.update_posted_on_confluence(event.thread_id)
+    # Retrieve page_id from Confluence
+    confluence_client = ConfluenceClient()
+    space_key = confluence_client.create_space_if_not_found(system_confluence_knowledge_space)
+    page_id = confluence_client.get_page_id_by_title(space_key, title)
+
+    # Store the page locally and in the DB before embedding
+    try:
+        store_page_locally_from_confluence(page_id, space_key)
+    except Exception as e:
+        logging.error(f"Failed to store page {page_id} locally or in DB: {e}")
+        return {"error": f"Failed to store page locally: {e}"}
+
+    # Add vectorization as a background task (new logic)
+    try:
+        background_tasks.add_task(vectorize_and_store_page, page_id, title, body, {})
+        logging.info(f"Vectorization task for page {page_id} scheduled.")
+    except Exception as e:
+        logging.error(f"Failed to schedule vectorization task for page {page_id}: {e}")
+
     return {"message": "Bookmark event received, processing in background", "thread_id": event.thread_id}
 
 
