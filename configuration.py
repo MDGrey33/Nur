@@ -68,7 +68,7 @@ embedding_model_id = embedding_model_id_latest_large
 
 # page retrieval for answering questions
 # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
-document_count = 15
+document_count = 20
 # interaction retrieval for identifying knowledge gaps interaction_retrieval_count is recommended from 3 to 10 where
 # 3 is minimum cost and 10 is maximum comprehensive list of questions
 interaction_retrieval_count = 10
@@ -91,3 +91,9 @@ system_confluence_knowledge_space = system_knowledge_space_private
 # Knowledge gap recovery Slack channel ids
 slack_channel_debug = "C06RLR5S049"
 channel_id = slack_channel_debug
+
+# === Centralized context/model limits ===
+# Maximum number of characters for context passed to the model or assistant
+MAX_CONTEXT_LENGTH = 500000
+# Maximum number of tokens for model output (used in OpenAI API calls)
+MODEL_MAX_TOKENS = 4095

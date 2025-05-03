@@ -1,8 +1,7 @@
 # ./gpt_4t/query_from_documents_threads.py
 from openai import OpenAI
 from credentials import oai_api_key
-from configuration import file_system_path
-from configuration import model_id
+from configuration import file_system_path, model_id, MODEL_MAX_TOKENS
 
 client = OpenAI(api_key=oai_api_key)
 
@@ -37,7 +36,7 @@ def get_response_from_gpt_4t(question, context):
                 },
             ],
             temperature=0,
-            max_tokens=4095,
+            max_tokens=MODEL_MAX_TOKENS,
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0,

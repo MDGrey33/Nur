@@ -1,9 +1,9 @@
 import json
-from configuration import file_system_path
+from configuration import file_system_path, MAX_CONTEXT_LENGTH
 from vector.chroma import retrieve_relevant_documents
 
 
-def format_pages_as_context(file_ids, max_length=30000):
+def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
     """
     Formats specified files as a context string and additional details for referencing in responses,
     ensuring the total context length does not exceed the specified maximum length.
@@ -50,7 +50,7 @@ def format_pages_as_context(file_ids, max_length=30000):
     return documents
 
 
-def get_context(context_query, max_length=30000):
+def get_context(context_query, max_length=MAX_CONTEXT_LENGTH):
     """
     Retrieves relevant documents based on a context query and formats them for use as context,
     with the entire response structured as a JSON-compatible dictionary.

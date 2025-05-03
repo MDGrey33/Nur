@@ -3,7 +3,7 @@ from open_ai.assistants.utility import initiate_client
 from open_ai.assistants.file_manager import FileManager
 from open_ai.assistants.thread_manager import ThreadManager
 from open_ai.assistants.assistant_manager import AssistantManager
-from configuration import qa_assistant_id, file_system_path
+from configuration import qa_assistant_id, file_system_path, MAX_CONTEXT_LENGTH
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +45,7 @@ def add_files_to_assistant(assistant, file_paths):
     return updated_assistant
 
 
-def format_pages_as_context(file_ids, max_length=30000):
+def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
     """
     Formats specified files as a context string for referencing in responses,
     ensuring the total context length does not exceed the specified maximum length.
