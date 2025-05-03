@@ -6,6 +6,7 @@ from configuration import sql_file_path
 from datetime import datetime, timezone
 import json
 from sqlalchemy.exc import SQLAlchemyError
+import logging
 
 
 # Define the base class for SQLAlchemy models
@@ -190,17 +191,19 @@ def add_or_update_embed_vector(page_id, embed_vector):
             if page:
                 page.embed = embed_vector_json  # Store the serialized list
                 page.last_embedded = datetime.now(timezone.utc)
-                print(
+                logging.info(
                     f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated."
                 )
             else:
-                print(
-                    f"No page found with ID {page_id}. Consider handling this case as needed."
+                logging.error(
+                    f"No page found with ID {page_id}. Cannot add or update embed vector."
                 )
+                raise ValueError(f"No page found with ID {page_id}.")
 
             session.commit()
         except SQLAlchemyError as e:
             session.rollback()
+            logging.error(f"SQLAlchemyError while adding/updating embed vector for page ID {page_id}: {e}")
             raise e
 
 
