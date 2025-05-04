@@ -16,9 +16,12 @@ from database.page_manager import (
     store_pages_data,
     is_page_processed,
     get_last_updated_timestamp,
+    get_page_ids_missing_embeds,
+    Session,
+    PageData,
 )
 from confluence_integration.retrieve_space import process_page
-from database.page_manager import get_page_ids_missing_embeds
+from embedding.skip_large import should_skip_embedding
 
 
 host = os.environ.get("NUR_API_HOST", api_host)
@@ -156,38 +159,36 @@ def get_page_content_using_queue(space_key):
 
 def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None:
     for attempt in range(retry_limit):
-        # Retrieve the IDs of pages that are still missing embeddings.
         page_ids = get_page_ids_missing_embeds()
-
-        # If there are no pages missing embeddings, exit the loop and end the process.
         if not page_ids:
             print("All pages have embeddings. Process complete.")
             return
-
         print(
             f"Attempt {attempt + 1} of {retry_limit}: Processing {len(page_ids)} pages missing embeddings."
         )
         for page_id in page_ids:
-            # Submit a request to generate an embedding for each page ID.
+            # Fetch page content for skip check
+            with Session() as session:
+                page = session.query(PageData).filter_by(page_id=page_id).first()
+                if not page:
+                    logging.warning(f"Page ID {page_id} not found in DB, skipping.")
+                    continue
+                content = page.content or ""
+            # Check if should skip embedding
+            if should_skip_embedding(content, model="text-embedding-3-large"):  # Use your embedding model variable if needed
+                logging.warning(f"Skipping embedding for page ID {page_id}: content too large for embedding model.")
+                continue
             submit_embedding_creation_request(page_id)
-            # A brief delay between requests to manage load and potentially avoid rate limiting.
             time.sleep(0.5)
-
         print(f"Waiting for {wait_time} seconds for embeddings to be processed...")
         time.sleep(wait_time)
-
-        # After waiting, retrieve the list of pages still missing embeddings to see if the list has decreased.
-        # This retrieval is crucial to ensure that the loop only continues if there are still pages that need processing.
         page_ids = get_page_ids_missing_embeds()
         if not page_ids:
             print("All pages now have embeddings. Process complete.")
-            break  # Break out of the loop if there are no more pages missing embeddings.
-
+            break
         print(
             f"After attempt {attempt + 1}, {len(page_ids)} pages are still missing embeds."
         )
-
-    # After exhausting the retry limit, check if there are still pages without embeddings.
     if page_ids:
         print("Some pages still lack embeddings after all attempts.")
     else:
