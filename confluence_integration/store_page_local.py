@@ -1,5 +1,5 @@
 import logging
-logging.basicConfig(level=logging.DEBUG)
+from datetime import datetime, timezone
 from confluence_integration.confluence_client import ConfluenceClient
 from file_system.file_manager import FileManager
 from database.page_manager import store_pages_data, parse_datetime
@@ -18,18 +18,18 @@ def store_page_locally_from_confluence(page_id, space_key):
         raise Exception(f"Could not retrieve page with ID {page_id} from Confluence.")
 
     # 2. Extract metadata (snake_case, matching the model)
-    page_title = page["title"]
-    page_author = page["history"]["createdBy"]["displayName"]
-    created_date = parse_datetime(page["history"]["createdDate"])
-    last_updated = parse_datetime(page["version"]["when"])
+    page_title = page.get("title", "")
+    page_author = page.get("history", {}).get("createdBy", {}).get("displayName", "Unknown")
+    created_date = parse_datetime(page.get("history", {}).get("createdDate"))
+    last_updated = parse_datetime(page.get("version", {}).get("when"))
     page_content = page.get("body", {}).get("storage", {}).get("value", "")
     page_comments_content = ""  # (Optional: pull comments if needed)
-    date_pulled_from_confluence = created_date  # Or use datetime.now(timezone.utc) if you want the pull time
+    date_pulled_from_confluence = created_date or datetime.now()
 
     # 3. Prepare the page_data dict with correct keys
     page_data = {
         "page_id": page_id,
-        "space_key": space_key,
+        "space_key": space_key or page.get("spaceKey", "Unknown"),
         "title": page_title,
         "author": page_author,
         "createdDate": created_date,
@@ -60,8 +60,8 @@ def store_page_locally_from_confluence(page_id, space_key):
     page_data_for_db = {
         "title": page_title,
         "author": page_author,
-        "createdDate": created_date.isoformat(),
-        "lastUpdated": last_updated.isoformat(),
+        "createdDate": created_date.isoformat() if created_date else "",
+        "lastUpdated": last_updated.isoformat() if last_updated else "",
         "content": page_content,
         "comments": page_comments_content,
         "date_pulled_from_confluence": date_pulled_from_confluence,

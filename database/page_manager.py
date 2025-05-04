@@ -70,19 +70,23 @@ def store_pages_data(space_key, pages_data):
     """
     with Session() as session:
         for page_id, page_info in pages_data.items():
-            created_date = parse_datetime(page_info["createdDate"])
-            last_updated = parse_datetime(page_info["lastUpdated"])
-            date_pulled_from_confluence = page_info["date_pulled_from_confluence"]
-
+            created_date = parse_datetime(page_info.get("createdDate"))
+            last_updated = parse_datetime(page_info.get("lastUpdated"))
+            # Robust fallback for date_pulled_from_confluence
+            date_pulled_from_confluence = (
+                page_info.get("date_pulled_from_confluence") or
+                page_info.get("datePulledFromConfluence") or
+                created_date
+            )
             new_page = PageData(
                 page_id=page_id,
-                space_key=space_key,
-                title=page_info["title"],
-                author=page_info["author"],
+                space_key=page_info.get("space_key") or page_info.get("spaceKey") or space_key or "Unknown",
+                title=page_info.get("title", ""),
+                author=page_info.get("author", "Unknown"),
                 createdDate=created_date,
                 lastUpdated=last_updated,
-                content=page_info["content"],
-                comments=page_info["comments"],
+                content=page_info.get("content", ""),
+                comments=page_info.get("comments", ""),
                 date_pulled_from_confluence=date_pulled_from_confluence,
             )
             session.add(new_page)

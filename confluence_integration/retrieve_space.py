@@ -275,12 +275,12 @@ def process_page(page_id, space_key, file_manager, page_content_map):
             page_comments_content += get_comment_content(comment_id)
 
         page_data = {
-            "spaceKey": space_key,
+            "spaceKey": space_key or page.get("spaceKey", "Unknown"),
             "pageId": page_id,
             "title": page_title,
-            "author": page_author,
-            "createdDate": created_date,
-            "lastUpdated": last_updated,
+            "author": page_author if page_author else "Unknown",
+            "createdDate": created_date if created_date else current_time,
+            "lastUpdated": last_updated if last_updated else current_time,
             "content": page_content,
             "comments": page_comments_content,
             "datePulledFromConfluence": current_time,

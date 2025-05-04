@@ -1,0 +1,496 @@
+diff --git a/check_chroma_page_id.py b/check_chroma_page_id.py
+index 30ef66e..badf021 100644
+--- a/check_chroma_page_id.py
++++ b/check_chroma_page_id.py
+@@ -1,7 +1,7 @@
+ import chromadb
+ from configuration import vector_folder_path, pages_collection_name
+ 
+-PAGE_ID = "81796825385"
++PAGE_ID = "81814257872"
+ 
+ if __name__ == "__main__":
+     client = chromadb.PersistentClient(path=vector_folder_path)
+diff --git a/configuration.py b/configuration.py
+index b2bd27b..2088b4f 100644
+--- a/configuration.py
++++ b/configuration.py
+@@ -68,7 +68,7 @@ embedding_model_id = embedding_model_id_latest_large
+ 
+ # page retrieval for answering questions
+ # document count is recommended from 3 to 15 where 3 is minimum cost and 15 is maximum comprehensive answer
+-document_count = 15
++document_count = 20
+ # interaction retrieval for identifying knowledge gaps interaction_retrieval_count is recommended from 3 to 10 where
+ # 3 is minimum cost and 10 is maximum comprehensive list of questions
+ interaction_retrieval_count = 10
+@@ -91,3 +91,9 @@ system_confluence_knowledge_space = system_knowledge_space_private
+ # Knowledge gap recovery Slack channel ids
+ slack_channel_debug = "C06RLR5S049"
+ channel_id = slack_channel_debug
++
++# === Centralized context/model limits ===
++# Maximum number of characters for context passed to the model or assistant
++MAX_CONTEXT_LENGTH = 500000
++# Maximum number of tokens for model output (used in OpenAI API calls)
++MODEL_MAX_TOKENS = 4095
+diff --git a/context/prepare_context.py b/context/prepare_context.py
+index c3ba0fb..445efff 100644
+--- a/context/prepare_context.py
++++ b/context/prepare_context.py
+@@ -1,9 +1,9 @@
+ import json
+-from configuration import file_system_path
++from configuration import file_system_path, MAX_CONTEXT_LENGTH
+ from vector.chroma import retrieve_relevant_documents
+ 
+ 
+-def format_pages_as_context(file_ids, max_length=30000):
++def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
+     """
+     Formats specified files as a context string and additional details for referencing in responses,
+     ensuring the total context length does not exceed the specified maximum length.
+@@ -50,7 +50,7 @@ def format_pages_as_context(file_ids, max_length=30000):
+     return documents
+ 
+ 
+-def get_context(context_query, max_length=30000):
++def get_context(context_query, max_length=MAX_CONTEXT_LENGTH):
+     """
+     Retrieves relevant documents based on a context query and formats them for use as context,
+     with the entire response structured as a JSON-compatible dictionary.
+diff --git a/database/page_manager.py b/database/page_manager.py
+index c8d2fbb..a6c7485 100644
+--- a/database/page_manager.py
++++ b/database/page_manager.py
+@@ -6,6 +6,7 @@ from configuration import sql_file_path
+ from datetime import datetime, timezone
+ import json
+ from sqlalchemy.exc import SQLAlchemyError
++import logging
+ 
+ 
+ # Define the base class for SQLAlchemy models
+@@ -190,17 +191,19 @@ def add_or_update_embed_vector(page_id, embed_vector):
+             if page:
+                 page.embed = embed_vector_json  # Store the serialized list
+                 page.last_embedded = datetime.now(timezone.utc)
+-                print(
++                logging.info(
+                     f"Embed vector and last_embedded timestamp for page ID {page_id} have been updated."
+                 )
+             else:
+-                print(
+-                    f"No page found with ID {page_id}. Consider handling this case as needed."
++                logging.error(
++                    f"No page found with ID {page_id}. Cannot add or update embed vector."
+                 )
++                raise ValueError(f"No page found with ID {page_id}.")
+ 
+             session.commit()
+         except SQLAlchemyError as e:
+             session.rollback()
++            logging.error(f"SQLAlchemyError while adding/updating embed vector for page ID {page_id}: {e}")
+             raise e
+ 
+ 
+diff --git a/docs/bookmark_to_vector_flow.md b/docs/bookmark_to_vector_flow.md
+new file mode 100644
+index 0000000..88b9b11
+--- /dev/null
++++ b/docs/bookmark_to_vector_flow.md
+@@ -0,0 +1,108 @@
++# :bookmark: Event to Vector DB Flow Documentation
++
++## Overview
++This document details the end-to-end process that occurs when a :bookmark: reaction is added in Slack, tracing the flow through the system, including all relevant file paths, databases, and vector DBs.
++
++---
++
++## 1. Project Structure and Key Paths
++
++| Purpose | Variable | Path (relative to project root) |
++|---------|----------|---------------------------------|
++| **Main SQL DB** (Confluence pages, embeddings, etc.) | `sql_file_path` | `content/database/confluence_pages_sql.db` |
++| **Vector DB (Chroma, persistent client)** | `vector_folder_path` | `content/database/confluence_page_vectors` |
++| **Vector Chunks** | `vector_chunk_folder_path` | `content/database/confluence_page_vectors` |
++| **Interaction Vectors** | `interactions_folder_path` | `content/database/confluence_interaction_vectors` |
++| **File System Storage** | `file_system_path` | `content/file_system` |
++| **Charts** | `chart_folder_path` | `content/charts` |
++
++---
++
++## 2. End-to-End :bookmark: Event Flow
++
++### Step-by-Step Sequence
++
++1. **Slack User adds :bookmark: reaction**
++   - **File:** `slack/bot.py`, `slack/channel_message_handler.py`
++   - **Handler:** `ChannelMessageHandler.handle` detects the event and calls `process_bookmark_added_event`.
++
++2. **Process :bookmark: Event**
++   - **File:** `slack/reaction_manager.py`
++   - Fetches the conversation thread and POSTs it to `/api/v1/bookmark_to_confluence`.
++
++3. **API Receives and Processes Event**
++   - **File:** `api/endpoint.py`
++   - Generates a document from the conversation, stores it in the DB, creates a Confluence page, and schedules vectorization.
++
++4. **Bookmarked Conversation Storage**
++   - **File:** `database/bookmarked_conversation_manager.py`
++   - **DB Table:** `bookmarked_conversations` in `content/database/confluence_pages_sql.db`
++
++5. **Confluence Page Storage**
++   - **File:** `confluence_integration/store_page_local.py`
++   - **Local Copy:** `content/file_system`
++   - **DB Table:** `page_data` in `content/database/confluence_pages_sql.db`
++
++6. **Vectorization and Storage**
++   - **File:** `use_cases/vectorize_page.py`, `database/page_manager.py`
++   - **Vector DB Path:** `content/database/confluence_page_vectors`
++   - **DB Table:** `page_data.embed` (embedding stored as JSON string)
++
++---
++
++## 3. Mermaid Diagram
++
++```mermaid
++sequenceDiagram
++    participant SlackUser as Slack User
++    participant SlackBot as slack/bot.py
++    participant ChannelHandler as slack/channel_message_handler.py
++    participant ReactionMgr as slack/reaction_manager.py
++    participant FastAPI as api/endpoint.py
++    participant DocGen as use_cases/conversation_to_document.py
++    participant BookmarkDB as database/bookmarked_conversation_manager.py
++    participant Confluence as confluence_integration/system_knowledge_manager.py
++    participant LocalStore as confluence_integration/store_page_local.py
++    participant Vectorize as use_cases/vectorize_page.py
++    participant VectorDB as database/page_manager.py
++
++    SlackUser->>SlackBot: Adds :bookmark: reaction
++    SlackBot->>ChannelHandler: Receives event
++    ChannelHandler->>ReactionMgr: Calls process_bookmark_added_event
++    ReactionMgr->>ReactionMgr: Fetches conversation thread
++    ReactionMgr->>FastAPI: POST /api/v1/bookmark_to_confluence
++    FastAPI->>DocGen: generate_document_from_conversation
++    DocGen-->>FastAPI: Returns {title, body}
++    FastAPI->>BookmarkDB: add_bookmarked_conversation<br/>(content/database/confluence_pages_sql.db)
++    FastAPI->>Confluence: create_page_on_confluence<br/>(Nur Documentation)
++    FastAPI->>BookmarkDB: update_posted_on_confluence
++    FastAPI->>Confluence: get_page_id_by_title
++    FastAPI->>LocalStore: store_page_locally_from_confluence<br/>(content/file_system)
++    FastAPI->>Vectorize: background_tasks.add_task(vectorize_and_store_page)
++    Vectorize->>VectorDB: add_or_update_embed_vector<br/>(content/database/confluence_page_vectors, page_data.embed)
++    VectorDB-->>Vectorize: Embedding stored in DB
++
++    Note over FastAPI,Vectorize: All DBs and vector stores are under content/database/
++```
++
++---
++
++## 4. Potential Failure Points
++
++- Slack event not triggered or not handled
++- No messages fetched for the thread
++- API call to `/api/v1/bookmark_to_confluence` fails
++- Document generation or DB write fails
++- Confluence page or vectorization fails
++- Background task fails silently (embedding not written)
++
++---
++
++## 5. References
++- All configuration values are set in `configuration.py`.
++- All DBs and vector DBs are under `content/database/` relative to the project root.
++- Local Confluence page copies are under `content/file_system`.
++
++---
++
++**For troubleshooting, check logs and DB entries at each step and verify the presence of files and embeddings at the specified paths.** 
+\ No newline at end of file
+diff --git a/docs/context_length_management.md b/docs/context_length_management.md
+new file mode 100644
+index 0000000..7aa05e2
+--- /dev/null
++++ b/docs/context_length_management.md
+@@ -0,0 +1,170 @@
++# Context Length Management in Nur
++
++## GPT-4.1 Context Window (Latest as of 2025)
++
++- **Maximum context window:** 300,000 tokens (input + output combined)
++- **Estimated max characters in one message:** ~1,200,000 (assuming 4 characters per token)
++- **Max output tokens:**
++  - 32,768 for o1-preview
++  - 65,536 for o1-mini
++
++**References:**
++- [Why am I hitting 300,000 tokens limit on GPT4.1, which should have 1M context length? (OpenAI Community)](https://community.openai.com/t/why-am-i-hitting-300-000-tokens-limit-on-gpt4-1-which-should-have-1m-context-length/1249404)
++- [What is the token context window size of the GPT-4 o1-preview model? (OpenAI Community)](https://community.openai.com/t/what-is-the-token-context-window-size-of-the-gpt-4-o1-preview-model/954321)
++- [OpenAI Tokenizer Documentation](https://platform.openai.com/tokenizer)
++
++| Model                | Max Context Window (tokens) | Max Output Tokens | Est. Max Characters (input+output) |
++|----------------------|----------------------------|-------------------|-------------------------------------|
++| gpt-4.1-preview      | 300,000                    | 32,768            | ~1,200,000                          |
++| gpt-4.1-mini         | 300,000                    | 65,536            | ~1,200,000                          |
++
++---
++
++This document tracks all places in the codebase where the context provided to language models is measured, limited, or trimmed. It is intended as a living reference for developers to understand and extend context management practices.
++
++---
++
++## 1. `open_ai/assistants/query_assistant_from_documents.py`
++
++### `format_pages_as_context`
++
++This function explicitly measures and limits the context string to a maximum length (default: 300,000 tokens, see config). If adding more content would exceed the limit, it truncates the context and appends a notice.
++
++```python
++def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
++    context = ""
++    for file_id in file_ids:
++        if len(context) >= max_length:
++            break
++        ...
++        additional_context = (
++            f"\nDocument Title: {title}\nSpace Key: {space_key}\n\n{file_content}"
++        )
++
++        if len(context) + len(additional_context) <= max_length:
++            context += additional_context
++        else:
++            available_space = (
++                max_length
++                - len(context)
++                - len(" [Content truncated due to size limit.]")
++            )
++            context += (
++                additional_context[:available_space]
++                + " [Content truncated due to size limit.]"
++            )
++            break
++
++    return context
++```
++
++- **Purpose:** Prevents the context string from exceeding a set length before being sent to the model.
++- **Location:** `open_ai/assistants/query_assistant_from_documents.py`
++
++---
++
++## 2. `open_ai/chat/query_from_documents.py`
++
++### Model API Parameter (Not Code-side Trimming)
++
++```python
++response = client.chat.completions.create(
++    ...
++    max_tokens=MODEL_MAX_TOKENS,
++    ...
++)
++```
++- **Purpose:** Limits the model's output length, but does **not** trim the context string in code before sending.
++- **Location:** `open_ai/chat/query_from_documents.py`
++
++---
++
++## 3. Other Files
++
++As of this writing, no other files in the codebase (including `main.py`, `slack/event_consumer.py`, `slack/reaction_manager.py`, `use_cases/conversation_to_document.py`, or the utility/instruction files) contain code that measures, trims, or limits the context length before sending to the model.
++
++---
++
++## Usage of `format_pages_as_context`
++
++Below are all the places in the codebase where `format_pages_as_context` is used, with code snippets and explanations:
++
++### 1. `open_ai/chat/query_from_documents.py`
++
++**Usage:**
++```python
++def query_gpt_4t_with_context(question, page_ids):
++    ...
++    context = format_pages_as_context(page_ids)
++    ...
++```
++- **Purpose:** Formats the context from a list of file IDs before passing it to the model.
++- **Location:** `open_ai/chat/query_from_documents.py`, line 107
++
++---
++
++### 2. `open_ai/assistants/query_assistant_from_documents.py`
++
++**Usage:**
++```python
++def query_assistant_with_context(question, page_ids, thread_id=None):
++    ...
++    context = format_pages_as_context(page_ids)
++    ...
++```
++- **Purpose:** Formats the context from a list of file IDs before sending it to the assistant.
++- **Location:** `open_ai/assistants/query_assistant_from_documents.py`, line 122
++
++---
++
++### 3. `open_ai/assistants/query_assistant_rag_tool.py`
++
++**Usage:**
++```python
++def query_assistant_with_context(question, page_ids, thread_id=None):
++    ...
++    context = format_pages_as_context(page_ids)
++    ...
++```
++- **Purpose:** Formats the context from a list of file IDs before sending it to the assistant (RAG tool variant).
++- **Location:** `open_ai/assistants/query_assistant_rag_tool.py`, line 124
++
++---
++
++### 4. `context/prepare_context.py`
++
++**Usage:**
++```python
++def get_context(context_query, max_length=MAX_CONTEXT_LENGTH):
++    ...
++    documents = format_pages_as_context(context_document_ids, max_length)
++    ...
++```
++- **Purpose:** Formats relevant documents as context for use in a JSON-compatible dictionary.
++- **Location:** `context/prepare_context.py`, line 66
++
++---
++
++### Summary Table
++
++| File/Function                                      | How `format_pages_as_context` Is Used                                                                 |
++|----------------------------------------------------|-------------------------------------------------------------------------------------------------------|
++| `open_ai/chat/query_from_documents.py`<br>`query_gpt_4t_with_context` | Formats context from file IDs for model input.                                                         |
++| `open_ai/assistants/query_assistant_from_documents.py`<br>`query_assistant_with_context` | Formats context from file IDs for assistant input.                                                     |
++| `open_ai/assistants/query_assistant_rag_tool.py`<br>`query_assistant_with_context` | Formats context from file IDs for assistant input (RAG tool variant).                                  |
++| `context/prepare_context.py`<br>`get_context`      | Formats relevant documents as context for use in a JSON-compatible dictionary.                         |
++
++---
++
++## Summary Table
++
++| File/Function                                      | How Context Length Is Limited/Measured/Trimmed                                                                 |
++|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
++| `open_ai/assistants/query_assistant_from_documents.py`<br>`format_pages_as_context` | Explicitly measures and trims context to a max length (default 300,000), truncates and appends a notice if needed. |
++| `open_ai/chat/query_from_documents.py`<br>Model API call | Sets `max_tokens` for model output, but does **not** trim context in code.                                       |
++
++---
++
++## To Be Extended
++
++This document is a living reference. Please add any new context management logic or related findings here as the codebase evolves. 
+\ No newline at end of file
+diff --git a/open_ai/assistants/query_assistant_from_documents.py b/open_ai/assistants/query_assistant_from_documents.py
+index c69d307..b697f68 100644
+--- a/open_ai/assistants/query_assistant_from_documents.py
++++ b/open_ai/assistants/query_assistant_from_documents.py
+@@ -3,7 +3,7 @@ from open_ai.assistants.utility import initiate_client
+ from open_ai.assistants.file_manager import FileManager
+ from open_ai.assistants.thread_manager import ThreadManager
+ from open_ai.assistants.assistant_manager import AssistantManager
+-from configuration import qa_assistant_id, file_system_path
++from configuration import qa_assistant_id, file_system_path, MAX_CONTEXT_LENGTH
+ import logging
+ 
+ logging.basicConfig(level=logging.INFO)
+@@ -45,7 +45,7 @@ def add_files_to_assistant(assistant, file_paths):
+     return updated_assistant
+ 
+ 
+-def format_pages_as_context(file_ids, max_length=30000):
++def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
+     """
+     Formats specified files as a context string for referencing in responses,
+     ensuring the total context length does not exceed the specified maximum length.
+diff --git a/open_ai/assistants/query_assistant_rag_tool.py b/open_ai/assistants/query_assistant_rag_tool.py
+index a9fe219..c6f65bb 100644
+--- a/open_ai/assistants/query_assistant_rag_tool.py
++++ b/open_ai/assistants/query_assistant_rag_tool.py
+@@ -5,6 +5,7 @@ from open_ai.assistants.thread_manager import ThreadManager
+ from open_ai.assistants.assistant_manager import AssistantManager
+ from configuration import qa_assistant_id
+ from configuration import file_system_path
++from configuration import MAX_CONTEXT_LENGTH
+ import logging
+ 
+ logging.basicConfig(level=logging.INFO)
+@@ -46,7 +47,7 @@ def add_files_to_assistant(assistant, file_paths):
+     return updated_assistant
+ 
+ 
+-def format_pages_as_context(file_ids, max_length=30000):
++def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
+     """
+     Formats specified files as a context string for referencing in responses,
+     ensuring the total context length does not exceed the specified maximum length.
+diff --git a/open_ai/chat/format_knowledge_gathering.py b/open_ai/chat/format_knowledge_gathering.py
+index a162399..d13042c 100644
+--- a/open_ai/chat/format_knowledge_gathering.py
++++ b/open_ai/chat/format_knowledge_gathering.py
+@@ -3,6 +3,7 @@ from openai import OpenAI
+ from credentials import oai_api_key
+ from configuration import file_system_path
+ from configuration import model_id
++from configuration import MODEL_MAX_TOKENS
+ 
+ client = OpenAI(api_key=oai_api_key)
+ 
+@@ -45,7 +46,7 @@ def get_response_from_gpt_4t(question, context):
+                 },
+             ],
+             temperature=0,
+-            max_tokens=4095,
++            max_tokens=MODEL_MAX_TOKENS,
+             top_p=1,
+             frequency_penalty=0,
+             presence_penalty=0,
+diff --git a/open_ai/chat/query_from_documents.py b/open_ai/chat/query_from_documents.py
+index 86a6523..c3340f3 100644
+--- a/open_ai/chat/query_from_documents.py
++++ b/open_ai/chat/query_from_documents.py
+@@ -1,8 +1,7 @@
+ # ./gpt_4t/query_from_documents_threads.py
+ from openai import OpenAI
+ from credentials import oai_api_key
+-from configuration import file_system_path
+-from configuration import model_id
++from configuration import file_system_path, model_id, MODEL_MAX_TOKENS
+ 
+ client = OpenAI(api_key=oai_api_key)
+ 
+@@ -37,7 +36,7 @@ def get_response_from_gpt_4t(question, context):
+                 },
+             ],
+             temperature=0,
+-            max_tokens=4095,
++            max_tokens=MODEL_MAX_TOKENS,
+             top_p=1,
+             frequency_penalty=0,
+             presence_penalty=0,
+diff --git a/use_cases/vectorize_page.py b/use_cases/vectorize_page.py
+index 5680589..9a944e1 100644
+--- a/use_cases/vectorize_page.py
++++ b/use_cases/vectorize_page.py
+@@ -2,12 +2,14 @@ import logging
+ from open_ai.embedding.embed_manager import embed_text
+ from configuration import embedding_model_id
+ from database.page_manager import add_or_update_embed_vector
++from vector.chroma import upsert_page_to_chromadb
+ 
+ async def vectorize_and_store_page(page_id: str, title: str, body: str, metadata: dict):
+     try:
+         text = f"{title}\n{body}"
+         embedding = embed_text(text, embedding_model_id)
+         add_or_update_embed_vector(page_id, embedding)
+-        logging.info(f"Page {page_id} vectorized and stored in vector DB.")
++        upsert_page_to_chromadb(page_id)
++        logging.info(f"Page {page_id} vectorized and stored in vector DB and Chroma.")
+     except Exception as e:
+         logging.error(f"Failed to vectorize/store page {page_id}: {e}") 
+\ No newline at end of file

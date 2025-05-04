@@ -20,23 +20,23 @@ def generate_document_embedding(page_id, model=embedding_model_id):
     Generates an embedding for the given text using the specified OpenAI model.
     Returns a tuple of (embedding, error_message).
     """
-    file_manager = FileManager()
-    try:
-        page_content = file_manager.read(f"{file_system_path}/{page_id}.txt")
-        # Ensure the content does not exceed the maximum token limit
-        page_content = page_content[:8190]
-    except Exception as e:
-        logging.error(f"Error reading page content for page ID {page_id}: {e}")
-        return None, f"Error reading page content: {e}"
-
-    try:
-        # embed_text now returns a serialized JSON string of the embedding vector
-        embedding_json = embed_text(text=page_content, model=model)
-        return embedding_json, None
-    except Exception as e:
-        error_message = f"Error generating embedding for page ID {page_id}: {e}\n"
-        logging.error(error_message)
-        return None, error_message
+    with Session() as session:
+        page = session.query(PageData).filter_by(page_id=page_id).first()
+        if not page:
+            logging.error(f"No page found with ID {page_id} for embedding.")
+            return None, f"No page found with ID {page_id} for embedding."
+        author = getattr(page, "author", None) or "Unknown"
+        space_key = getattr(page, "space_key", None) or "Unknown"
+        title = getattr(page, "title", None) or ""
+        content = getattr(page, "content", None) or ""
+        embedding_text = f"Author: {author}\nSpace Key: {space_key}\nTitle: {title}\n{content}"
+        try:
+            embedding_json = embed_text(text=embedding_text, model=model)
+            return embedding_json, None
+        except Exception as e:
+            error_message = f"Error generating embedding for page ID {page_id}: {e}\n"
+            logging.error(error_message)
+            return None, error_message
 
 
 def retrieve_relevant_documents(question: str) -> List[str]:
