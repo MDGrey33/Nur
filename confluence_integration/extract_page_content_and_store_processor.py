@@ -17,11 +17,8 @@ from database.page_manager import (
     is_page_processed,
     get_last_updated_timestamp,
     get_page_ids_missing_embeds,
-    Session,
-    PageData,
 )
 from confluence_integration.retrieve_space import process_page
-from embedding.skip_large import should_skip_embedding
 
 
 host = os.environ.get("NUR_API_HOST", api_host)
@@ -167,17 +164,6 @@ def embed_pages_missing_embeds(retry_limit: int = 3, wait_time: int = 5) -> None
             f"Attempt {attempt + 1} of {retry_limit}: Processing {len(page_ids)} pages missing embeddings."
         )
         for page_id in page_ids:
-            # Fetch page content for skip check
-            with Session() as session:
-                page = session.query(PageData).filter_by(page_id=page_id).first()
-                if not page:
-                    logging.warning(f"Page ID {page_id} not found in DB, skipping.")
-                    continue
-                content = page.content or ""
-            # Check if should skip embedding
-            if should_skip_embedding(content, model="text-embedding-3-large"):  # Use your embedding model variable if needed
-                logging.warning(f"Skipping embedding for page ID {page_id}: content too large for embedding model.")
-                continue
             submit_embedding_creation_request(page_id)
             time.sleep(0.5)
         print(f"Waiting for {wait_time} seconds for embeddings to be processed...")

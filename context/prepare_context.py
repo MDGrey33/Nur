@@ -1,5 +1,5 @@
-import json
 from configuration import file_system_path, MAX_CONTEXT_LENGTH
+from context.budget import allocate
 from vector.chroma import retrieve_relevant_documents
 
 
@@ -15,11 +15,8 @@ def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
     Returns:
         list of dicts: Each dict contains the document title, space key, and content, truncated if necessary.
     """
-    documents = []
-    total_length = 0
+    candidates = []
     for file_id in file_ids:
-        if total_length >= max_length:
-            break
         chosen_file_path = file_system_path + f"/{file_id}.txt"
         with open(chosen_file_path, "r") as file:
             file_content = file.read()
@@ -31,23 +28,11 @@ def format_pages_as_context(file_ids, max_length=MAX_CONTEXT_LENGTH):
                 "spaceKey": space_key,
                 "content": file_content,
             }
-            document_length = len(json.dumps(document))
-            if total_length + document_length <= max_length:
-                documents.append(document)
-                total_length += document_length
-            else:
-                break  # Stop adding more content to ensure we respect the maximum length
+            candidates.append(document)
 
-    # Truncate the last document's content if total_length exceeds max_length
-    if total_length > max_length:
-        last_doc = documents[-1]
-        available_space = max_length - (total_length - len(last_doc["content"]))
-        last_doc["content"] = (
-            last_doc["content"][:available_space]
-            + " [Content truncated due to size limit.]"
-        )
-
-    return documents
+    # Reserve an equal share for every later ranked result. A large first
+    # document remains visible but cannot suppress all evidence behind it.
+    return allocate(candidates, max_length)
 
 
 def get_context(context_query, max_length=MAX_CONTEXT_LENGTH):
