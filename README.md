@@ -27,6 +27,8 @@ Easy onboarding, reach out if you need support.
 
 ## Feature list
 
+Large pages are embedded in overlapping chunks and combined into the existing page vector, so an input limit does not remove a page from retrieval. Ranked answer context reserves space for each retrieved source and marks any truncated content.
+
 ### Done:
 #### Capabilities
 - Learns from your confluence

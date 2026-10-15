@@ -11,6 +11,7 @@ import chromadb
 import logging
 from typing import List
 from open_ai.embedding.embed_manager import embed_text
+from embedding.chunks import chunks, mean
 from database.page_manager import add_or_update_embed_vector, Session, PageData
 import json
 
@@ -29,9 +30,11 @@ def generate_document_embedding(page_id, model=embedding_model_id):
         space_key = getattr(page, "space_key", None) or "Unknown"
         title = getattr(page, "title", None) or ""
         content = getattr(page, "content", None) or ""
-        embedding_text = f"Author: {author}\nSpace Key: {space_key}\nTitle: {title}\n{content}"
+        prefix = f"Author: {author}\nSpace Key: {space_key}\nTitle: {title}\n"
         try:
-            embedding_json = embed_text(text=embedding_text, model=model)
+            vectors = [embed_text(text=prefix + chunk, model=model)
+                       for chunk in chunks(content)]
+            embedding_json = mean(vectors)
             return embedding_json, None
         except Exception as e:
             error_message = f"Error generating embedding for page ID {page_id}: {e}\n"

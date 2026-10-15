@@ -143,6 +143,10 @@ def get_context(context_query, max_length=MAX_CONTEXT_LENGTH):
 - **Purpose:** Formats relevant documents as context for use in a JSON-compatible dictionary.
 - **Location:** `context/prepare_context.py`, line 66
 
+The tool-facing context path reserves part of the configured character budget for every ranked result. An oversized high-ranked document is included as a marked prefix, while later results remain visible. `context/budget.py` performs the exact serialized-size accounting.
+
+Embedding limits are handled separately in `embedding/chunks.py`: all page content is split into overlapping bounded inputs and the chunk embeddings are combined into the existing one-vector-per-page store. No page is marked embedded unless all chunk calls succeed.
+
 ---
 
 ### Summary Table
@@ -167,4 +171,4 @@ def get_context(context_query, max_length=MAX_CONTEXT_LENGTH):
 
 ## To Be Extended
 
-This document is a living reference. Please add any new context management logic or related findings here as the codebase evolves. 
+This document is a living reference. Please add any new context management logic or related findings here as the codebase evolves.
